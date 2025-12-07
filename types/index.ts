@@ -28,6 +28,7 @@ export interface Coin {
   sparkline_in_7d?: {
     price: number[];
   };
+  source?: 'coingecko' | 'bybit' | 'both'; // NEW: Track data source
 }
 
 export interface WatchlistItem {
@@ -59,3 +60,5 @@ export interface PurchaseWithCurrentPrice extends Purchase {
 }
 
 export type TabType = 'all' | 'new' | 'gainers' | 'losers' | 'volume' | 'turnover' | 'watchlist' | 'portfolio';
+
+export type PlatformFilter = 'all' | 'coingecko' | 'bybit' | 'both';

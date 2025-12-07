@@ -28,14 +28,38 @@ export default function CoinCard({ coin, isInWatchlist, onToggleWatchlist, onCli
     return `$${volume.toFixed(2)}`;
   };
 
+  // Platform badge styling
+  const getPlatformBadge = () => {
+    if (coin.source === 'both') {
+      return (
+        <span className="px-2 py-0.5 text-xs font-semibold bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded">
+          Both
+        </span>
+      );
+    } else if (coin.source === 'coingecko') {
+      return (
+        <span className="px-2 py-0.5 text-xs font-semibold bg-purple-600 text-white rounded">
+          CoinGecko
+        </span>
+      );
+    } else if (coin.source === 'bybit') {
+      return (
+        <span className="px-2 py-0.5 text-xs font-semibold bg-blue-600 text-white rounded">
+          Bybit
+        </span>
+      );
+    }
+    return null;
+  };
+
   return (
     <div
       onClick={onClick}
       className="bg-gray-800 rounded-lg p-4 hover:bg-gray-750 transition-colors cursor-pointer border border-gray-700 hover:border-purple-500"
     >
       <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center gap-3">
-          <div className="relative w-10 h-10">
+        <div className="flex items-center gap-3 flex-1">
+          <div className="relative w-10 h-10 flex-shrink-0">
             <Image
               src={coin.image}
               alt={coin.name}
@@ -44,9 +68,12 @@ export default function CoinCard({ coin, isInWatchlist, onToggleWatchlist, onCli
               unoptimized
             />
           </div>
-          <div>
-            <h3 className="font-semibold text-white">{coin.symbol.toUpperCase()}</h3>
-            <p className="text-xs text-gray-400">{coin.name}</p>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <h3 className="font-semibold text-white truncate">{coin.symbol.toUpperCase()}</h3>
+              {getPlatformBadge()}
+            </div>
+            <p className="text-xs text-gray-400 truncate">{coin.name}</p>
           </div>
         </div>
         
@@ -55,7 +82,7 @@ export default function CoinCard({ coin, isInWatchlist, onToggleWatchlist, onCli
             e.stopPropagation();
             onToggleWatchlist(coin);
           }}
-          className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
+          className="p-2 hover:bg-gray-700 rounded-lg transition-colors flex-shrink-0"
         >
           <Star
             size={18}
