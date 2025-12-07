@@ -21,6 +21,8 @@ export default function PurchaseHistory({ coins }: PurchaseHistoryProps) {
   );
 
   const [showAddForm, setShowAddForm] = useState(false);
+  const [coinSearchQuery, setCoinSearchQuery] = useState('');
+  const [showCoinDropdown, setShowCoinDropdown] = useState(false);
   const [formData, setFormData] = useState({
     coinId: '',
     symbol: '',
@@ -31,6 +33,11 @@ export default function PurchaseHistory({ coins }: PurchaseHistoryProps) {
     notes: '',
     date: new Date().toISOString().split('T')[0]
   });
+
+  const filteredCoins = coins.filter(coin => 
+    coin.name.toLowerCase().includes(coinSearchQuery.toLowerCase()) ||
+    coin.symbol.toLowerCase().includes(coinSearchQuery.toLowerCase())
+  );
 
   const purchases: PurchaseWithCurrentPrice[] = (data?.purchases || []).map((purchase) => {
     const coin = coins.find((c) => c.id === purchase.coinId);
@@ -174,19 +181,53 @@ export default function PurchaseHistory({ coins }: PurchaseHistoryProps) {
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 Select Coin
               </label>
-              <select
-                value={formData.coinId}
-                onChange={handleCoinSelect}
-                required
-                className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-              >
-                <option value="">Choose a coin...</option>
-                {coins.map((coin) => (
-                  <option key={coin.id} value={coin.id}>
-                    {coin.name} ({coin.symbol.toUpperCase()}) - ${formatPrice(coin.current_price)}
-                  </option>
-                ))}
-              </select>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search for a coin..."
+                  value={coinSearchQuery}
+                  onChange={(e) => {
+                    setCoinSearchQuery(e.target.value);
+                    setShowCoinDropdown(true);
+                  }}
+                  onFocus={() => setShowCoinDropdown(true)}
+                  className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+                {formData.coinId && (
+                  <div className="mt-2 text-sm text-gray-400">
+                    Selected: {formData.name} ({formData.symbol.toUpperCase()})
+                  </div>
+                )}
+                
+                {showCoinDropdown && coinSearchQuery && (
+                  <div className="absolute z-10 w-full mt-1 bg-gray-800 border border-gray-700 rounded-lg max-h-60 overflow-y-auto">
+                    {filteredCoins.length > 0 ? (
+                      filteredCoins.map((coin) => (
+                        <button
+                          key={coin.id}
+                          type="button"
+                          onClick={() => {
+                            setFormData({
+                              ...formData,
+                              coinId: coin.id,
+                              symbol: coin.symbol,
+                              name: coin.name,
+                              buyPrice: coin.current_price.toString()
+                            });
+                            setCoinSearchQuery('');
+                            setShowCoinDropdown(false);
+                          }}
+                          className="w-full text-left px-4 py-2 hover:bg-gray-700 text-white"
+                        >
+                          {coin.name} ({coin.symbol.toUpperCase()}) - ${formatPrice(coin.current_price)}
+                        </button>
+                      ))
+                    ) : (
+                      <div className="px-4 py-2 text-gray-400">No coins found</div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

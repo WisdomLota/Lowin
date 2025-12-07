@@ -1,6 +1,8 @@
 // app/(authenticated)/portfolio/page.tsx
 'use client';
 
+import { useState } from 'react';
+import { TabType } from '@/types';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import useSWR from 'swr';
@@ -8,12 +10,15 @@ import PurchaseHistory from '@/components/PurchaseHistory';
 import { Loader2 } from 'lucide-react';
 import { useEffect } from 'react';
 import { Coin } from '@/types';
+import Tabs from '@/components/Tabs';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function PortfolioPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const [activeTab, setActiveTab] = useState<TabType>('all');
+
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -37,6 +42,7 @@ export default function PortfolioPage() {
 
   return (
     <div className="min-h-screen bg-gray-950">
+      <Tabs activeTab={activeTab} onTabChange={setActiveTab} />
       <div className="container mx-auto px-4 py-6">
         <h1 className="text-3xl font-bold text-white mb-6">My Portfolio</h1>
         <PurchaseHistory coins={coinsData?.coins || []} />

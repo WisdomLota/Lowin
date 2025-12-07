@@ -4,14 +4,16 @@
 import { signOut, useSession } from 'next-auth/react';
 import { LogOut, User } from 'lucide-react';
 import NotificationButton from './NotificationButton';
+import { useRouter } from 'next/navigation';
 
 export default function Header() {
   const { data: session } = useSession();
+  const router = useRouter();
 
   return (
     <header className="bg-gray-900 border-b border-purple-500 sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between cursor-pointer" onClick={() =>router.push('/dashboard')}>
           <div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
               LOWIN
