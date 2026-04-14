@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { toast } from 'sonner'
 
 export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null)
@@ -19,8 +20,10 @@ export default function RegisterPage() {
     const result = await register(formData)
     if (result?.error) {
       setError(result.error)
+      toast.error(result.error)
     } else if (result?.success) {
       setSuccess(result.success)
+      toast.success('Account created! Check your email.')
     }
     setLoading(false)
   }

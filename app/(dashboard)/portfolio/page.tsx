@@ -6,6 +6,7 @@ import { useCoins } from '@/hooks/useCoins'
 import { Header } from '@/components/layout/header'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { toast } from 'sonner'
 
 type PortfolioTab = 'purchases' | 'watchlist'
 
@@ -174,7 +175,10 @@ export default function PortfolioPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => removePurchase(purchase.id)}
+                          onClick={() => {
+                            removePurchase(purchase.id)
+                            toast.success(`${purchase.coin_symbol} purchase deleted`)
+                          }}
                           className="text-zinc-600 hover:text-red-400 hover:bg-transparent text-xs"
                         >
                           Delete
@@ -251,7 +255,10 @@ export default function PortfolioPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => removeWatchlist(item.id)}
+                          onClick={() => {
+                            removeWatchlist(item.id)
+                            toast.success(`${item.coin_symbol} removed from watchlist`)
+                          }}
                           className="text-zinc-600 hover:text-red-400 hover:bg-transparent text-xs"
                         >
                           Remove

@@ -1,13 +1,23 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signOut } from '@/app/(auth)/actions'
+import { createClient } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 export function Header() {
   const pathname = usePathname()
+  const [email, setEmail] = useState<string | null>(null)
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setEmail(user?.email ?? null)
+    })
+  }, [])
 
   return (
     <header className="border-b border-zinc-800 bg-zinc-950 px-6 py-3 flex items-center justify-between">
@@ -29,22 +39,27 @@ export function Header() {
             href="/portfolio"
             className={cn(
               'px-3 py-1.5 rounded text-sm transition-colors',
-              pathname === '/portfolio' ? 'text-white bg-zinc-800' : 'text-zinc-500 hover:text-zinc-300'
+              pathname === '/portfolio'
+                ? 'text-white bg-zinc-800'
+                : 'text-zinc-500 hover:text-zinc-300'
             )}
           >
             Portfolio
           </Link>
         </nav>
       </div>
-      <form action={signOut}>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-zinc-400 hover:text-white hover:bg-zinc-800"
-        >
-          Sign Out
-        </Button>
-      </form>
+      <div className="flex items-center gap-3">
+        {email && <span className="text-xs text-zinc-500">{email}</span>}
+        <form action={signOut}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-zinc-400 hover:text-white hover:bg-zinc-800"
+          >
+            Sign Out
+          </Button>
+        </form>
+      </div>
     </header>
   )
 }

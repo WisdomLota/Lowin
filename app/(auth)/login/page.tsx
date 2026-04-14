@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { toast } from 'sonner'
 
 export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
@@ -19,8 +20,10 @@ export default function LoginPage() {
     const result = await login(formData)
     if (result?.error) {
       setError(result.error)
+      toast.error(result.error)
       setLoading(false)
     }
+    // On success, login() calls redirect() so we won't reach here
   }
 
   async function handleGoogleLogin() {
