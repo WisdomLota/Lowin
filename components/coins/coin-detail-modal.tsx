@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { Coin } from '@/types/coin'
 import { PriceChart } from './price-chart'
 import { createClient } from '@/lib/supabase'
+import { PurchaseFormModal } from '@/components/portfolio/purchase-form-modal'
 import {
   Dialog,
   DialogContent,
@@ -44,6 +45,7 @@ export function CoinDetailModal({ coin, open, onClose }: CoinDetailModalProps) {
   const [chartLoading, setChartLoading] = useState(false)
   const [watchlistLoading, setWatchlistLoading] = useState(false)
   const [isWatchlisted, setIsWatchlisted] = useState(false)
+  const [purchaseOpen, setPurchaseOpen] = useState(false)
 
   // Fetch chart data when modal opens
   useEffect(() => {
@@ -191,6 +193,14 @@ export function CoinDetailModal({ coin, open, onClose }: CoinDetailModalProps) {
           <Button
             size="sm"
             variant="outline"
+            className="text-xs border-emerald-600 text-emerald-400 hover:bg-emerald-600/10"
+            onClick={() => setPurchaseOpen(true)}
+          >
+            Log Purchase
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
             className="text-xs border-zinc-700 text-zinc-300 hover:bg-zinc-800"
             onClick={() => window.open(bybitUrl, '_blank')}
           >
@@ -208,6 +218,13 @@ export function CoinDetailModal({ coin, open, onClose }: CoinDetailModalProps) {
           )}
         </div>
       </DialogContent>
+
+      <PurchaseFormModal
+        coin={coin}
+        open={purchaseOpen}
+        onClose={() => setPurchaseOpen(false)}
+        onSuccess={() => {}}
+      />
     </Dialog>
   )
 }
