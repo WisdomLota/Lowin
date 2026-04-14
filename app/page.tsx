@@ -5,28 +5,26 @@ import { useCoins } from '@/hooks/useCoins'
 import { Header } from '@/components/layout/header'
 import { NavTabs, TabKey, SourceFilter } from '@/components/layout/nav-tabs'
 import { CoinTable } from '@/components/coins/coin-table'
+import { CoinDetailModal } from '@/components/coins/coin-detail-modal'
 import { Coin } from '@/types/coin'
 
 export default function DashboardPage() {
   const { data, isLoading, error } = useCoins()
   const [activeTab, setActiveTab] = useState<TabKey>('all')
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>('all')
+  const [selectedCoin, setSelectedCoin] = useState<Coin | null>(null)
 
-  // Filter and sort coins based on active tab and source
   const filteredCoins = useMemo(() => {
     if (!data?.coins) return []
 
     let coins = data.coins
 
-    // Apply source filter
     if (sourceFilter !== 'all') {
       coins = coins.filter((c) => c.source === sourceFilter)
     }
 
-    // Apply tab sorting/filtering
     switch (activeTab) {
       case 'new':
-        // Coins with lowest market cap or no rank (likely newest/smallest)
         return [...coins]
           .filter((c) => c.market_cap > 0)
           .sort((a, b) => a.market_cap - b.market_cap)
@@ -42,7 +40,6 @@ export default function DashboardPage() {
       case 'volume':
         return [...coins].sort((a, b) => b.total_volume - a.total_volume)
       case 'turnover':
-        // Turnover = volume relative to market cap (high turnover = active trading)
         return [...coins]
           .filter((c) => c.market_cap > 0)
           .sort((a, b) => {
@@ -55,11 +52,6 @@ export default function DashboardPage() {
     }
   }, [data?.coins, activeTab, sourceFilter])
 
-  function handleCoinClick(coin: Coin) {
-    // We'll build the modal in the next phase
-    console.log('Clicked:', coin.name)
-  }
-
   return (
     <div className="min-h-screen bg-zinc-950">
       <Header />
@@ -71,7 +63,6 @@ export default function DashboardPage() {
       />
 
       <main>
-        {/* Loading State */}
         {isLoading && (
           <div className="flex items-center justify-center py-20">
             <div className="flex items-center gap-3 text-zinc-500">
@@ -81,7 +72,6 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Error State */}
         {error && (
           <div className="flex flex-col items-center justify-center py-20 text-red-400">
             <p className="text-lg">Failed to load data</p>
@@ -91,7 +81,6 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Data */}
         {data && (
           <>
             <div className="px-6 py-2 flex items-center justify-between">
@@ -102,10 +91,17 @@ export default function DashboardPage() {
                 Updated: {new Date(data.updated_at).toLocaleTimeString()}
               </span>
             </div>
-            <CoinTable coins={filteredCoins} onCoinClick={handleCoinClick} />
+            <CoinTable coins={filteredCoins} onCoinClick={setSelectedCoin} />
           </>
         )}
       </main>
+
+      {/* Coin Detail Modal */}
+      <CoinDetailModal
+        coin={selectedCoin}
+        open={!!selectedCoin}
+        onClose={() => setSelectedCoin(null)}
+      />
     </div>
   )
 }
