@@ -5,6 +5,7 @@ import { useTrades } from '@/hooks/useTrades'
 import { Header } from '@/components/layout/header'
 import { TradeFormModal } from '@/components/trades/trade-form-modal'
 import { exportTradesToExcel, exportTradesToPDF } from '@/lib/export-trades'
+import { ImportTradesModal } from '@/components/trades/import-trades-modal'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
@@ -12,10 +13,12 @@ import { cn } from '@/lib/utils'
 type ViewMode = 'trades' | 'monthly' | 'yearly'
 
 export default function JournalPage() {
-  const { trades, loading, addTrade, removeTrade, getMonthlySummaries, getYearlySummaries } = useTrades()
+  const { trades, loading, addTrade, removeTrade, fetchTrades, getMonthlySummaries, getYearlySummaries } = useTrades()
   const [formOpen, setFormOpen] = useState(false)
   const [viewMode, setViewMode] = useState<ViewMode>('trades')
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null)
+
+  const [importOpen, setImportOpen] = useState(false)
 
   const monthlySummaries = useMemo(() => getMonthlySummaries(), [getMonthlySummaries])
   const yearlySummaries = useMemo(() => getYearlySummaries(), [getYearlySummaries])
@@ -104,6 +107,10 @@ export default function JournalPage() {
           <Button size="sm" onClick={() => setFormOpen(true)}
             className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs">
             + Log Trade
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => setImportOpen(true)}
+            className="border-zinc-700 text-zinc-400 hover:bg-zinc-800 text-xs">
+            Import Excel
           </Button>
         </div>
       </div>
@@ -303,6 +310,11 @@ export default function JournalPage() {
       </main>
 
       <TradeFormModal open={formOpen} onClose={() => setFormOpen(false)} onSubmit={addTrade} />
+      <ImportTradesModal
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        onSuccess={() => fetchTrades()}
+      />
     </div>
   )
 }
