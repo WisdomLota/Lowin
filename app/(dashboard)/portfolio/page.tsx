@@ -64,7 +64,7 @@ export default function PortfolioPage() {
       <Header />
 
       {/* Summary Bar */}
-      <div className="grid grid-cols-4 gap-px bg-zinc-800 border-b border-zinc-800">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-zinc-800 border-b border-zinc-800">
         {[
           { label: 'Total Invested', value: formatUsd(summary.totalInvested), color: 'text-white' },
           { label: 'Current Value', value: formatUsd(summary.currentValue), color: 'text-white' },
@@ -79,7 +79,7 @@ export default function PortfolioPage() {
             color: summary.plPercentage >= 0 ? 'text-emerald-400' : 'text-red-400',
           },
         ].map((stat) => (
-          <div key={stat.label} className="bg-zinc-950 px-6 py-4">
+          <div key={stat.label} className="bg-zinc-950 px-4 sm:px-6 py-4">
             <p className="text-xs text-zinc-500">{stat.label}</p>
             <p className={cn('text-lg font-mono mt-0.5', stat.color)}>{stat.value}</p>
           </div>
@@ -87,7 +87,7 @@ export default function PortfolioPage() {
       </div>
 
       {/* Tab Switcher */}
-      <div className="flex border-b border-zinc-800 px-6">
+      <div className="flex border-b border-zinc-800 px-4 sm:px-6">
         {(['purchases', 'watchlist'] as PortfolioTab[]).map((tab) => (
           <button
             key={tab}
@@ -123,14 +123,14 @@ export default function PortfolioPage() {
             <table className="w-full">
               <thead>
                 <tr className="text-xs text-zinc-500 border-b border-zinc-800">
-                  <th className="text-left py-3 px-6 font-medium">Coin</th>
+                  <th className="text-left py-3 px-4 sm:px-6 font-medium">Coin</th>
                   <th className="text-right py-3 px-2 font-medium">Quantity</th>
                   <th className="text-right py-3 px-2 font-medium">Buy Price</th>
                   <th className="text-right py-3 px-2 font-medium">Current Price</th>
                   <th className="text-right py-3 px-2 font-medium">P&L</th>
                   <th className="text-right py-3 px-2 font-medium">Exchange</th>
                   <th className="text-right py-3 px-2 font-medium">Date</th>
-                  <th className="text-right py-3 px-6 font-medium"></th>
+                  <th className="text-right py-3 px-4 sm:px-6 font-medium"></th>
                 </tr>
               </thead>
               <tbody>
@@ -143,7 +143,7 @@ export default function PortfolioPage() {
 
                   return (
                     <tr key={purchase.id} className="border-b border-zinc-800/50 hover:bg-zinc-900/50">
-                      <td className="py-3 px-6">
+                      <td className="py-3 px-4 sm:px-6">
                         <span className="text-sm font-medium text-white">{purchase.coin_name}</span>
                         <span className="text-xs text-zinc-500 ml-2">{purchase.coin_symbol}</span>
                       </td>
@@ -171,7 +171,7 @@ export default function PortfolioPage() {
                       <td className="py-3 px-2 text-right text-xs text-zinc-500">
                         {new Date(purchase.purchased_at).toLocaleDateString()}
                       </td>
-                      <td className="py-3 px-6 text-right">
+                      <td className="py-3 px-4 sm:px-6 text-right">
                         <Button
                           variant="ghost"
                           size="sm"
@@ -212,12 +212,12 @@ export default function PortfolioPage() {
             <table className="w-full">
               <thead>
                 <tr className="text-xs text-zinc-500 border-b border-zinc-800">
-                  <th className="text-left py-3 px-6 font-medium">Coin</th>
+                  <th className="text-left py-3 px-4 sm:px-6 font-medium">Coin</th>
                   <th className="text-right py-3 px-2 font-medium">Current Price</th>
                   <th className="text-right py-3 px-2 font-medium">24h %</th>
                   <th className="text-right py-3 px-2 font-medium">Source</th>
                   <th className="text-right py-3 px-2 font-medium">Added</th>
-                  <th className="text-right py-3 px-6 font-medium"></th>
+                  <th className="text-right py-3 px-4 sm:px-6 font-medium"></th>
                 </tr>
               </thead>
               <tbody>
@@ -228,7 +228,7 @@ export default function PortfolioPage() {
                   )
                   return (
                     <tr key={item.id} className="border-b border-zinc-800/50 hover:bg-zinc-900/50">
-                      <td className="py-3 px-6">
+                      <td className="py-3 px-4 sm:px-6">
                         <span className="text-sm font-medium text-white">{item.coin_name}</span>
                         <span className="text-xs text-zinc-500 ml-2">{item.coin_symbol}</span>
                       </td>
@@ -251,7 +251,7 @@ export default function PortfolioPage() {
                       <td className="py-3 px-2 text-right text-xs text-zinc-500">
                         {new Date(item.added_at).toLocaleDateString()}
                       </td>
-                      <td className="py-3 px-6 text-right">
+                      <td className="py-3 px-4 sm:px-6 text-right">
                         <Button
                           variant="ghost"
                           size="sm"

@@ -20,8 +20,8 @@ export function Header() {
   }, [])
 
   return (
-    <header className="border-b border-zinc-800 bg-zinc-950 px-6 py-3 flex items-center justify-between">
-      <div className="flex items-center gap-6">
+    <header className="border-b border-zinc-800 bg-zinc-950 px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-2">
+      <div className="flex items-center gap-3 sm:gap-6">
         <Link href="/">
           <h1 className="text-lg font-bold tracking-tight text-white">LOWIN</h1>
         </Link>
@@ -45,6 +45,17 @@ export function Header() {
             )}
           >
             Portfolio
+          </Link>
+          <Link
+            href="/journal"
+            className={cn(
+              'px-3 py-1.5 rounded text-sm transition-colors',
+              pathname === '/journal'
+                ? 'text-white bg-zinc-800'
+                : 'text-zinc-500 hover:text-zinc-300'
+            )}
+          >
+            Journal
           </Link>
         </nav>
       </div>

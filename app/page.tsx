@@ -98,7 +98,7 @@ export default function DashboardPage() {
       />
 
       {/* Search Bar */}
-      <div className="px-6 pt-4 pb-2">
+      <div className="px-4 sm:px-6 pt-4 pb-2">
         <Input
           placeholder="Search by name or symbol..."
           value={search}
@@ -128,7 +128,7 @@ export default function DashboardPage() {
 
         {data && (
           <>
-            <div className="px-6 py-2 flex items-center justify-between">
+            <div className="px-4 sm:px-6 py-2 flex items-center justify-between">
               <span className="text-xs text-zinc-600">
                 {filteredCoins.length} coins · Page {page} of {totalPages || 1}
               </span>

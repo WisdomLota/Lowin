@@ -37,7 +37,7 @@ export function CoinTable({ coins, onCoinClick }: CoinTableProps) {
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full">
+      <table className="w-full min-w-175">
         <thead>
           <tr className="text-xs text-zinc-500 border-b border-zinc-800">
             <th className="text-left py-3 px-6 font-medium">#</th>

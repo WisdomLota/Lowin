@@ -29,8 +29,8 @@ const sources: { key: SourceFilter; label: string }[] = [
 
 export function NavTabs({ activeTab, onTabChange, sourceFilter, onSourceChange }: NavTabsProps) {
   return (
-    <div className="flex items-center justify-between border-b border-zinc-800 px-6">
-      <div className="flex gap-1">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-zinc-800 px-4 sm:px-6 gap-2 py-2 sm:py-0">
+      <div className="flex gap-1 overflow-x-auto">
         {tabs.map((tab) => (
           <button
             key={tab.key}
