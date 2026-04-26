@@ -137,28 +137,85 @@ export default function JournalPage() {
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null)
   const [expandedYear, setExpandedYear] = useState<number | null>(null)
   const [expandedMonth, setExpandedMonth] = useState<string | null>(null)
+  const [tradeFilter, setTradeFilter] = useState<'combined' | 'real' | 'demo'>('combined')
 
-  const monthlySummaries = useMemo(() => getMonthlySummaries(), [getMonthlySummaries])
-  const yearlySummaries = useMemo(() => getYearlySummaries(), [getYearlySummaries])
+  // Filter all trades by mode
+  const filteredByMode = useMemo(() => {
+    if (tradeFilter === 'combined') return trades
+    return trades.filter((t) => t.trade_mode === tradeFilter)
+  }, [trades, tradeFilter])
+
+  const monthlySummaries = useMemo(() => {
+    const grouped = new Map<string, any[]>()
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December']
+
+    for (const trade of filteredByMode) {
+      const key = trade.date.substring(0, 7)
+      if (!grouped.has(key)) grouped.set(key, [])
+      grouped.get(key)!.push(trade)
+    }
+
+    return Array.from(grouped.entries())
+      .map(([month, monthTrades]) => {
+        const [y, m] = month.split('-')
+        const label = `${monthNames[parseInt(m) - 1]} ${y}`
+        const profits = monthTrades.filter((t: any) => t.pl_type === 'P').length
+        const losses = monthTrades.filter((t: any) => t.pl_type === 'L').length
+        const totalPL = monthTrades.reduce((sum: number, t: any) => {
+          return sum + (t.pl_type === 'P' ? Math.abs(t.amount_pl) : -Math.abs(t.amount_pl))
+        }, 0)
+        return {
+          month, label, totalTrades: monthTrades.length, profits, losses,
+          winRate: monthTrades.length > 0 ? (profits / monthTrades.length) * 100 : 0,
+          totalPL, totalAmountPL: 0, avgPLPercent: 0,
+        }
+      })
+      .sort((a, b) => b.month.localeCompare(a.month))
+  }, [filteredByMode])
+
+  const yearlySummaries = useMemo(() => {
+    const grouped = new Map<number, any[]>()
+
+    for (const trade of filteredByMode) {
+      const year = parseInt(trade.date.substring(0, 4))
+      if (!grouped.has(year)) grouped.set(year, [])
+      grouped.get(year)!.push(trade)
+    }
+
+    return Array.from(grouped.entries())
+      .map(([year, yearTrades]) => {
+        const profits = yearTrades.filter((t: any) => t.pl_type === 'P').length
+        const losses = yearTrades.filter((t: any) => t.pl_type === 'L').length
+        const totalPL = yearTrades.reduce((sum: number, t: any) => {
+          return sum + (t.pl_type === 'P' ? Math.abs(t.amount_pl) : -Math.abs(t.amount_pl))
+        }, 0)
+        return {
+          year, totalTrades: yearTrades.length, profits, losses,
+          winRate: yearTrades.length > 0 ? (profits / yearTrades.length) * 100 : 0,
+          totalPL, totalAmountPL: 0,
+          months: monthlySummaries.filter((m) => m.month.startsWith(year.toString())),
+        }
+      })
+      .sort((a, b) => b.year - a.year)
+  }, [filteredByMode, monthlySummaries])
 
   const currentMonthKey = getCurrentMonthKey()
   const currentMonthTrades = useMemo(() => {
-    return trades.filter((t) => t.date.startsWith(currentMonthKey))
-  }, [trades, currentMonthKey])
+    return filteredByMode.filter((t) => t.date.startsWith(currentMonthKey))
+  }, [filteredByMode, currentMonthKey])
 
-  // Trades for the selected month filter (when in "trades" view)
   const displayedTrades = useMemo(() => {
     if (selectedMonth) {
-      return trades.filter((t) => t.date.startsWith(selectedMonth))
+      return filteredByMode.filter((t) => t.date.startsWith(selectedMonth))
     }
-    return trades
-  }, [trades, selectedMonth])
+    return filteredByMode
+  }, [filteredByMode, selectedMonth])
 
-  // Trades for expanded month in monthly/yearly views
   const expandedMonthTrades = useMemo(() => {
     if (!expandedMonth) return []
-    return trades.filter((t) => t.date.startsWith(expandedMonth))
-  }, [trades, expandedMonth])
+    return filteredByMode.filter((t) => t.date.startsWith(expandedMonth))
+  }, [filteredByMode, expandedMonth])
 
   function handleMonthClick(monthKey: string) {
     if (expandedMonth === monthKey) {
@@ -172,9 +229,32 @@ export default function JournalPage() {
     <div className="min-h-screen bg-zinc-950">
       <Header />
 
+      {/* Mode Toggle */}
+      <div className="px-4 sm:px-6 py-3 border-b border-zinc-800 flex items-center justify-between">
+        <span className="text-sm text-zinc-400">Trading Mode</span>
+        <div className="flex gap-1 border border-zinc-800 rounded-lg p-0.5">
+          {(['real', 'demo', 'combined'] as const).map((mode) => (
+            <button
+              key={mode}
+              onClick={() => { setTradeFilter(mode); setExpandedMonth(null) }}
+              className={cn(
+                'px-4 py-1.5 text-sm rounded font-medium capitalize transition-colors',
+                tradeFilter === mode
+                  ? mode === 'demo' ? 'bg-amber-600/20 text-amber-400 border border-amber-600/30'
+                    : mode === 'real' ? 'bg-emerald-600/20 text-emerald-400 border border-emerald-600/30'
+                    : 'bg-zinc-800 text-white border border-zinc-700'
+                  : 'text-zinc-500 hover:text-zinc-300 border border-transparent'
+              )}
+            >
+              {mode}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Overall Stats */}
-      <StatsBar trades={trades} label="Overall Performance" />
-      
+      <StatsBar trades={filteredByMode} label={`Overall Performance — ${tradeFilter === 'combined' ? 'All Trades' : tradeFilter === 'real' ? 'Real Trades' : 'Demo Trades'}`} />
+
       {/* Current Month Section */}
       <StatsBar trades={currentMonthTrades} label={`Current Month — ${getMonthLabel(currentMonthKey)}`} />
 

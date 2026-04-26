@@ -121,12 +121,8 @@ export function TradeFormModal({ open, onClose, onSubmit }: TradeFormModalProps)
           </div>
           <div>
             <Label className="text-zinc-400 text-xs">Leverage</Label>
-            <select value={form.leverage} onChange={(e) => updateField('leverage', e.target.value)}
-              className="w-full mt-1 rounded-md bg-zinc-800 border border-zinc-700 text-white text-sm px-3 py-2 outline-none">
-              {['1X', '2X', '3X', '5X', '10X', '20X', '25X', '50X', '100X'].map((l) => (
-                <option key={l} value={l}>{l}</option>
-              ))}
-            </select>
+            <Input placeholder="e.g. 10X" value={form.leverage} onChange={(e) => updateField('leverage', e.target.value)}
+              className="bg-zinc-800 border-zinc-700 text-white mt-1 text-sm" />
           </div>
           <div>
             <Label className="text-zinc-400 text-xs">Direction</Label>
