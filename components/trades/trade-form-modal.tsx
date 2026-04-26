@@ -21,20 +21,21 @@ interface TradeFormModalProps {
 export function TradeFormModal({ open, onClose, onSubmit }: TradeFormModalProps) {
   const [loading, setLoading] = useState(false)
   const [form, setForm] = useState({
-    date: new Date().toISOString().split('T')[0],
-    name: '',
-    amount: '',
-    staked: '',
-    leverage: '10X',
-    open_price: '',
-    close_price: '',
-    pl_type: 'P',
-    pl_percentage: '',
-    amount_pl: '',
-    lg_st: 'ST',
-    hint: '',
-    comments: '',
-  })
+  date: new Date().toISOString().split('T')[0],
+      name: '',
+      amount: '',
+      staked: '',
+      leverage: '10X',
+      open_price: '',
+      close_price: '',
+      pl_type: 'P',
+      pl_percentage: '',
+      amount_pl: '',
+      lg_st: 'ST',
+      hint: '',
+      comments: '',
+      trade_mode: 'real',
+    })
 
   function updateField(field: string, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -62,6 +63,7 @@ export function TradeFormModal({ open, onClose, onSubmit }: TradeFormModalProps)
       lg_st: form.lg_st,
       hint: form.hint || null,
       comments: form.comments || null,
+      trade_mode: form.trade_mode,
     })
 
     setLoading(false)
@@ -75,7 +77,7 @@ export function TradeFormModal({ open, onClose, onSubmit }: TradeFormModalProps)
         name: '', amount: '', staked: '', leverage: '10X',
         open_price: '', close_price: '', pl_type: 'P',
         pl_percentage: '', amount_pl: '', lg_st: 'ST',
-        hint: '', comments: '',
+        hint: '', comments: '', trade_mode: 'real',
       })
       onClose()
     }
@@ -89,6 +91,14 @@ export function TradeFormModal({ open, onClose, onSubmit }: TradeFormModalProps)
         </DialogHeader>
 
         <div className="grid grid-cols-2 gap-3 mt-2">
+          <div>
+            <Label className="text-zinc-400 text-xs">Mode</Label>
+            <select value={form.trade_mode} onChange={(e) => updateField('trade_mode', e.target.value)}
+              className="w-full mt-1 rounded-md bg-zinc-800 border border-zinc-700 text-white text-sm px-3 py-2 outline-none">
+              <option value="real">Real</option>
+              <option value="demo">Demo</option>
+            </select>
+          </div>
           <div>
             <Label className="text-zinc-400 text-xs">Date</Label>
             <Input type="date" value={form.date} onChange={(e) => updateField('date', e.target.value)}

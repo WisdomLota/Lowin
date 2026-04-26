@@ -21,6 +21,7 @@ interface ImportTradesModalProps {
 export function ImportTradesModal({ open, onClose, onSuccess }: ImportTradesModalProps) {
   const [file, setFile] = useState<File | null>(null)
   const [fileType, setFileType] = useState<'demo' | 'daily'>('demo')
+  const [tradeMode, setTradeMode] = useState<'demo' | 'real'>('real')
   const [loading, setLoading] = useState(false)
   const [preview, setPreview] = useState<any[] | null>(null)
 
@@ -79,6 +80,7 @@ export function ImportTradesModal({ open, onClose, onSuccess }: ImportTradesModa
       const batch = preview.slice(i, i + batchSize).map((trade) => ({
         ...trade,
         user_id: user.id,
+        trade_mode: tradeMode,
       }))
 
       const { error } = await supabase.from('trades').insert(batch)
@@ -121,6 +123,18 @@ export function ImportTradesModal({ open, onClose, onSuccess }: ImportTradesModa
               <option value="daily">
                 Daily Trades (DATE, COIN, ENTRY P, EXIT P, ..., P/L %, P/L AMT, LEV, AMT STKD, LG/ST, Reason, COMMENTS)
               </option>
+            </select>
+          </div>
+
+          <div>
+            <Label className="text-zinc-400 text-sm">Trade Mode</Label>
+            <select
+              value={tradeMode}
+              onChange={(e) => setTradeMode(e.target.value as any)}
+              className="w-full mt-1 rounded-md bg-zinc-800 border border-zinc-700 text-white text-sm px-3 py-2 outline-none"
+            >
+              <option value="real">Real Trades</option>
+              <option value="demo">Demo Trades</option>
             </select>
           </div>
 

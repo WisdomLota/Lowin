@@ -18,6 +18,7 @@ export interface Trade {
   lg_st: string
   hint: string | null
   comments: string | null
+  trade_mode: 'demo' | 'real'
   created_at: string
 }
 
