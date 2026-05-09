@@ -217,6 +217,7 @@ export default function PortfolioPage() {
                   <th className="text-right py-3 px-2 font-medium">24h %</th>
                   <th className="text-right py-3 px-2 font-medium">Source</th>
                   <th className="text-right py-3 px-2 font-medium">Added</th>
+                  <th className="text-left py-3 px-2 font-medium">Note</th>
                   <th className="text-right py-3 px-4 sm:px-6 font-medium"></th>
                 </tr>
               </thead>
@@ -250,6 +251,9 @@ export default function PortfolioPage() {
                       </td>
                       <td className="py-3 px-2 text-right text-xs text-zinc-500">
                         {new Date(item.added_at).toLocaleDateString()}
+                      </td>
+                      <td className="py-3 px-2 text-xs text-zinc-500 max-w-50 truncate">
+                        {item.comment || '—'}
                       </td>
                       <td className="py-3 px-4 sm:px-6 text-right">
                         <Button

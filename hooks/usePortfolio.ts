@@ -10,6 +10,7 @@ export interface WatchlistItem {
   coin_name: string
   source: string
   added_at: string
+  comment: string | null
 }
 
 export interface Purchase {

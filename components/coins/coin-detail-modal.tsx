@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { Input } from '@/components/ui/input'
 
 interface PricePoint {
   time: number
@@ -47,12 +48,16 @@ export function CoinDetailModal({ coin, open, onClose }: CoinDetailModalProps) {
   const [watchlistLoading, setWatchlistLoading] = useState(false)
   const [isWatchlisted, setIsWatchlisted] = useState(false)
   const [purchaseOpen, setPurchaseOpen] = useState(false)
+  const [watchlistComment, setWatchlistComment] = useState('')
+  const [showCommentInput, setShowCommentInput] = useState(false)
 
   useEffect(() => {
     if (!coin || !open) return
 
     setChartLoading(true)
     setChartData([])
+    setWatchlistComment('')
+    setShowCommentInput(false)
 
     const params = new URLSearchParams({
       source: coin.source,
@@ -103,8 +108,11 @@ export function CoinDetailModal({ coin, open, onClose }: CoinDetailModalProps) {
         coin_symbol: coin.symbol,
         coin_name: coin.name,
         source: coin.source,
+        comment: watchlistComment || null,
       })
       setIsWatchlisted(true)
+      setShowCommentInput(false)
+      setWatchlistComment('')
       toast.success(`${coin.symbol} added to watchlist`)
     }
 
@@ -182,22 +190,42 @@ export function CoinDetailModal({ coin, open, onClose }: CoinDetailModalProps) {
 
           {/* Action Buttons */}
           <div className="px-6 py-5 flex flex-wrap gap-2">
-            <Button
-              size="sm"
-              onClick={handleWatchlist}
-              disabled={watchlistLoading}
-              className={cn(
-                isWatchlisted
-                  ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
-                  : 'bg-emerald-600 hover:bg-emerald-700 text-white'
-              )}
-            >
-              {watchlistLoading
-                ? '...'
-                : isWatchlisted
-                  ? 'Remove from Watchlist'
-                  : 'Add to Watchlist'}
-            </Button>
+            {isWatchlisted ? (
+              <Button
+                size="sm"
+                onClick={handleWatchlist}
+                disabled={watchlistLoading}
+                className="bg-zinc-800 text-zinc-300 hover:bg-zinc-700"
+              >
+                {watchlistLoading ? '...' : 'Remove from Watchlist'}
+              </Button>
+            ) : showCommentInput ? (
+              <div className="flex items-center gap-2 flex-1">
+                <Input
+                  placeholder="Why are you watching this? (optional)"
+                  value={watchlistComment}
+                  onChange={(e) => setWatchlistComment(e.target.value)}
+                  className="bg-zinc-800 border-zinc-700 text-white text-sm h-8"
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleWatchlist() }}
+                />
+                <Button size="sm" onClick={handleWatchlist} disabled={watchlistLoading}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white whitespace-nowrap">
+                  {watchlistLoading ? '...' : 'Add'}
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => setShowCommentInput(false)}
+                  className="text-zinc-500 hover:text-white">
+                  Cancel
+                </Button>
+              </div>
+            ) : (
+              <Button
+                size="sm"
+                onClick={() => setShowCommentInput(true)}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+              >
+                Add to Watchlist
+              </Button>
+            )}
             <Button
               size="sm"
               variant="outline"
