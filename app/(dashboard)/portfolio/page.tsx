@@ -7,6 +7,8 @@ import { Header } from '@/components/layout/header'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
+import { CoinDetailModal } from '@/components/coins/coin-detail-modal'
+import { Coin } from '@/types/coin'
 
 type PortfolioTab = 'purchases' | 'watchlist'
 
@@ -20,12 +22,13 @@ function formatPrice(price: number): string {
 function formatUsd(value: number): string {
   if (Math.abs(value) >= 1000) return `$${value.toFixed(2)}`
   if (Math.abs(value) >= 1) return `$${value.toFixed(2)}`
-  if (Math.abs(value) >= 0.01) return `$${value.toFixed(4)}`
+  if (Math.abs(value) >= 0.01) return `$${value.toFixed(4)}` 
   return `$${value.toFixed(6)}`
 }
 
 export default function PortfolioPage() {
   const [activeTab, setActiveTab] = useState<PortfolioTab>('purchases')
+  const [selectedCoin, setSelectedCoin] = useState<Coin | null>(null)
   const { items: watchlist, loading: watchlistLoading, remove: removeWatchlist } = useWatchlist()
   const { items: purchases, loading: purchasesLoading, remove: removePurchase, refetch: refetchPurchases } = usePurchases()
   const { data: coinsData } = useCoins()
@@ -40,6 +43,28 @@ export default function PortfolioPage() {
     }
     return map
   }, [coinsData])
+
+  function openWatchlistCoin(item: typeof watchlist[number]) {
+    const liveCoin = coinsData?.coins.find((c) => c.symbol === item.coin_symbol)
+    if (liveCoin) {
+      setSelectedCoin(liveCoin)
+    } else {
+      // Build a minimal Coin object if live data isn't available
+      setSelectedCoin({
+        id: item.coin_id,
+        symbol: item.coin_symbol,
+        name: item.coin_name,
+        image: null,
+        current_price: 0,
+        price_change_percentage_24h: 0,
+        market_cap: 0,
+        total_volume: 0,
+        circulating_supply: 0,
+        market_cap_rank: null,
+        source: item.source as 'coingecko' | 'bybit',
+      })
+    }
+  }
 
   // Calculate P&L summary
   const summary = useMemo(() => {
@@ -228,7 +253,7 @@ export default function PortfolioPage() {
                     (c) => c.symbol === item.coin_symbol
                   )
                   return (
-                    <tr key={item.id} className="border-b border-zinc-800/50 hover:bg-zinc-900/50">
+                    <tr key={item.id} onClick={() => openWatchlistCoin(item)} className="border-b border-zinc-800/50 hover:bg-zinc-900/50 cursor-pointer">
                       <td className="py-3 px-4 sm:px-6">
                         <span className="text-sm font-medium text-white">{item.coin_name}</span>
                         <span className="text-xs text-zinc-500 ml-2">{item.coin_symbol}</span>
@@ -276,6 +301,12 @@ export default function PortfolioPage() {
           )}
         </div>
       )}
+
+      <CoinDetailModal
+        coin={selectedCoin}
+        open={!!selectedCoin}
+        onClose={() => setSelectedCoin(null)}
+      />
     </div>
   )
 }
