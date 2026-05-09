@@ -8,7 +8,7 @@ const BASE_URL = 'https://api.coingecko.com/api/v3'
 export async function fetchCoinGeckoCoins(page = 1): Promise<Coin[]> {
   const res = await fetch(
     `${BASE_URL}/coins/markets?vs_currency=usd&order=market_cap_asc&per_page=250&page=${page}&sparkline=false&price_change_percentage=24h`,
-    { next: { revalidate: 60 } } // Cache for 60 seconds
+    { cache: 'no-store' }
   )
 
   if (!res.ok) {

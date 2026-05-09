@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { fetchAllCoins } from '@/lib/coins'
 
-export const revalidate = 60 // Cache this route for 60 seconds
+export const revalidate = 0 
 
 export async function GET() {
   try {

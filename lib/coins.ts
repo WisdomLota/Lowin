@@ -18,12 +18,18 @@ export async function fetchAllCoins(): Promise<Coin[]> {
     coinMap.set(coin.symbol, coin)
   }
 
-  // Add Bybit-only coins (skip duplicates)
+  // Overlay Bybit prices on matching coins (more accurate for trading)
+  // Add Bybit-only coins as new entries
   for (const coin of bybitCoins) {
-    if (!coinMap.has(coin.symbol)) {
+    const existing = coinMap.get(coin.symbol)
+    if (existing) {
+      // Keep CoinGecko metadata but use Bybit's price and volume
+      existing.current_price = coin.current_price
+      existing.price_change_percentage_24h = coin.price_change_percentage_24h
+      existing.total_volume = coin.total_volume
+    } else {
       coinMap.set(coin.symbol, coin)
     }
   }
-
   return Array.from(coinMap.values())
 }

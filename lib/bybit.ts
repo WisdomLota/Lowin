@@ -7,7 +7,7 @@ export async function fetchBybitCoins(): Promise<Coin[]> {
     // Fetch all USDT spot tickers from Bybit
     const res = await fetch(
       `${BASE_URL}/market/tickers?category=spot`,
-      { next: { revalidate: 60 } }
+      { cache: 'no-store' }
     )
 
     if (!res.ok) {

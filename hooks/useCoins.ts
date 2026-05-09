@@ -11,7 +11,7 @@ export function useCoins() {
   return useQuery<CoinsResponse>({
     queryKey: ['coins'],
     queryFn: async () => {
-      const res = await fetch('/api/coins')
+      const res = await fetch('/api/coins', { cache: 'no-store' })
       if (!res.ok) throw new Error('Failed to fetch coins')
       return res.json()
     },
