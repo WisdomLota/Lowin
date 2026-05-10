@@ -19,6 +19,8 @@ export interface Trade {
   hint: string | null
   comments: string | null
   trade_mode: 'demo' | 'real'
+  open_time: string | null
+  close_time: string | null
   created_at: string
 }
 

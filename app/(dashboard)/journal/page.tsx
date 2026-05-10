@@ -50,6 +50,9 @@ function TradesTable({ trades, onDelete }: { trades: any[]; onDelete: (id: strin
             <th className="text-right py-2.5 px-3 font-medium">%P/L</th>
             <th className="text-right py-2.5 px-3 font-medium">Amt P/L</th>
             <th className="text-center py-2.5 px-3 font-medium">Dir</th>
+            <th className="text-center py-2.5 px-3 font-medium">Open T</th>
+            <th className="text-center py-2.5 px-3 font-medium">Close T</th>
+            <th className="text-center py-2.5 px-3 font-medium">Duration</th>
             <th className="text-left py-2.5 px-3 font-medium">Hint</th>
             <th className="text-left py-2.5 px-3 font-medium">Comments</th>
             <th className="py-2.5 px-3"></th>
@@ -79,6 +82,19 @@ function TradesTable({ trades, onDelete }: { trades: any[]; onDelete: (id: strin
                 {trade.amount_pl.toFixed(4)}
               </td>
               <td className="py-2.5 px-3 text-sm text-center text-zinc-400">{trade.lg_st}</td>
+              <td className="py-2.5 px-3 text-xs text-center text-zinc-400">{trade.open_time || '—'}</td>
+              <td className="py-2.5 px-3 text-xs text-center text-zinc-400">{trade.close_time || '—'}</td>
+              <td className="py-2.5 px-3 text-xs text-center text-zinc-300">
+                {trade.open_time && trade.close_time ? (() => {
+                  const [oh, om] = trade.open_time.split(':').map(Number)
+                  const [ch, cm] = trade.close_time.split(':').map(Number)
+                  let diff = (ch * 60 + cm) - (oh * 60 + om)
+                  if (diff < 0) diff += 24 * 60
+                  const hours = Math.floor(diff / 60)
+                  const mins = diff % 60
+                  return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`
+                })() : '—'}
+              </td>
               <td className="py-2.5 px-3 text-xs text-zinc-500 max-w-30 truncate">{trade.hint || '—'}</td>
               <td className="py-2.5 px-3 text-xs text-zinc-500 max-w-50 truncate">{trade.comments || '—'}</td>
               <td className="py-2.5 px-3 text-right">

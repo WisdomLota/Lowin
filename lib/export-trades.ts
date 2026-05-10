@@ -17,6 +17,8 @@ export async function exportTradesToExcel(trades: Trade[], filename: string) {
     '%P/L': t.pl_percentage,
     'Amt P/L': t.amount_pl,
     'LG/ST': t.lg_st,
+    'Open Time': t.open_time || '',
+    'Close Time': t.close_time || '',
     Hint: t.hint || '',
     Comments: t.comments || '',
   }))
@@ -29,6 +31,7 @@ export async function exportTradesToExcel(trades: Trade[], filename: string) {
     { wch: 4 }, { wch: 12 }, { wch: 14 }, { wch: 12 }, { wch: 10 },
     { wch: 8 }, { wch: 12 }, { wch: 12 }, { wch: 5 }, { wch: 8 },
     { wch: 10 }, { wch: 6 }, { wch: 20 }, { wch: 40 },
+    { wch: 10 }, { wch: 10 },
   ]
 
   XLSX.utils.book_append_sheet(wb, ws, 'Trades')
@@ -52,6 +55,8 @@ export function exportTradesToPDF(trades: Trade[], summaries: MonthlySummary[], 
       <td style="color:${t.pl_type === 'P' ? '#34d399' : '#f87171'}">${t.pl_percentage}%</td>
       <td style="color:${t.pl_type === 'P' ? '#34d399' : '#f87171'}">$${t.amount_pl.toFixed(4)}</td>
       <td>${t.lg_st}</td>
+      <td>${t.open_time || ''}</td>
+      <td>${t.close_time || ''}</td>
       <td>${t.hint || ''}</td>
       <td>${t.comments || ''}</td>
     </tr>`
@@ -92,7 +97,7 @@ export function exportTradesToPDF(trades: Trade[], summaries: MonthlySummary[], 
 </table>
 <h2>All Trades</h2>
 <table>
-  <tr><th>#</th><th>Date</th><th>Name</th><th>Amount</th><th>Lev</th><th>Open</th><th>Close</th><th>P/L</th><th>%</th><th>Amt P/L</th><th>Dir</th><th>Hint</th><th>Comments</th></tr>
+  <tr><th>#</th><th>Date</th><th>Name</th><th>Amount</th><th>Lev</th><th>Open</th><th>Close</th><th>P/L</th><th>%</th><th>Amt P/L</th><th>Dir</th><th>Open T</th><th>Close T</th><th>Hint</th><th>Comments</th></tr>
   ${rows}
 </table>
 </body></html>`

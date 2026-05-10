@@ -35,6 +35,8 @@ export function TradeFormModal({ open, onClose, onSubmit }: TradeFormModalProps)
       hint: '',
       comments: '',
       trade_mode: 'real',
+      open_time: '',
+      close_time: '',
     })
 
   function updateField(field: string, value: string) {
@@ -64,6 +66,8 @@ export function TradeFormModal({ open, onClose, onSubmit }: TradeFormModalProps)
       hint: form.hint || null,
       comments: form.comments || null,
       trade_mode: form.trade_mode,
+      open_time: form.open_time || null,
+      close_time: form.close_time || null,
     })
 
     setLoading(false)
@@ -78,6 +82,7 @@ export function TradeFormModal({ open, onClose, onSubmit }: TradeFormModalProps)
         open_price: '', close_price: '', pl_type: 'P',
         pl_percentage: '', amount_pl: '', lg_st: 'ST',
         hint: '', comments: '', trade_mode: 'real',
+        open_time: '', close_time: '',
       })
       onClose()
     }
@@ -132,6 +137,16 @@ export function TradeFormModal({ open, onClose, onSubmit }: TradeFormModalProps)
               <option value="LG">Long</option>
             </select>
           </div>
+          <div>
+              <Label className="text-zinc-400 text-xs">Open Time</Label>
+              <Input type="time" value={form.open_time} onChange={(e) => updateField('open_time', e.target.value)}
+                className="bg-zinc-800 border-zinc-700 text-white mt-1 text-sm" />
+            </div>
+            <div>
+              <Label className="text-zinc-400 text-xs">Close Time</Label>
+              <Input type="time" value={form.close_time} onChange={(e) => updateField('close_time', e.target.value)}
+                className="bg-zinc-800 border-zinc-700 text-white mt-1 text-sm" />
+            </div>
           <div>
             <Label className="text-zinc-400 text-xs">Open Price</Label>
             <Input type="number" step="any" value={form.open_price} onChange={(e) => updateField('open_price', e.target.value)}
