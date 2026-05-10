@@ -21,6 +21,7 @@ export interface Trade {
   trade_mode: 'demo' | 'real'
   open_time: string | null
   close_time: string | null
+  close_date: string | null
   created_at: string
 }
 

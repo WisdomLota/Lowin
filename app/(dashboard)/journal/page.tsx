@@ -9,6 +9,13 @@ import { exportTradesToExcel, exportTradesToPDF } from '@/lib/export-trades'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+import { Trade } from '@/hooks/useTrades'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 
 type ViewMode = 'trades' | 'monthly' | 'yearly'
 
@@ -24,7 +31,26 @@ function getMonthLabel(monthKey: string) {
   return `${months[parseInt(m) - 1]} ${y}`
 }
 
-function TradesTable({ trades, onDelete }: { trades: any[]; onDelete: (id: string) => void }) {
+function calcDuration(trade: any): string {
+  if (!trade.open_time || !trade.close_time) return '—'
+  const openDate = trade.date
+  const closeDate = trade.close_date || trade.date
+  const [oh, om] = trade.open_time.split(':').map(Number)
+  const [ch, cm] = trade.close_time.split(':').map(Number)
+  const openMs = new Date(`${openDate}T${trade.open_time}:00`).getTime()
+  const closeMs = new Date(`${closeDate}T${trade.close_time}:00`).getTime()
+  let diff = closeMs - openMs
+  if (diff < 0) diff += 24 * 60 * 60 * 1000 // fallback for same-day wrap
+  const totalMins = Math.floor(diff / 60000)
+  const days = Math.floor(totalMins / (24 * 60))
+  const hours = Math.floor((totalMins % (24 * 60)) / 60)
+  const mins = totalMins % 60
+  if (days > 0) return `${days}d ${hours}h ${mins}m`
+  if (hours > 0) return `${hours}h ${mins}m`
+  return `${mins}m`
+}
+
+function TradesTable({ trades, onDelete, onSelect }: { trades: any[]; onDelete: (id: string) => void; onSelect: (trade: any) => void }) {
   if (trades.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-zinc-500">
@@ -60,7 +86,7 @@ function TradesTable({ trades, onDelete }: { trades: any[]; onDelete: (id: strin
         </thead>
         <tbody>
           {trades.map((trade, i) => (
-            <tr key={trade.id} className="border-b border-zinc-800/50 hover:bg-zinc-900/50">
+            <tr key={trade.id} onClick={() => onSelect(trade)} className="border-b border-zinc-800/50 hover:bg-zinc-900/50 cursor-pointer">
               <td className="py-2.5 px-3 text-xs text-zinc-500">{i + 1}</td>
               <td className="py-2.5 px-3 text-sm text-zinc-300">{trade.date}</td>
               <td className="py-2.5 px-3 text-sm font-medium text-white">{trade.name}</td>
@@ -85,21 +111,13 @@ function TradesTable({ trades, onDelete }: { trades: any[]; onDelete: (id: strin
               <td className="py-2.5 px-3 text-xs text-center text-zinc-400">{trade.open_time || '—'}</td>
               <td className="py-2.5 px-3 text-xs text-center text-zinc-400">{trade.close_time || '—'}</td>
               <td className="py-2.5 px-3 text-xs text-center text-zinc-300">
-                {trade.open_time && trade.close_time ? (() => {
-                  const [oh, om] = trade.open_time.split(':').map(Number)
-                  const [ch, cm] = trade.close_time.split(':').map(Number)
-                  let diff = (ch * 60 + cm) - (oh * 60 + om)
-                  if (diff < 0) diff += 24 * 60
-                  const hours = Math.floor(diff / 60)
-                  const mins = diff % 60
-                  return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`
-                })() : '—'}
+                {calcDuration(trade)}
               </td>
               <td className="py-2.5 px-3 text-xs text-zinc-500 max-w-30 truncate">{trade.hint || '—'}</td>
               <td className="py-2.5 px-3 text-xs text-zinc-500 max-w-50 truncate">{trade.comments || '—'}</td>
               <td className="py-2.5 px-3 text-right">
                 <Button variant="ghost" size="sm"
-                  onClick={() => { onDelete(trade.id); toast.success('Trade deleted') }}
+                  onClick={(e) => { e.stopPropagation(); onDelete(trade.id); toast.success('Trade deleted') }}
                   className="text-zinc-600 hover:text-red-400 hover:bg-transparent text-xs">
                   Del
                 </Button>
@@ -145,6 +163,80 @@ function StatsBar({ trades, label }: { trades: any[]; label?: string }) {
   )
 }
 
+function TradeDetailModal({ trade, open, onClose }: { trade: Trade | null; open: boolean; onClose: () => void }) {
+  if (!trade) return null
+
+  const rows = [
+    { label: 'Date', value: trade.date },
+    { label: 'Name', value: trade.name },
+    { label: 'Mode', value: trade.trade_mode === 'real' ? 'Real' : 'Demo' },
+    { label: 'Direction', value: trade.lg_st === 'LG' ? 'Long' : 'Short' },
+    { label: 'Amount (USD)', value: `$${trade.amount.toFixed(2)}` },
+    { label: 'Staked', value: trade.staked > 0 ? `$${trade.staked.toFixed(2)}` : '—' },
+    { label: 'Leverage', value: trade.leverage },
+    { label: 'Open Price', value: trade.open_price.toString() },
+    { label: 'Close Price', value: trade.close_price.toString() },
+    { label: 'Open Time', value: trade.open_time || '—' },
+    { label: 'Close Time', value: trade.close_time || '—' },
+    { label: 'Close Date', value: trade.close_date || trade.date },
+    { label: 'Duration', value: calcDuration(trade) },
+    { label: 'P/L', value: trade.pl_type === 'P' ? 'Profit' : 'Loss', color: trade.pl_type === 'P' ? 'text-emerald-400' : 'text-red-400' },
+    { label: 'P/L %', value: `${trade.pl_percentage}%`, color: trade.pl_type === 'P' ? 'text-emerald-400' : 'text-red-400' },
+    { label: 'Amount P/L', value: `$${trade.amount_pl.toFixed(4)}`, color: trade.pl_type === 'P' ? 'text-emerald-400' : 'text-red-400' },
+  ]
+
+  return (
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+      <DialogContent className="bg-zinc-900 border-zinc-800 text-white max-w-md! p-0 gap-0">
+        <DialogHeader className="px-5 pt-5 pb-3">
+          <DialogTitle className="text-lg text-white flex items-center gap-2">
+            {trade.name}
+            <span className={cn('text-xs px-2 py-0.5 rounded',
+              trade.pl_type === 'P' ? 'bg-emerald-600/20 text-emerald-400' : 'bg-red-600/20 text-red-400')}>
+              {trade.pl_type === 'P' ? 'Profit' : 'Loss'}
+            </span>
+            <span className="text-xs px-2 py-0.5 rounded bg-zinc-800 text-zinc-400">
+              {trade.trade_mode === 'real' ? 'Real' : 'Demo'}
+            </span>
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="divide-y divide-zinc-800">
+          {rows.map((r) => (
+            <div key={r.label} className="flex justify-between px-5 py-2">
+              <span className="text-xs text-zinc-500">{r.label}</span>
+              <span className={cn('text-sm font-mono', (r as any).color || 'text-zinc-200')}>{r.value}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Hint - full text */}
+        {trade.hint && (
+          <div className="px-5 py-3 border-t border-zinc-800">
+            <p className="text-xs text-zinc-500 mb-1">Hint</p>
+            <p className="text-sm text-zinc-300 whitespace-pre-wrap">{trade.hint}</p>
+          </div>
+        )}
+
+        {/* Comments - full text */}
+        {trade.comments && (
+          <div className="px-5 py-3 border-t border-zinc-800">
+            <p className="text-xs text-zinc-500 mb-1">Comments</p>
+            <p className="text-sm text-zinc-300 whitespace-pre-wrap">{trade.comments}</p>
+          </div>
+        )}
+
+        <div className="px-5 py-3 border-t border-zinc-800">
+          <Button variant="ghost" size="sm" onClick={onClose}
+            className="w-full text-zinc-400 hover:text-white hover:bg-zinc-800">
+            Close
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 export default function JournalPage() {
   const { trades, loading, addTrade, removeTrade, fetchTrades, getMonthlySummaries, getYearlySummaries } = useTrades()
   const [formOpen, setFormOpen] = useState(false)
@@ -154,6 +246,7 @@ export default function JournalPage() {
   const [expandedYear, setExpandedYear] = useState<number | null>(null)
   const [expandedMonth, setExpandedMonth] = useState<string | null>(null)
   const [tradeFilter, setTradeFilter] = useState<'combined' | 'real' | 'demo'>('combined')
+  const [selectedTrade, setSelectedTrade] = useState<Trade | null>(null)
 
   // Filter all trades by mode
   const filteredByMode = useMemo(() => {
@@ -339,7 +432,7 @@ export default function JournalPage() {
                 </span>
               </div>
             )}
-            <TradesTable trades={displayedTrades} onDelete={removeTrade} />
+            <TradesTable trades={displayedTrades} onDelete={removeTrade} onSelect={setSelectedTrade} />
           </>
 
         ) : viewMode === 'monthly' ? (
@@ -387,7 +480,7 @@ export default function JournalPage() {
                   {/* Expanded trades for this month */}
                   {expandedMonth === s.month && (
                     <div className="bg-zinc-900/30 border-t border-zinc-800">
-                      <TradesTable trades={expandedMonthTrades} onDelete={removeTrade} />
+                      <TradesTable trades={expandedMonthTrades} onDelete={removeTrade} onSelect={setSelectedTrade} />
                     </div>
                   )}
                 </div>
@@ -468,7 +561,7 @@ export default function JournalPage() {
                         {/* Expanded trades */}
                         {expandedMonth === m.month && (
                           <div className="bg-zinc-900/30 border-t border-zinc-800">
-                            <TradesTable trades={expandedMonthTrades} onDelete={removeTrade} />
+                            <TradesTable trades={expandedMonthTrades} onDelete={removeTrade} onSelect={setSelectedTrade} />
                           </div>
                         )}
                       </div>
@@ -483,6 +576,7 @@ export default function JournalPage() {
 
       <TradeFormModal open={formOpen} onClose={() => setFormOpen(false)} onSubmit={addTrade} />
       <ImportTradesModal open={importOpen} onClose={() => setImportOpen(false)} onSuccess={() => fetchTrades()} />
+      <TradeDetailModal trade={selectedTrade} open={!!selectedTrade} onClose={() => setSelectedTrade(null)} />
     </div>
   )
 }

@@ -37,6 +37,7 @@ export function TradeFormModal({ open, onClose, onSubmit }: TradeFormModalProps)
       trade_mode: 'real',
       open_time: '',
       close_time: '',
+      close_date: '',
     })
 
   function updateField(field: string, value: string) {
@@ -68,6 +69,7 @@ export function TradeFormModal({ open, onClose, onSubmit }: TradeFormModalProps)
       trade_mode: form.trade_mode,
       open_time: form.open_time || null,
       close_time: form.close_time || null,
+      close_date: form.close_date || null,
     })
 
     setLoading(false)
@@ -82,7 +84,7 @@ export function TradeFormModal({ open, onClose, onSubmit }: TradeFormModalProps)
         open_price: '', close_price: '', pl_type: 'P',
         pl_percentage: '', amount_pl: '', lg_st: 'ST',
         hint: '', comments: '', trade_mode: 'real',
-        open_time: '', close_time: '',
+        open_time: '', close_time: '', close_date: '',
       })
       onClose()
     }
@@ -145,6 +147,11 @@ export function TradeFormModal({ open, onClose, onSubmit }: TradeFormModalProps)
             <div>
               <Label className="text-zinc-400 text-xs">Close Time</Label>
               <Input type="time" value={form.close_time} onChange={(e) => updateField('close_time', e.target.value)}
+                className="bg-zinc-800 border-zinc-700 text-white mt-1 text-sm" />
+            </div>
+            <div>
+              <Label className="text-zinc-400 text-xs">Close Date (if different)</Label>
+              <Input type="date" value={form.close_date} onChange={(e) => updateField('close_date', e.target.value)}
                 className="bg-zinc-800 border-zinc-700 text-white mt-1 text-sm" />
             </div>
           <div>
