@@ -57,6 +57,17 @@ export function Header() {
           >
             Journal
           </Link>
+          <Link
+            href="/investments"
+            className={cn(
+              'px-3 py-1.5 rounded text-sm transition-colors',
+              pathname === '/investments'
+                ? 'text-white bg-zinc-800'
+                : 'text-zinc-500 hover:text-zinc-300'
+            )}
+          >
+            Investments
+          </Link>
         </nav>
       </div>
       <div className="flex items-center gap-3">

@@ -172,7 +172,7 @@ function TradeDetailModal({ trade, open, onClose }: { trade: Trade | null; open:
     { label: 'Mode', value: trade.trade_mode === 'real' ? 'Real' : 'Demo' },
     { label: 'Direction', value: trade.lg_st === 'LG' ? 'Long' : 'Short' },
     { label: 'Amount (USD)', value: `$${trade.amount.toFixed(2)}` },
-    { label: 'Staked', value: trade.staked > 0 ? `$${trade.staked.toFixed(2)}` : '—' },
+    { label: 'Staked', value: trade.staked > 0 ? `${trade.staked.toFixed(2)}` : '—' },
     { label: 'Leverage', value: trade.leverage },
     { label: 'Open Price', value: trade.open_price.toString() },
     { label: 'Close Price', value: trade.close_price.toString() },
