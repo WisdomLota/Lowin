@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useCoins } from '@/hooks/useCoins'
 import { Header } from '@/components/layout/header'
 import { NavTabs, TabKey, SourceFilter } from '@/components/layout/nav-tabs'
@@ -9,6 +9,7 @@ import { CoinDetailModal } from '@/components/coins/coin-detail-modal'
 import { Coin } from '@/types/coin'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { useNotifications } from '@/hooks/useNotifications'
 
 const PAGE_SIZE = 50
 
@@ -19,6 +20,19 @@ export default function DashboardPage() {
   const [selectedCoin, setSelectedCoin] = useState<Coin | null>(null)
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
+
+  const { checkDelistings, checkPriceAlerts } = useNotifications()
+
+  // Check for delistings and price alerts when data loads
+  useEffect(() => {
+    if (!data?.coins || data.coins.length === 0) return
+  
+    const liveSymbols = new Set(data.coins.map((c) => c.symbol))
+    const priceMap = new Map(data.coins.map((c) => [c.symbol, c.current_price]))
+  
+    checkDelistings(liveSymbols)
+    checkPriceAlerts(priceMap)
+  }, [data]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Reset page when filters change
   const handleTabChange = (tab: TabKey) => {

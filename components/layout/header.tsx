@@ -7,6 +7,7 @@ import { signOut } from '@/app/(auth)/actions'
 import { createClient } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { NotificationBell } from './notification-bell'
 
 export function Header() {
   const pathname = usePathname()
@@ -71,6 +72,7 @@ export function Header() {
         </nav>
       </div>
       <div className="flex items-center gap-3">
+        <NotificationBell />
         {email && <span className="text-xs text-zinc-500">{email}</span>}
         <form action={signOut}>
           <Button

@@ -15,6 +15,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
+import { PriceAlertModal } from './price-alert-modal'
 
 interface PricePoint {
   time: number
@@ -53,6 +54,7 @@ export function CoinDetailModal({ coin, open, onClose }: CoinDetailModalProps) {
   const [purchaseOpen, setPurchaseOpen] = useState(false)
   const [watchlistComment, setWatchlistComment] = useState('')
   const [showCommentInput, setShowCommentInput] = useState(false)
+  const [priceAlertOpen, setPriceAlertOpen] = useState(false)
 
   useEffect(() => {
     if (!coin || !open) return
@@ -245,6 +247,14 @@ export function CoinDetailModal({ coin, open, onClose }: CoinDetailModalProps) {
             >
               View on Bybit
             </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="border-amber-600/50 text-amber-400 hover:bg-amber-600/10"
+              onClick={() => setPriceAlertOpen(true)}
+            >
+              Set Price Alert
+            </Button>
             {coingeckoUrl && (
               <Button
                 size="sm"
@@ -264,6 +274,12 @@ export function CoinDetailModal({ coin, open, onClose }: CoinDetailModalProps) {
         open={purchaseOpen}
         onClose={() => setPurchaseOpen(false)}
         onSuccess={() => toast.success(`Purchase logged for ${coin.symbol}`)}
+      />
+
+      <PriceAlertModal
+        coin={coin}
+        open={priceAlertOpen}
+        onClose={() => setPriceAlertOpen(false)}
       />
     </>
   )
