@@ -7,10 +7,15 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'LOWIN — Sub-Penny Crypto Discovery',
-  description: 'Discover and track cryptocurrencies under $0.01',
+  title: 'LOWIN — Crypto Discovery, Trading Journal & Investment Tracker',
+  description: 'Discover sub-penny cryptocurrencies, journal your trades, track investments and monitor your portfolio performance in real time.',
 }
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+}
 export default function RootLayout({
   children,
 }: {

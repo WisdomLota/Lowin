@@ -169,7 +169,7 @@ export default function PortfolioPage() {
               <p className="text-sm mt-1">Click any coin on the dashboard to log a purchase</p>
             </div>
           ) : (
-            <table className="w-full">
+            <table className="w-full min-w-150">
               <thead>
                 <tr className="text-xs text-zinc-500 border-b border-zinc-800">
                   <th className="text-left py-3 px-4 sm:px-6 font-medium">Coin</th>
@@ -259,7 +259,7 @@ export default function PortfolioPage() {
               <p className="text-sm mt-1">Add coins from the dashboard to track them here</p>
             </div>
           ) : (
-            <table className="w-full">
+            <table className="w-full min-w-137.5">
               <thead>
                 <tr className="text-xs text-zinc-500 border-b border-zinc-800">
                   <th className="text-left py-3 px-4 sm:px-6 font-medium">Coin</th>

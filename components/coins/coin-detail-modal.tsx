@@ -133,9 +133,9 @@ export function CoinDetailModal({ coin, open, onClose }: CoinDetailModalProps) {
   return (
     <>
       <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-        <DialogContent className="bg-zinc-900 border-zinc-800 text-white max-w-4xl! p-0 gap-0">
+        <DialogContent className="bg-zinc-900 border-zinc-800 text-white max-w-[95vw]! sm:max-w-4xl! p-0 gap-0 max-h-[90vh] overflow-y-auto">
           {/* Header */}
-          <DialogHeader className="px-6 pt-6 pb-3">
+          <DialogHeader className="px-4 sm:px-6 pt-4 sm:pt-6 pb-3">
             <div className="flex items-center gap-3">
               {coin.image ? (
                 <img src={coin.image} alt={coin.name} className="w-10 h-10 rounded-full" />
@@ -152,7 +152,7 @@ export function CoinDetailModal({ coin, open, onClose }: CoinDetailModalProps) {
               </div>
             </div>
             <div className="flex items-baseline gap-3 mt-3">
-              <span className="text-3xl font-mono font-semibold">
+              <span className="text-xl sm:text-3xl font-mono font-semibold">
                 {formatPrice(coin.current_price)}
               </span>
               <span
@@ -168,12 +168,12 @@ export function CoinDetailModal({ coin, open, onClose }: CoinDetailModalProps) {
           </DialogHeader>
 
           {/* Chart */}
-          <div className="px-6">
+          <div className="px-3 sm:px-6">
             <PriceChart data={chartData} isLoading={chartLoading} />
           </div>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-4 gap-px bg-zinc-800 mx-6 mt-4 rounded-lg overflow-hidden">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-zinc-800 mx-3 sm:mx-6 mt-4 rounded-lg overflow-hidden">
             {[
               { label: 'Market Cap', value: formatCompact(coin.market_cap) },
               { label: '24h Volume', value: formatCompact(coin.total_volume) },
@@ -194,7 +194,7 @@ export function CoinDetailModal({ coin, open, onClose }: CoinDetailModalProps) {
           </div>
 
           {/* Action Buttons */}
-          <div className="px-6 py-5 flex flex-wrap gap-2">
+          <div className="px-4 sm:px-6 py-4 sm:py-5 flex flex-wrap gap-2">
             {isWatchlisted ? (
               <Button
                 size="sm"

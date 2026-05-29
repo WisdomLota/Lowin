@@ -40,16 +40,16 @@ export function CoinTable({ coins, onCoinClick }: CoinTableProps) {
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-175">
+      <table className="w-full min-w-125">
         <thead>
           <tr className="text-xs text-zinc-500 border-b border-zinc-800">
-            <th className="text-left py-3 px-6 font-medium">#</th>
+            <th className="text-left py-3 px-3 sm:px-6 font-medium hidden sm:table-cell">#</th>
             <th className="text-left py-3 px-2 font-medium">Coin</th>
             <th className="text-right py-3 px-2 font-medium">Price</th>
             <th className="text-right py-3 px-2 font-medium">24h %</th>
-            <th className="text-right py-3 px-2 font-medium">Market Cap</th>
+            <th className="text-right py-3 px-2 font-medium hidden sm:table-cell">Market Cap</th>
             <th className="text-right py-3 px-2 font-medium">Volume (24h)</th>
-            <th className="text-right py-3 px-6 font-medium">Source</th>
+            <th className="text-right py-3 px-2 sm:px-6 font-medium">Source</th>
           </tr>
         </thead>
         <tbody>
@@ -59,7 +59,7 @@ export function CoinTable({ coins, onCoinClick }: CoinTableProps) {
               onClick={() => onCoinClick(coin)}
               className="border-b border-zinc-800/50 hover:bg-zinc-900/50 cursor-pointer transition-colors"
             >
-              <td className="py-3 px-6 text-sm text-zinc-500">{index + 1}</td>
+              <td className="py-3 px-3 sm:px-6 text-sm text-zinc-500 hidden sm:table-cell">{index + 1}</td>
               <td className="py-3 px-2">
                 <div className="flex items-center gap-2.5">
                   {coin.image ? (
@@ -97,13 +97,13 @@ export function CoinTable({ coins, onCoinClick }: CoinTableProps) {
                 {coin.price_change_percentage_24h >= 0 ? '+' : ''}
                 {coin.price_change_percentage_24h.toFixed(2)}%
               </td>
-              <td className="py-3 px-2 text-right text-sm text-zinc-400">
+              <td className="py-3 px-2 text-right text-sm text-zinc-400 hidden sm:table-cell">
                 {coin.market_cap > 0 ? formatCompact(coin.market_cap) : '—'}
               </td>
               <td className="py-3 px-2 text-right text-sm text-zinc-400">
                 {coin.total_volume > 0 ? formatCompact(coin.total_volume) : '—'}
               </td>
-              <td className="py-3 px-6 text-right">
+              <td className="py-3 px-2 sm:px-6 text-right">
                 <Badge
                   variant="outline"
                   className={cn(

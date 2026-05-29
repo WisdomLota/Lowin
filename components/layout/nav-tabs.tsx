@@ -37,7 +37,7 @@ export function NavTabs({ activeTab, onTabChange, sourceFilter, onSourceChange }
             key={tab.key}
             onClick={() => onTabChange(tab.key)}
             className={cn(
-              'px-3 py-2.5 text-sm font-medium transition-colors border-b-2',
+              'px-3 py-2.5 text-sm font-medium transition-colors border-b-2 whitespace-nowrap',
               activeTab === tab.key
                 ? 'border-emerald-500 text-white'
                 : 'border-transparent text-zinc-500 hover:text-zinc-300'
@@ -47,13 +47,13 @@ export function NavTabs({ activeTab, onTabChange, sourceFilter, onSourceChange }
           </button>
         ))}
       </div>
-      <div className="flex gap-1">
+      <div className="flex gap-1 overflow-x-auto">
         {sources.map((source) => (
           <button
             key={source.key}
             onClick={() => onSourceChange(source.key)}
             className={cn(
-              'px-2.5 py-1.5 text-xs rounded font-medium transition-colors',
+              'px-2.5 py-1.5 text-xs rounded font-medium transition-colors whitespace-nowrap',
               sourceFilter === source.key
                 ? 'bg-zinc-800 text-white'
                 : 'text-zinc-500 hover:text-zinc-300'

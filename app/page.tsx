@@ -26,7 +26,7 @@ export default function DashboardPage() {
   // Check for delistings and price alerts when data loads
   useEffect(() => {
     if (!data?.coins || data.coins.length === 0) return
-    
+
     const liveSymbols = new Set(data.coins.map((c) => c.symbol))
     const priceMap = new Map(data.coins.map((c) => [c.symbol, c.current_price]))
     const coinData = new Map(data.coins.map((c) => [c.symbol, {
@@ -35,7 +35,7 @@ export default function DashboardPage() {
       symbol: c.symbol,
       name: c.name,
     }]))
-  
+
     checkDelistings(liveSymbols)
     checkPriceAlerts(priceMap)
     checkDelistingWarnings(coinData)
@@ -124,7 +124,7 @@ export default function DashboardPage() {
           placeholder="Search by name or symbol..."
           value={search}
           onChange={(e) => handleSearchChange(e.target.value)}
-          className="max-w-sm bg-zinc-900 border-zinc-800 text-white placeholder:text-zinc-600"
+          className="w-full sm:max-w-sm bg-zinc-900 border-zinc-800 text-white placeholder:text-zinc-600"
         />
       </div>
 
