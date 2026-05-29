@@ -169,58 +169,70 @@ export function useInvestments() {
     }))
   }, [getEnrichedInvestments])
 
-  // Monthly performance from value_update history
+  // Monthly performance: compare portfolio value snapshots month-to-month
   const getMonthlyPerformance = useCallback(() => {
     const enriched = getEnrichedInvestments()
-    const allValueUpdates = transactions
-      .filter((t) => t.type === 'value_update')
-      .sort((a, b) => a.date.localeCompare(b.date))
+    if (enriched.length === 0) return []
 
-    // Group value updates by month
-    const monthlyData = new Map<string, { date: string; totalValue: number }[]>()
-
-    for (const tx of allValueUpdates) {
-      const monthKey = tx.date.substring(0, 7)
-      if (!monthlyData.has(monthKey)) monthlyData.set(monthKey, [])
-      monthlyData.get(monthKey)!.push({ date: tx.date, totalValue: tx.amount })
+    // Collect all months that have any value_update
+    const monthsWithUpdates = new Set<string>()
+    for (const tx of transactions) {
+      if (tx.type === 'value_update') {
+        monthsWithUpdates.add(tx.date.substring(0, 7))
+      }
     }
 
-    const months = ['January', 'February', 'March', 'April', 'May', 'June',
+    const sortedMonths = Array.from(monthsWithUpdates).sort()
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
       'July', 'August', 'September', 'October', 'November', 'December']
 
-    // Build monthly summaries from value updates
-    const totalInvested = enriched.reduce((s, i) => s + i.totalDeposited, 0)
-    const totalFees = enriched.reduce((s, i) => s + i.processing_fee, 0)
-    const totalWithdrawn = enriched.reduce((s, i) => s + i.totalWithdrawn, 0)
+    const monthlySummaries: { month: string; label: string; totalValue: number; totalInvested: number; totalFees: number; totalWithdrawn: number; netPL: number; plPct: number }[] = []
 
-    // Get the latest value update per investment per month
-    const monthlySummaries: { month: string; label: string; totalValue: number; netPL: number; plPct: number }[] = []
-
-    const allMonths = Array.from(monthlyData.keys()).sort()
-    for (const monthKey of allMonths) {
-      // For each month, find the latest value_update per investment
+    for (const monthKey of sortedMonths) {
       let monthTotalValue = 0
+      let monthTotalInvested = 0
+      let monthTotalFees = 0
+      let monthTotalWithdrawn = 0
+
       for (const inv of enriched) {
-        const invUpdates = transactions
-          .filter((t) => t.investment_id === inv.id && t.type === 'value_update' && t.date.startsWith(monthKey))
-          .sort((a, b) => b.date.localeCompare(a.date))
-        if (invUpdates.length > 0) {
-          monthTotalValue += invUpdates[0].amount
+        const invTxs = transactions.filter((t) => t.investment_id === inv.id)
+
+        // Find the latest value_update for this investment ON OR BEFORE this month
+        const relevantUpdates = invTxs
+          .filter((t) => t.type === 'value_update' && t.date.substring(0, 7) <= monthKey)
+          .sort((a, b) => b.date.localeCompare(a.date) || b.created_at.localeCompare(a.created_at))
+
+        if (relevantUpdates.length > 0) {
+          monthTotalValue += relevantUpdates[0].amount
+        } else {
+          // No value update yet for this investment — use invested amount minus withdrawals
+          const deposits = invTxs.filter((t) => t.type === 'deposit' && t.date.substring(0, 7) <= monthKey).reduce((s, t) => s + t.amount, 0)
+          const withdrawals = invTxs.filter((t) => t.type === 'withdrawal' && t.date.substring(0, 7) <= monthKey).reduce((s, t) => s + t.amount, 0)
+          monthTotalValue += inv.amount + deposits - withdrawals
         }
+
+        // Calculate invested/fees/withdrawn up to this month
+        const depositsToDate = invTxs.filter((t) => t.type === 'deposit' && t.date.substring(0, 7) <= monthKey).reduce((s, t) => s + t.amount, 0)
+        const withdrawalsToDate = invTxs.filter((t) => t.type === 'withdrawal' && t.date.substring(0, 7) <= monthKey).reduce((s, t) => s + t.amount, 0)
+        monthTotalInvested += inv.amount + depositsToDate
+        monthTotalFees += inv.processing_fee
+        monthTotalWithdrawn += withdrawalsToDate
       }
 
-      if (monthTotalValue > 0) {
-        const netPL = monthTotalValue + totalWithdrawn - totalInvested - totalFees
-        const plPct = totalInvested > 0 ? (netPL / totalInvested) * 100 : 0
-        const [y, m] = monthKey.split('-')
-        monthlySummaries.push({
-          month: monthKey,
-          label: `${months[parseInt(m) - 1]} ${y}`,
-          totalValue: monthTotalValue,
-          netPL,
-          plPct,
-        })
-      }
+      const netPL = monthTotalValue + monthTotalWithdrawn - monthTotalInvested - monthTotalFees
+      const plPct = monthTotalInvested > 0 ? (netPL / monthTotalInvested) * 100 : 0
+      const [y, m] = monthKey.split('-')
+
+      monthlySummaries.push({
+        month: monthKey,
+        label: `${monthNames[parseInt(m) - 1]} ${y}`,
+        totalValue: monthTotalValue,
+        totalInvested: monthTotalInvested,
+        totalFees: monthTotalFees,
+        totalWithdrawn: monthTotalWithdrawn,
+        netPL,
+        plPct,
+      })
     }
 
     return monthlySummaries
