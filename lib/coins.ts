@@ -1,16 +1,18 @@
 import { Coin } from '@/types/coin'
 import { fetchCoinGeckoCoins } from './coingecko'
 import { fetchBybitCoins } from './bybit'
+import { fetchBinanceCoins } from './binance'
 
 export async function fetchAllCoins(): Promise<Coin[]> {
-  // Fetch from both sources in parallel
-  const [geckoCoins, bybitCoins] = await Promise.all([
+  // Fetch from all sources in parallel
+  const [geckoCoins, bybitCoins, binanceCoins] = await Promise.all([
     fetchCoinGeckoCoins(1),
     fetchBybitCoins(),
+    fetchBinanceCoins(),
   ])
 
-  // Merge: if a coin exists on both, prefer CoinGecko (richer data)
-  // but mark it as available on both
+  // Merge: if a coin exists on all sources, prefer CoinGecko (richer data)
+  // but mark it as available on all
   const coinMap = new Map<string, Coin>()
 
   // Add CoinGecko coins first (they have better metadata)
@@ -28,6 +30,14 @@ export async function fetchAllCoins(): Promise<Coin[]> {
       existing.price_change_percentage_24h = coin.price_change_percentage_24h
       existing.total_volume = coin.total_volume
     } else {
+      coinMap.set(coin.symbol, coin)
+    }
+  }
+
+  // Add Binance-only coins
+  for (const coin of binanceCoins) {
+    const existing = coinMap.get(coin.symbol)
+    if (!existing) {
       coinMap.set(coin.symbol, coin)
     }
   }

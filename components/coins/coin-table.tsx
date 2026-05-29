@@ -110,10 +110,12 @@ export function CoinTable({ coins, onCoinClick }: CoinTableProps) {
                     'text-xs font-normal',
                     coin.source === 'coingecko'
                       ? 'border-orange-500/30 text-orange-400'
-                      : 'border-yellow-500/30 text-yellow-400'
+                      : coin.source === 'bybit'
+                      ? 'border-yellow-500/30 text-yellow-400'
+                      : 'border-blue-500/30 text-blue-400'
                   )}
                 >
-                  {coin.source === 'coingecko' ? 'CG' : 'BB'}
+                  {coin.source === 'coingecko' ? 'CG' : coin.source === 'bybit' ? 'BB' : 'BN'}
                 </Badge>
               </td>
             </tr>

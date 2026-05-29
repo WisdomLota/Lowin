@@ -5,9 +5,10 @@ import { useNotifications } from '@/hooks/useNotifications'
 import { cn } from '@/lib/utils'
 
 export function NotificationBell() {
-  const { notifications, unreadCount, markAsRead, markAllAsRead, clearNotification } = useNotifications()
+  const { notifications, priceAlerts, unreadCount, markAsRead, markAllAsRead, clearNotification, removePriceAlert } = useNotifications()
   const [open, setOpen] = useState(false)
   const [expandedNotif, setExpandedNotif] = useState<string | null>(null)
+  const [activeView, setActiveView] = useState<'notifications' | 'alerts'>('notifications')
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   // Close dropdown when clicking outside
@@ -44,12 +45,18 @@ export function NotificationBell() {
         <div className="absolute right-0 mt-2 w-80 bg-zinc-900 border border-zinc-800 rounded-lg shadow-xl z-50 overflow-hidden">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-2.5 border-b border-zinc-800">
-            <span className="text-sm font-medium text-white">Notifications</span>
-            {unreadCount > 0 && (
-              <button
-                onClick={markAllAsRead}
-                className="text-xs text-emerald-400 hover:text-emerald-300"
-              >
+            <div className="flex gap-2">
+              <button onClick={() => setActiveView('notifications')}
+                className={cn('text-sm font-medium', activeView === 'notifications' ? 'text-white' : 'text-zinc-500')}>
+                Notifications
+              </button>
+              <button onClick={() => setActiveView('alerts')}
+                className={cn('text-sm font-medium', activeView === 'alerts' ? 'text-white' : 'text-zinc-500')}>
+                Alerts {priceAlerts.filter(a => !a.triggered).length > 0 && `(${priceAlerts.filter(a => !a.triggered).length})`}
+              </button>
+            </div>
+            {activeView === 'notifications' && unreadCount > 0 && (
+              <button onClick={markAllAsRead} className="text-xs text-emerald-400 hover:text-emerald-300">
                 Mark all read
               </button>
             )}
@@ -57,49 +64,50 @@ export function NotificationBell() {
 
           {/* Notification list */}
           <div className="max-h-80 overflow-y-auto">
-            {notifications.length === 0 ? (
-              <div className="py-8 text-center text-zinc-500 text-sm">
-                No notifications
-              </div>
-            ) : (
-              notifications.slice(0, 20).map((notif) => (
-                <div
-                  key={notif.id}
-                  onClick={() => {
-                    markAsRead(notif.id)
-                    setExpandedNotif(expandedNotif === notif.id ? null : notif.id)
-                  }}
-                  className={cn(
-                    'px-4 py-2.5 border-b border-zinc-800/50 cursor-pointer hover:bg-zinc-800/50 transition-colors',
-                    !notif.read && 'bg-zinc-800/30'
-                  )}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className={cn('w-1.5 h-1.5 rounded-full shrink-0',
-                          notif.type === 'delisting' ? 'bg-red-400'
-                            : notif.type === 'price_alert' ? 'bg-emerald-400'
-                            : 'bg-blue-400'
-                        )} />
-                        <p className="text-sm font-medium text-white truncate">{notif.title}</p>
+            {activeView === 'notifications' ? (
+              notifications.length === 0 ? (
+                <div className="py-8 text-center text-zinc-500 text-sm">No notifications</div>
+              ) : (
+                notifications.slice(0, 20).map((notif) => (
+                  <div
+                    key={notif.id}
+                    onClick={() => { markAsRead(notif.id); setExpandedNotif(expandedNotif === notif.id ? null : notif.id) }}
+                    className={cn('px-4 py-2.5 border-b border-zinc-800/50 cursor-pointer hover:bg-zinc-800/50 transition-colors', !notif.read && 'bg-zinc-800/30')}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className={cn('w-1.5 h-1.5 rounded-full shrink-0',
+                            notif.type === 'delisting' ? 'bg-red-400' : notif.type === 'price_alert' ? 'bg-emerald-400' : 'bg-blue-400'
+                          )} />
+                          <p className="text-sm font-medium text-white truncate">{notif.title}</p>
+                        </div>
+                        <p className={cn('text-xs text-zinc-500 mt-0.5', expandedNotif === notif.id ? 'whitespace-pre-wrap' : 'line-clamp-2')}>{notif.message}</p>
+                        <p className="text-xs text-zinc-600 mt-1">
+                          {new Date(notif.created_at).toLocaleDateString()} · {new Date(notif.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </p>
                       </div>
-                      <p className={cn('text-xs text-zinc-500 mt-0.5',
-                        expandedNotif === notif.id ? 'whitespace-pre-wrap' : 'line-clamp-2'
-                      )}>{notif.message}</p>
-                      <p className="text-xs text-zinc-600 mt-1">
-                        {new Date(notif.created_at).toLocaleDateString()} · {new Date(notif.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      <button onClick={(e) => { e.stopPropagation(); clearNotification(notif.id) }} className="text-zinc-600 hover:text-red-400 text-xs shrink-0 mt-0.5">×</button>
+                    </div>
+                  </div>
+                ))
+              )
+            ) : (
+              priceAlerts.filter(a => !a.triggered).length === 0 ? (
+                <div className="py-8 text-center text-zinc-500 text-sm">No active alerts</div>
+              ) : (
+                priceAlerts.filter(a => !a.triggered).map((alert) => (
+                  <div key={alert.id} className="px-4 py-2.5 border-b border-zinc-800/50 flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-white">{alert.coin_symbol}</p>
+                      <p className="text-xs text-zinc-500">
+                        {alert.direction === 'above' ? 'Goes above' : 'Goes below'} ${alert.target_price < 0.0001 ? alert.target_price.toFixed(8) : alert.target_price}
                       </p>
                     </div>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); clearNotification(notif.id) }}
-                      className="text-zinc-600 hover:text-red-400 text-xs shrink-0 mt-0.5"
-                    >
-                      ×
-                    </button>
+                    <button onClick={() => removePriceAlert(alert.id)} className="text-zinc-600 hover:text-red-400 text-xs">Remove</button>
                   </div>
-                </div>
-              ))
+                ))
+              )
             )}
           </div>
         </div>

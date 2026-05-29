@@ -3,7 +3,7 @@
 import { cn } from '@/lib/utils'
 
 export type TabKey = 'all' | 'new' | 'gainers' | 'losers' | 'volume' | 'turnover'
-export type SourceFilter = 'all' | 'coingecko' | 'bybit'
+export type SourceFilter = 'all' | 'coingecko' | 'bybit' | 'binance'
 
 interface NavTabsProps {
   activeTab: TabKey
@@ -25,6 +25,7 @@ const sources: { key: SourceFilter; label: string }[] = [
   { key: 'all', label: 'All Sources' },
   { key: 'coingecko', label: 'CoinGecko' },
   { key: 'bybit', label: 'Bybit' },
+  { key: 'binance', label: 'Binance' },
 ]
 
 export function NavTabs({ activeTab, onTabChange, sourceFilter, onSourceChange }: NavTabsProps) {
