@@ -6,9 +6,9 @@ import { fetchBinanceCoins } from './binance'
 export async function fetchAllCoins(): Promise<Coin[]> {
   // Fetch from all sources in parallel
   const [geckoCoins, bybitCoins, binanceCoins] = await Promise.all([
-    fetchCoinGeckoCoins(1),
-    fetchBybitCoins(),
-    fetchBinanceCoins(),
+    fetchCoinGeckoCoins(1).catch(() => []),
+    fetchBybitCoins().catch(() => []),
+    fetchBinanceCoins().catch(() => []),
   ])
 
   // Merge: if a coin exists on all sources, prefer CoinGecko (richer data)
