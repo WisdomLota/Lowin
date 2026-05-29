@@ -170,8 +170,9 @@ export function useInvestments() {
   }, [getEnrichedInvestments])
 
   // Monthly performance: compare portfolio value snapshots month-to-month
-  const getMonthlyPerformance = useCallback(() => {
-    const enriched = getEnrichedInvestments()
+  const getMonthlyPerformance = useCallback((filterType?: 'mutual_fund' | 'stock') => {
+    const allEnriched = getEnrichedInvestments()
+    const enriched = filterType ? allEnriched.filter((i) => i.type === filterType) : allEnriched
     if (enriched.length === 0) return []
 
     // Collect all months that have any value_update

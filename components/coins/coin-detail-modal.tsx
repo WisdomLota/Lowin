@@ -28,7 +28,10 @@ interface CoinDetailModalProps {
 }
 
 function formatPrice(price: number): string {
-  if (price < 0.000001) return `$${price.toExponential(2)}`
+  if (price === 0) return '$0.00'
+  if (price < 0.0000000001) return `$${price.toFixed(14)}`
+  if (price < 0.00000001) return `$${price.toFixed(12)}`
+  if (price < 0.000001) return `$${price.toFixed(10)}`
   if (price < 0.0001) return `$${price.toFixed(8)}`
   if (price < 0.01) return `$${price.toFixed(6)}`
   return `$${price.toFixed(4)}`

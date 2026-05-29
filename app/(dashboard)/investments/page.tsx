@@ -74,7 +74,8 @@ export default function InvestmentsPage() {
     return { ngn: ngnSummary, usd: usdSummary }
   }, [ngnGroups, usdGroups])
 
-  const monthlyPerformance = useMemo(() => getMonthlyPerformance(), [getMonthlyPerformance])
+  const monthlyPerformanceForTab = useMemo(() => getMonthlyPerformance(activeTab), [getMonthlyPerformance, activeTab])
+  const monthlyPerformanceCombined = useMemo(() => getMonthlyPerformance(), [getMonthlyPerformance])
   const enrichedInvestments = useMemo(() => getEnrichedInvestments(), [getEnrichedInvestments])
 
   function renderInvestmentsList(group: typeof ngnGroups[number]) {
@@ -357,15 +358,44 @@ export default function InvestmentsPage() {
           </div>
         )}
 
-        {/* Monthly Performance */}
-        {monthlyPerformance.length > 0 && (
-          <div className="p-4 sm:p-6">
+        {/* Monthly Performance for current tab */}
+        {monthlyPerformanceForTab.length > 0 && (
+          <div className="p-4 sm:p-6 pt-0">
             <div className="border border-zinc-800 rounded-lg overflow-hidden">
               <div className="px-4 py-3 border-b border-zinc-800">
-                <p className="text-sm font-medium text-zinc-300">Monthly Performance</p>
+                <p className="text-sm font-medium text-zinc-300">
+                  Monthly Performance — {activeTab === 'mutual_fund' ? 'Mutual Funds' : 'Stocks'}
+                </p>
               </div>
               <div className="divide-y divide-zinc-800/50">
-                {monthlyPerformance.map((m) => (
+                {monthlyPerformanceForTab.map((m) => (
+                  <div key={m.month} className="flex items-center justify-between px-4 py-2.5">
+                    <span className="text-sm text-zinc-300">{m.label}</span>
+                    <div className="flex items-center gap-4 text-sm">
+                      <span className="text-zinc-400 font-mono">{formatCurrency(m.totalValue)}</span>
+                      <span className={cn('font-mono', m.netPL >= 0 ? 'text-emerald-400' : 'text-red-400')}>
+                        {m.netPL >= 0 ? '+' : '-'}{formatCurrency(m.netPL)}
+                      </span>
+                      <span className={cn('font-mono text-xs', m.plPct >= 0 ? 'text-emerald-400' : 'text-red-400')}>
+                        {m.plPct >= 0 ? '+' : ''}{m.plPct.toFixed(2)}%
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Combined Monthly Performance */}
+        {monthlyPerformanceCombined.length > 0 && (
+          <div className="p-4 sm:p-6 pt-0">
+            <div className="border border-zinc-800 rounded-lg overflow-hidden">
+              <div className="px-4 py-3 border-b border-zinc-800">
+                <p className="text-sm font-medium text-zinc-300">Monthly Performance — All Investments</p>
+              </div>
+              <div className="divide-y divide-zinc-800/50">
+                {monthlyPerformanceCombined.map((m) => (
                   <div key={m.month} className="flex items-center justify-between px-4 py-2.5">
                     <span className="text-sm text-zinc-300">{m.label}</span>
                     <div className="flex items-center gap-4 text-sm">
