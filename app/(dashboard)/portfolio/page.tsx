@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useWatchlist, usePurchases } from '@/hooks/usePortfolio'
 import { useCoins } from '@/hooks/useCoins'
 import { Header } from '@/components/layout/header'
@@ -36,6 +36,9 @@ export default function PortfolioPage() {
   const { items: purchases, loading: purchasesLoading, remove: removePurchase, refetch: refetchPurchases } = usePurchases()
   const { data: coinsData } = useCoins()
 
+  // Fetch prices for portfolio coins not in the dashboard data
+  const [extraPrices, setExtraPrices] = useState<Map<string, number>>(new Map())
+
   // Build a lookup map: symbol → current price
   const priceMap = useMemo(() => {
     const map = new Map<string, number>()
@@ -44,8 +47,43 @@ export default function PortfolioPage() {
         map.set(coin.symbol, coin.current_price)
       }
     }
+    // Merge extra prices for coins not in the sub-penny list
+    for (const [symbol, price] of extraPrices) {
+      if (!map.has(symbol)) {
+        map.set(symbol, price)
+      }
+    }
     return map
-  }, [coinsData])
+  }, [coinsData, extraPrices])
+
+  useEffect(() => {
+    if (!coinsData?.coins) return
+
+    const liveSymbols = new Set(coinsData.coins.map((c) => c.symbol))
+    const missingSymbols = new Set<string>()
+
+    for (const p of purchases) {
+      if (!liveSymbols.has(p.coin_symbol)) {
+        missingSymbols.add(p.coin_symbol)
+      }
+    }
+    for (const w of watchlist) {
+      if (!liveSymbols.has(w.coin_symbol)) {
+        missingSymbols.add(w.coin_symbol)
+      }
+    }
+
+    if (missingSymbols.size === 0) return
+
+    fetch(`/api/prices?symbols=${Array.from(missingSymbols).join(',')}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.prices) {
+          setExtraPrices(new Map(Object.entries(data.prices)))
+        }
+      })
+      .catch(() => {})
+  }, [coinsData, purchases, watchlist])
 
   function openWatchlistCoin(item: typeof watchlist[number]) {
     const liveCoin = coinsData?.coins.find((c) => c.symbol === item.coin_symbol)

@@ -34,3 +34,61 @@ export async function fetchCoinGeckoCoins(page = 1): Promise<Coin[]> {
       source: 'coingecko',
     }))
 }
+
+
+// Fetch specific coins by ID (for portfolio/watchlist price lookups)
+// This isn't limited to ≤ $0.01
+export async function fetchCoinPricesBySymbols(symbols: string[]): Promise<Map<string, number>> {
+  const priceMap = new Map<string, number>()
+  if (symbols.length === 0) return priceMap
+
+  try {
+    // Use CoinGecko simple/price endpoint with symbol search
+    // First we need to find coin IDs from symbols
+    const searchPromises = symbols.slice(0, 10).map(async (symbol) => {
+      try {
+        const res = await fetch(
+          `${BASE_URL}/search?query=${symbol.toLowerCase()}`,
+          {
+            cache: 'no-store',
+            headers: { 'Accept': 'application/json' },
+          }
+        )
+        if (!res.ok) return null
+        const data = await res.json()
+        const match = data.coins?.find((c: any) => c.symbol?.toUpperCase() === symbol)
+        return match ? { symbol, id: match.id } : null
+      } catch {
+        return null
+      }
+    })
+
+    const results = await Promise.all(searchPromises)
+    const coinIds = results.filter(Boolean) as { symbol: string; id: string }[]
+
+    if (coinIds.length === 0) return priceMap
+
+    // Fetch prices for found IDs
+    const ids = coinIds.map((c) => c.id).join(',')
+    const res = await fetch(
+      `${BASE_URL}/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`,
+      {
+        cache: 'no-store',
+        headers: { 'Accept': 'application/json' },
+      }
+    )
+
+    if (!res.ok) return priceMap
+    const prices = await res.json()
+
+    for (const coin of coinIds) {
+      if (prices[coin.id]?.usd) {
+        priceMap.set(coin.symbol, prices[coin.id].usd)
+      }
+    }
+  } catch (error) {
+    console.error('CoinGecko price lookup error:', error)
+  }
+
+  return priceMap
+}
