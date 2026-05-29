@@ -25,7 +25,9 @@ export default function DashboardPage() {
 
   // Check for delistings and price alerts when data loads
   useEffect(() => {
-    if (!data?.coins || data.coins.length === 0) return
+    // Need a meaningful amount of coins before running checks
+    // If APIs failed, we might have 0 or very few coins — don't trigger false alerts
+    if (!data?.coins || data.coins.length < 50) return
 
     const liveSymbols = new Set(data.coins.map((c) => c.symbol))
     const priceMap = new Map(data.coins.map((c) => [c.symbol, c.current_price]))

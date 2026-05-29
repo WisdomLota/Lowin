@@ -1,25 +1,65 @@
 import { Coin } from '@/types/coin'
 
-const BASE_URL = 'https://api.bybit.com/v5'
-
 export async function fetchBybitCoins(): Promise<Coin[]> {
   try {
-    // Fetch all USDT spot tickers from Bybit
+    // Use v5 with different endpoint structure that's less likely to be blocked
     const res = await fetch(
-      `${BASE_URL}/market/tickers?category=spot`,
+      'https://api.bybit.com/v5/market/tickers?category=spot',
       {
         cache: 'no-store',
         headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'User-Agent': 'Lowin/1.0',
           'Accept': 'application/json',
-          'Accept-Language': 'en-US,en;q=0.9',
+          'Referer': 'https://www.bybit.com',
         },
       }
     )
 
     if (!res.ok) {
       console.error('Bybit API error:', res.status)
-      return []
+
+      // Fallback: try alternative Bybit endpoint
+      try {
+        const fallbackRes = await fetch(
+          'https://api.bybit.com/spot/v3/public/quote/ticker/24hr',
+          {
+            cache: 'no-store',
+            headers: {
+              'User-Agent': 'Lowin/1.0',
+              'Accept': 'application/json',
+            },
+          }
+        )
+
+        if (!fallbackRes.ok) return []
+
+        const fallbackData = await fallbackRes.json()
+        if (fallbackData.retCode !== 0 || !fallbackData.result?.list) return []
+
+        return fallbackData.result.list
+          .filter((t: any) => {
+            const price = parseFloat(t.lp)
+            return t.s?.endsWith('USDT') && price > 0 && price <= 0.01
+          })
+          .map((t: any): Coin => {
+            const symbol = t.s.replace('USDT', '')
+            return {
+              id: `bybit-${symbol.toLowerCase()}`,
+              symbol,
+              name: symbol,
+              image: null,
+              current_price: parseFloat(t.lp),
+              price_change_percentage_24h: parseFloat(t.cp || '0') * 100,
+              market_cap: 0,
+              total_volume: parseFloat(t.qv || '0'),
+              circulating_supply: 0,
+              market_cap_rank: null,
+              source: 'bybit',
+            }
+          })
+      } catch {
+        return []
+      }
     }
 
     const data = await res.json()
@@ -32,7 +72,6 @@ export async function fetchBybitCoins(): Promise<Coin[]> {
     return data.result.list
       .filter((ticker: any) => {
         const price = parseFloat(ticker.lastPrice)
-        // Only USDT pairs, priced ≤ $0.01, with some volume
         return (
           ticker.symbol.endsWith('USDT') &&
           price > 0 &&
@@ -45,12 +84,12 @@ export async function fetchBybitCoins(): Promise<Coin[]> {
         return {
           id: `bybit-${symbol.toLowerCase()}`,
           symbol: symbol,
-          name: symbol, // Bybit doesn't return full names in ticker endpoint
+          name: symbol,
           image: null,
           current_price: parseFloat(ticker.lastPrice),
           price_change_percentage_24h: parseFloat(ticker.price24hPcnt) * 100,
-          market_cap: 0, // Bybit doesn't provide market cap
-          total_volume: parseFloat(ticker.turnover24h), // in USDT
+          market_cap: 0,
+          total_volume: parseFloat(ticker.turnover24h),
           circulating_supply: 0,
           market_cap_rank: null,
           source: 'bybit',
