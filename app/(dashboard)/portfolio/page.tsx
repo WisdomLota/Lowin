@@ -69,6 +69,27 @@ export default function PortfolioPage() {
     }
   }
 
+  function openPurchaseCoin(purchase: typeof purchases[number]) {
+    const liveCoin = coinsData?.coins.find((c) => c.symbol === purchase.coin_symbol)
+    if (liveCoin) {
+      setSelectedCoin(liveCoin)
+    } else {
+      setSelectedCoin({
+        id: purchase.coin_id,
+        symbol: purchase.coin_symbol,
+        name: purchase.coin_name,
+        image: null,
+        current_price: priceMap.get(purchase.coin_symbol) || purchase.buy_price,
+        price_change_percentage_24h: 0,
+        market_cap: 0,
+        total_volume: 0,
+        circulating_supply: 0,
+        market_cap_rank: null,
+        source: 'coingecko',
+      })
+    }
+  }
+
   // Calculate P&L summary
   const summary = useMemo(() => {
     let totalInvested = 0
@@ -170,7 +191,7 @@ export default function PortfolioPage() {
                   const plPct = invested > 0 ? (pl / invested) * 100 : 0
 
                   return (
-                    <tr key={purchase.id} className="border-b border-zinc-800/50 hover:bg-zinc-900/50">
+                    <tr key={purchase.id} onClick={() => openPurchaseCoin(purchase)} className="border-b border-zinc-800/50 hover:bg-zinc-900/50 cursor-pointer">
                       <td className="py-3 px-4 sm:px-6">
                         <span className="text-sm font-medium text-white">{purchase.coin_name}</span>
                         <span className="text-xs text-zinc-500 ml-2">{purchase.coin_symbol}</span>
@@ -203,7 +224,8 @@ export default function PortfolioPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation()
                             removePurchase(purchase.id)
                             toast.success(`${purchase.coin_symbol} purchase deleted`)
                           }}

@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 export function NotificationBell() {
   const { notifications, unreadCount, markAsRead, markAllAsRead, clearNotification } = useNotifications()
   const [open, setOpen] = useState(false)
+  const [expandedNotif, setExpandedNotif] = useState<string | null>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   // Close dropdown when clicking outside
@@ -64,7 +65,10 @@ export function NotificationBell() {
               notifications.slice(0, 20).map((notif) => (
                 <div
                   key={notif.id}
-                  onClick={() => markAsRead(notif.id)}
+                  onClick={() => {
+                    markAsRead(notif.id)
+                    setExpandedNotif(expandedNotif === notif.id ? null : notif.id)
+                  }}
                   className={cn(
                     'px-4 py-2.5 border-b border-zinc-800/50 cursor-pointer hover:bg-zinc-800/50 transition-colors',
                     !notif.read && 'bg-zinc-800/30'
@@ -80,7 +84,9 @@ export function NotificationBell() {
                         )} />
                         <p className="text-sm font-medium text-white truncate">{notif.title}</p>
                       </div>
-                      <p className="text-xs text-zinc-500 mt-0.5 line-clamp-2">{notif.message}</p>
+                      <p className={cn('text-xs text-zinc-500 mt-0.5',
+                        expandedNotif === notif.id ? 'whitespace-pre-wrap' : 'line-clamp-2'
+                      )}>{notif.message}</p>
                       <p className="text-xs text-zinc-600 mt-1">
                         {new Date(notif.created_at).toLocaleDateString()} · {new Date(notif.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </p>

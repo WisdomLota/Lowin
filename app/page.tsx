@@ -21,17 +21,24 @@ export default function DashboardPage() {
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
 
-  const { checkDelistings, checkPriceAlerts } = useNotifications()
+  const { checkDelistings, checkPriceAlerts, checkDelistingWarnings } = useNotifications()
 
   // Check for delistings and price alerts when data loads
   useEffect(() => {
     if (!data?.coins || data.coins.length === 0) return
-  
+    
     const liveSymbols = new Set(data.coins.map((c) => c.symbol))
     const priceMap = new Map(data.coins.map((c) => [c.symbol, c.current_price]))
+    const coinData = new Map(data.coins.map((c) => [c.symbol, {
+      price: c.current_price,
+      volume: c.total_volume,
+      symbol: c.symbol,
+      name: c.name,
+    }]))
   
     checkDelistings(liveSymbols)
     checkPriceAlerts(priceMap)
+    checkDelistingWarnings(coinData)
   }, [data]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Reset page when filters change
