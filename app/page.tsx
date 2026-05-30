@@ -25,9 +25,10 @@ export default function DashboardPage() {
 
   // Check for delistings and price alerts when data loads
   useEffect(() => {
-    // Need a meaningful amount of coins before running checks
-    // If APIs failed, we might have 0 or very few coins — don't trigger false alerts
     if (!data?.coins || data.coins.length < 50) return
+
+    // Determine which sources actually returned data
+    const availableSources = new Set(data.coins.map((c) => c.source))
 
     const liveSymbols = new Set(data.coins.map((c) => c.symbol))
     const priceMap = new Map(data.coins.map((c) => [c.symbol, c.current_price]))
@@ -38,7 +39,12 @@ export default function DashboardPage() {
       name: c.name,
     }]))
 
-    checkDelistings(liveSymbols)
+    // Only check delistings if all major sources are available
+    // If Bybit is down, we'd get false alerts for all Bybit-only coins
+    if (availableSources.has('coingecko') && availableSources.has('bybit')) {
+      checkDelistings(liveSymbols)
+    }
+
     checkPriceAlerts(priceMap)
     checkDelistingWarnings(coinData)
   }, [data]) // eslint-disable-line react-hooks/exhaustive-deps

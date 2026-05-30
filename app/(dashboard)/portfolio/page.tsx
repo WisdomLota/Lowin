@@ -322,7 +322,7 @@ export default function PortfolioPage() {
                         <span className="text-xs text-zinc-500 ml-2">{item.coin_symbol}</span>
                       </td>
                       <td className="py-3 px-2 text-right text-sm font-mono text-white">
-                        {liveCoin ? formatPrice(liveCoin.current_price) : '—'}
+                        {liveCoin ? formatPrice(liveCoin.current_price) : priceMap.get(item.coin_symbol) ? formatPrice(priceMap.get(item.coin_symbol)!) : '—'}
                       </td>
                       <td className={cn(
                         'py-3 px-2 text-right text-sm font-mono',
