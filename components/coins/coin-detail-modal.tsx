@@ -64,16 +64,67 @@ export function CoinDetailModal({ coin, open, onClose }: CoinDetailModalProps) {
     setWatchlistComment('')
     setShowCommentInput(false)
 
-    const params = new URLSearchParams({
-      source: coin.source,
-      symbol: coin.symbol,
-    })
+    async function loadChart() {
+      // 1. Try server route (CoinGecko - works for most coins)
+      try {
+        const params = new URLSearchParams({ source: coin!.source, symbol: coin!.symbol })
+        const res = await fetch(`/api/coins/${coin!.id}/chart?${params}`)
+        const data = await res.json()
+        if (data.prices?.length > 0) {
+          setChartData(data.prices)
+          setChartLoading(false)
+          return
+        }
+      } catch {}
 
-    fetch(`/api/coins/${coin.id}/chart?${params}`)
-      .then((res) => res.json())
-      .then((data) => setChartData(data.prices || []))
-      .catch(() => setChartData([]))
-      .finally(() => setChartLoading(false))
+      // 2. Try Bybit kline directly from browser
+      try {
+        const end = Date.now()
+        const start = end - 7 * 24 * 60 * 60 * 1000
+        const res = await fetch(
+          `https://api.bybit.com/v5/market/kline?category=spot&symbol=${coin!.symbol}USDT&interval=60&start=${start}&end=${end}&limit=168`
+        )
+        if (res.ok) {
+          const data = await res.json()
+          if (data.retCode === 0 && data.result?.list?.length > 0) {
+            const prices = data.result.list
+              .map((k: string[]) => ({ time: Math.floor(parseInt(k[0]) / 1000), value: parseFloat(k[4]) }))
+              .reverse()
+            if (prices.length > 0) {
+              setChartData(prices)
+              setChartLoading(false)
+              return
+            }
+          }
+        }
+      } catch {}
+
+      // 3. Try Binance kline directly from browser
+      try {
+        const end = Date.now()
+        const start = end - 7 * 24 * 60 * 60 * 1000
+        const res = await fetch(
+          `https://api.binance.com/api/v3/klines?symbol=${coin!.symbol}USDT&interval=1h&startTime=${start}&endTime=${end}&limit=168`
+        )
+        if (res.ok) {
+          const data = await res.json()
+          if (Array.isArray(data) && data.length > 0) {
+            const prices = data.map((k: any[]) => ({
+              time: Math.floor(k[0] / 1000),
+              value: parseFloat(k[4]),
+            }))
+            setChartData(prices)
+            setChartLoading(false)
+            return
+          }
+        }
+      } catch {}
+
+      setChartData([])
+      setChartLoading(false)
+    }
+
+    loadChart()
   }, [coin, open])
 
   useEffect(() => {
