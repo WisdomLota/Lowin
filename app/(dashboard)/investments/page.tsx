@@ -358,26 +358,34 @@ export default function InvestmentsPage() {
           </div>
         )}
 
-        {/* Monthly Performance for current tab */}
+        {/* Monthly Earnings for current tab */}
         {monthlyPerformanceForTab.length > 0 && (
           <div className="p-4 sm:p-6 pt-0">
             <div className="border border-zinc-800 rounded-lg overflow-hidden">
               <div className="px-4 py-3 border-b border-zinc-800">
                 <p className="text-sm font-medium text-zinc-300">
-                  Monthly Performance — {activeTab === 'mutual_fund' ? 'Mutual Funds' : 'Stocks'}
+                  Monthly Earnings — {activeTab === 'mutual_fund' ? 'Mutual Funds' : 'Stocks'}
                 </p>
               </div>
               <div className="divide-y divide-zinc-800/50">
                 {monthlyPerformanceForTab.map((m) => (
-                  <div key={m.month} className="flex items-center justify-between px-4 py-2.5">
-                    <span className="text-sm text-zinc-300">{m.label}</span>
-                    <div className="flex items-center gap-4 text-sm">
-                      <span className="text-zinc-400 font-mono">{formatCurrency(m.totalValue)}</span>
-                      <span className={cn('font-mono', m.netPL >= 0 ? 'text-emerald-400' : 'text-red-400')}>
-                        {m.netPL >= 0 ? '+' : '-'}{formatCurrency(m.netPL)}
+                  <div key={m.month} className="px-4 py-3">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm font-medium text-zinc-300">{m.label}</span>
+                      <span className={cn('text-sm font-mono font-semibold',
+                        m.monthEarning >= 0 ? 'text-emerald-400' : 'text-red-400')}>
+                        {m.monthEarning >= 0 ? '+' : '-'}{formatCurrency(m.monthEarning)}
                       </span>
-                      <span className={cn('font-mono text-xs', m.plPct >= 0 ? 'text-emerald-400' : 'text-red-400')}>
-                        {m.plPct >= 0 ? '+' : ''}{m.plPct.toFixed(2)}%
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex gap-3 text-xs text-zinc-500">
+                        {m.deposits > 0 && <span>Deposited: {formatCurrency(m.deposits)}</span>}
+                        {m.withdrawals > 0 && <span>Withdrawn: {formatCurrency(m.withdrawals)}</span>}
+                        <span>Value: {formatCurrency(m.totalValue)}</span>
+                      </div>
+                      <span className={cn('text-xs font-mono',
+                        m.earningPct >= 0 ? 'text-emerald-400' : 'text-red-400')}>
+                        {m.earningPct >= 0 ? '+' : ''}{m.earningPct.toFixed(2)}%
                       </span>
                     </div>
                   </div>
@@ -387,24 +395,32 @@ export default function InvestmentsPage() {
           </div>
         )}
         
-        {/* Combined Monthly Performance */}
+        {/* Combined Monthly Earnings */}
         {monthlyPerformanceCombined.length > 0 && (
           <div className="p-4 sm:p-6 pt-0">
             <div className="border border-zinc-800 rounded-lg overflow-hidden">
               <div className="px-4 py-3 border-b border-zinc-800">
-                <p className="text-sm font-medium text-zinc-300">Monthly Performance — All Investments</p>
+                <p className="text-sm font-medium text-zinc-300">Monthly Earnings — All Investments</p>
               </div>
               <div className="divide-y divide-zinc-800/50">
                 {monthlyPerformanceCombined.map((m) => (
-                  <div key={m.month} className="flex items-center justify-between px-4 py-2.5">
-                    <span className="text-sm text-zinc-300">{m.label}</span>
-                    <div className="flex items-center gap-4 text-sm">
-                      <span className="text-zinc-400 font-mono">{formatCurrency(m.totalValue)}</span>
-                      <span className={cn('font-mono', m.netPL >= 0 ? 'text-emerald-400' : 'text-red-400')}>
-                        {m.netPL >= 0 ? '+' : '-'}{formatCurrency(m.netPL)}
+                  <div key={m.month} className="px-4 py-3">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm font-medium text-zinc-300">{m.label}</span>
+                      <span className={cn('text-sm font-mono font-semibold',
+                        m.monthEarning >= 0 ? 'text-emerald-400' : 'text-red-400')}>
+                        {m.monthEarning >= 0 ? '+' : '-'}{formatCurrency(m.monthEarning)}
                       </span>
-                      <span className={cn('font-mono text-xs', m.plPct >= 0 ? 'text-emerald-400' : 'text-red-400')}>
-                        {m.plPct >= 0 ? '+' : ''}{m.plPct.toFixed(2)}%
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex gap-3 text-xs text-zinc-500">
+                        {m.deposits > 0 && <span>Deposited: {formatCurrency(m.deposits)}</span>}
+                        {m.withdrawals > 0 && <span>Withdrawn: {formatCurrency(m.withdrawals)}</span>}
+                        <span>Value: {formatCurrency(m.totalValue)}</span>
+                      </div>
+                      <span className={cn('text-xs font-mono',
+                        m.earningPct >= 0 ? 'text-emerald-400' : 'text-red-400')}>
+                        {m.earningPct >= 0 ? '+' : ''}{m.earningPct.toFixed(2)}%
                       </span>
                     </div>
                   </div>
