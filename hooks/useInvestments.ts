@@ -233,11 +233,23 @@ export function useInvestments() {
 
       for (const inv of enriched) {
         const invTxs = transactions.filter((t) => t.investment_id === inv.id)
+
+        // This month's cash flows for this investment
+        const monthDeposits = invTxs.filter((t) => t.type === 'deposit' && t.date.substring(0, 7) === monthKey).reduce((s, t) => s + t.amount, 0)
+          + (inv.buy_date.substring(0, 7) === monthKey ? inv.amount : 0)
+        const monthWithdrawals = invTxs.filter((t) => t.type === 'withdrawal' && t.date.substring(0, 7) === monthKey).reduce((s, t) => s + t.amount, 0)
+        const monthFees = inv.buy_date.substring(0, 7) === monthKey ? inv.processing_fee : 0
+
+        // Always count deposits/withdrawals for display
+        totalDeposits += monthDeposits
+        totalWithdrawals += monthWithdrawals
+        totalFees += monthFees
+
         const thisMonthValue = getInvValueAsOfMonth(inv, monthKey)
-        
-        // Skip investments with no value data as of this month
+
         if (thisMonthValue === null) {
-          // Still count it at cost basis for total value
+          // No value update yet — this investment contributes ₦0 earning
+          // but count it at cost basis for total value display
           if (inv.buy_date.substring(0, 7) <= monthKey) {
             const costBasis = getInvCostBasis(inv, monthKey)
             totalValueThisMonth += costBasis
@@ -254,38 +266,34 @@ export function useInvestments() {
           if (prevMonthValue !== null) {
             prevValue = prevMonthValue
           } else {
-            // Investment existed but had no value_update before this month
-            // Use cost basis as the starting point
-            prevValue = getInvCostBasis(inv, prevMonthKey)
+            // First value_update for this investment is in this month
+            // Use cost basis as starting point (what was invested before this month)
+            let basis = 0
+            if (inv.buy_date.substring(0, 7) <= monthKey) {
+              basis += inv.amount + inv.processing_fee
+              basis += invTxs.filter((t) => t.type === 'deposit' && t.date.substring(0, 7) < monthKey).reduce((s, t) => s + t.amount, 0)
+              basis -= invTxs.filter((t) => t.type === 'withdrawal' && t.date.substring(0, 7) < monthKey).reduce((s, t) => s + t.amount, 0)
+            }
+            prevValue = basis
           }
         } else {
           // First month ever — use cost basis before this month
-          const priorMonthKey = monthKey // we need cost basis BEFORE this month's transactions
           let basis = 0
           if (inv.buy_date.substring(0, 7) < monthKey) {
             basis += inv.amount + inv.processing_fee
             basis += invTxs.filter((t) => t.type === 'deposit' && t.date.substring(0, 7) < monthKey).reduce((s, t) => s + t.amount, 0)
             basis -= invTxs.filter((t) => t.type === 'withdrawal' && t.date.substring(0, 7) < monthKey).reduce((s, t) => s + t.amount, 0)
+          } else if (inv.buy_date.substring(0, 7) === monthKey) {
+            basis = 0 // brand new this month, no prior value
           }
           prevValue = basis
         }
 
         totalValuePrevMonth += prevValue
 
-        // This month's cash flows for this investment
-        const monthDeposits = invTxs.filter((t) => t.type === 'deposit' && t.date.substring(0, 7) === monthKey).reduce((s, t) => s + t.amount, 0)
-          + (inv.buy_date.substring(0, 7) === monthKey ? inv.amount : 0)
-        const monthWithdrawals = invTxs.filter((t) => t.type === 'withdrawal' && t.date.substring(0, 7) === monthKey).reduce((s, t) => s + t.amount, 0)
-        const monthFees = inv.buy_date.substring(0, 7) === monthKey ? inv.processing_fee : 0
-
-        // Per-investment earning: how much did this investment GROW (or shrink)
-        // = end value - start value - new money in + money out
+        // Per-investment earning: growth only
         const invEarning = thisMonthValue - prevValue - monthDeposits + monthWithdrawals
-
         totalEarning += invEarning
-        totalDeposits += monthDeposits
-        totalWithdrawals += monthWithdrawals
-        totalFees += monthFees
       }
 
       // Earning percentage: relative to what was in the portfolio at start
