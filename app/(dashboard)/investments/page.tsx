@@ -8,6 +8,7 @@ import { TransactionModal } from '@/components/investments/transaction-modal'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 
 type InvTab = 'mutual_fund' | 'stock'
 
@@ -390,6 +391,72 @@ export default function InvestmentsPage() {
                     </div>
                   </div>
                 ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Earnings Chart */}
+        {monthlyPerformanceCombined.length > 0 && (
+          <div className="p-4 sm:p-6 pt-0">
+            <div className="border border-zinc-800 rounded-lg overflow-hidden">
+              <div className="px-4 py-3 border-b border-zinc-800">
+                <p className="text-sm font-medium text-zinc-300">Earnings Overview</p>
+              </div>
+              <div className="px-2 sm:px-4 py-4">
+                <ResponsiveContainer width="100%" height={260}>
+                  <BarChart
+                    data={monthlyPerformanceCombined.map((m) => ({
+                      name: m.label.replace(' (to date)', '').split(' ')[0].substring(0, 3),
+                      earning: Math.round(m.monthEarning),
+                      fullLabel: m.label,
+                      pct: m.earningPct,
+                    }))}
+                    margin={{ top: 5, right: 10, left: 10, bottom: 5 }}
+                  >
+                    <XAxis
+                      dataKey="name"
+                      tick={{ fill: '#71717a', fontSize: 12 }}
+                      axisLine={{ stroke: '#27272a' }}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      tick={{ fill: '#71717a', fontSize: 11 }}
+                      axisLine={false}
+                      tickLine={false}
+                      tickFormatter={(v) => {
+                        if (Math.abs(v) >= 1000000) return `${(v / 1000000).toFixed(1)}M`
+                        if (Math.abs(v) >= 1000) return `${(v / 1000).toFixed(0)}K`
+                        return v.toString()
+                      }}
+                    />
+                    <Tooltip
+                      cursor={{ fill: 'rgba(255,255,255,0.03)' }}
+                      contentStyle={{
+                        background: '#18181b',
+                        border: '1px solid #3f3f46',
+                        borderRadius: '8px',
+                        color: '#fff',
+                        fontSize: '12px',
+                        padding: '8px 12px',
+                      }}
+                      formatter={(value) => [formatCurrency(Number(value)), 'Earning']}
+                      labelFormatter={(_, payload) => {
+                        const item = payload?.[0]?.payload
+                        return item?.fullLabel || ''
+                      }}
+                    />
+                    <Bar dataKey="earning" radius={[6, 6, 0, 0]} maxBarSize={60}>
+                      {monthlyPerformanceCombined.map((m, idx) => (
+                        <Cell
+                          key={idx}
+                          fill={m.monthEarning >= 0 ? '#34d399' : '#f87171'}
+                          fillOpacity={0.85}
+                        />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
             </div>
           </div>

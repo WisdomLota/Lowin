@@ -169,7 +169,7 @@ export function useInvestments() {
     }))
   }, [getEnrichedInvestments])
 
-  // Monthly performance: per-month earnings (not cumulative)
+  // Monthly performance: per-investment earnings summed up
   const getMonthlyPerformance = useCallback((filterType?: 'mutual_fund' | 'stock') => {
     const allEnriched = getEnrichedInvestments()
     const enriched = filterType ? allEnriched.filter((i) => i.type === filterType) : allEnriched
@@ -186,45 +186,26 @@ export function useInvestments() {
     const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
       'July', 'August', 'September', 'October', 'November', 'December']
 
-    // Helper: get total portfolio value as of a given month
-    function getValueAsOfMonth(monthKey: string): number {
-      let total = 0
-      for (const inv of enriched) {
-        const invTxs = transactions.filter((t) => t.investment_id === inv.id)
-        const relevantUpdates = invTxs
-          .filter((t) => t.type === 'value_update' && t.date.substring(0, 7) <= monthKey)
-          .sort((a, b) => b.date.localeCompare(a.date) || b.created_at.localeCompare(a.created_at))
-
-        if (relevantUpdates.length > 0) {
-          total += relevantUpdates[0].amount
-        } else {
-          const deposits = invTxs.filter((t) => t.type === 'deposit' && t.date.substring(0, 7) <= monthKey).reduce((s, t) => s + t.amount, 0)
-          const withdrawals = invTxs.filter((t) => t.type === 'withdrawal' && t.date.substring(0, 7) <= monthKey).reduce((s, t) => s + t.amount, 0)
-          total += inv.amount + deposits - withdrawals
-        }
-      }
-      return total
+    // For each investment, get its value as of a given month
+    function getInvValueAsOfMonth(inv: typeof enriched[number], monthKey: string): number | null {
+      const invTxs = transactions.filter((t) => t.investment_id === inv.id)
+      const updates = invTxs
+        .filter((t) => t.type === 'value_update' && t.date.substring(0, 7) <= monthKey)
+        .sort((a, b) => b.date.localeCompare(a.date) || b.created_at.localeCompare(a.created_at))
+      return updates.length > 0 ? updates[0].amount : null
     }
 
-    // Helper: get deposits and withdrawals that happened in a specific month
-    function getMonthCashFlow(monthKey: string) {
-      let deposits = 0
-      let withdrawals = 0
-      let fees = 0
-
-      for (const inv of enriched) {
-        const invTxs = transactions.filter((t) => t.investment_id === inv.id)
-        deposits += invTxs.filter((t) => t.type === 'deposit' && t.date.substring(0, 7) === monthKey).reduce((s, t) => s + t.amount, 0)
-        withdrawals += invTxs.filter((t) => t.type === 'withdrawal' && t.date.substring(0, 7) === monthKey).reduce((s, t) => s + t.amount, 0)
-
-        // Count initial investment if it was made this month
-        if (inv.buy_date.substring(0, 7) === monthKey) {
-          deposits += inv.amount
-          fees += inv.processing_fee
-        }
+    // For each investment, get total money put in as of a given month
+    function getInvCostBasis(inv: typeof enriched[number], monthKey: string): number {
+      const invTxs = transactions.filter((t) => t.investment_id === inv.id)
+      let basis = 0
+      if (inv.buy_date.substring(0, 7) <= monthKey) {
+        basis += inv.amount
+        basis += inv.processing_fee
       }
-
-      return { deposits, withdrawals, fees }
+      basis += invTxs.filter((t) => t.type === 'deposit' && t.date.substring(0, 7) <= monthKey).reduce((s, t) => s + t.amount, 0)
+      basis -= invTxs.filter((t) => t.type === 'withdrawal' && t.date.substring(0, 7) <= monthKey).reduce((s, t) => s + t.amount, 0)
+      return basis
     }
 
     const monthlySummaries: {
@@ -241,30 +222,87 @@ export function useInvestments() {
 
     for (let i = 0; i < sortedMonths.length; i++) {
       const monthKey = sortedMonths[i]
-      const currentValue = getValueAsOfMonth(monthKey)
-      const prevValue = i > 0 ? getValueAsOfMonth(sortedMonths[i - 1]) : 0
-      const cashFlow = getMonthCashFlow(monthKey)
+      const prevMonthKey = i > 0 ? sortedMonths[i - 1] : null
 
-      // Monthly earning = current value - previous value - net new money in
-      // Net new money = deposits - withdrawals (money you added minus money you took out)
-      const netNewMoney = cashFlow.deposits - cashFlow.withdrawals
-      const monthEarning = currentValue - prevValue - netNewMoney
-      
-      // Earning percentage relative to what was in the portfolio at start of month + new deposits
-      const base = prevValue + cashFlow.deposits
-      const earningPct = base > 0 ? (monthEarning / base) * 100 : 0
+      let totalEarning = 0
+      let totalValueThisMonth = 0
+      let totalValuePrevMonth = 0
+      let totalDeposits = 0
+      let totalWithdrawals = 0
+      let totalFees = 0
+
+      for (const inv of enriched) {
+        const invTxs = transactions.filter((t) => t.investment_id === inv.id)
+        const thisMonthValue = getInvValueAsOfMonth(inv, monthKey)
+        
+        // Skip investments with no value data as of this month
+        if (thisMonthValue === null) {
+          // Still count it at cost basis for total value
+          if (inv.buy_date.substring(0, 7) <= monthKey) {
+            const costBasis = getInvCostBasis(inv, monthKey)
+            totalValueThisMonth += costBasis
+          }
+          continue
+        }
+
+        totalValueThisMonth += thisMonthValue
+
+        // Get previous month's value for this specific investment
+        let prevValue: number
+        if (prevMonthKey) {
+          const prevMonthValue = getInvValueAsOfMonth(inv, prevMonthKey)
+          if (prevMonthValue !== null) {
+            prevValue = prevMonthValue
+          } else {
+            // Investment existed but had no value_update before this month
+            // Use cost basis as the starting point
+            prevValue = getInvCostBasis(inv, prevMonthKey)
+          }
+        } else {
+          // First month ever — use cost basis before this month
+          const priorMonthKey = monthKey // we need cost basis BEFORE this month's transactions
+          let basis = 0
+          if (inv.buy_date.substring(0, 7) < monthKey) {
+            basis += inv.amount + inv.processing_fee
+            basis += invTxs.filter((t) => t.type === 'deposit' && t.date.substring(0, 7) < monthKey).reduce((s, t) => s + t.amount, 0)
+            basis -= invTxs.filter((t) => t.type === 'withdrawal' && t.date.substring(0, 7) < monthKey).reduce((s, t) => s + t.amount, 0)
+          }
+          prevValue = basis
+        }
+
+        totalValuePrevMonth += prevValue
+
+        // This month's cash flows for this investment
+        const monthDeposits = invTxs.filter((t) => t.type === 'deposit' && t.date.substring(0, 7) === monthKey).reduce((s, t) => s + t.amount, 0)
+          + (inv.buy_date.substring(0, 7) === monthKey ? inv.amount : 0)
+        const monthWithdrawals = invTxs.filter((t) => t.type === 'withdrawal' && t.date.substring(0, 7) === monthKey).reduce((s, t) => s + t.amount, 0)
+        const monthFees = inv.buy_date.substring(0, 7) === monthKey ? inv.processing_fee : 0
+
+        // Per-investment earning: how much did this investment GROW (or shrink)
+        // = end value - start value - new money in + money out
+        const invEarning = thisMonthValue - prevValue - monthDeposits + monthWithdrawals
+
+        totalEarning += invEarning
+        totalDeposits += monthDeposits
+        totalWithdrawals += monthWithdrawals
+        totalFees += monthFees
+      }
+
+      // Earning percentage: relative to what was in the portfolio at start
+      const base = totalValuePrevMonth + totalDeposits
+      const earningPct = base > 0 ? (totalEarning / base) * 100 : 0
 
       const [y, m] = monthKey.split('-')
 
       monthlySummaries.push({
         month: monthKey,
         label: `${monthNames[parseInt(m) - 1]} ${y}`,
-        totalValue: currentValue,
-        prevValue,
-        monthEarning,
-        deposits: cashFlow.deposits,
-        withdrawals: cashFlow.withdrawals,
-        fees: cashFlow.fees,
+        totalValue: totalValueThisMonth,
+        prevValue: totalValuePrevMonth,
+        monthEarning: totalEarning,
+        deposits: totalDeposits,
+        withdrawals: totalWithdrawals,
+        fees: totalFees,
         earningPct,
       })
     }
