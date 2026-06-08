@@ -9,6 +9,10 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'LOWIN — Crypto Discovery, Trading Journal & Investment Tracker',
   description: 'Discover sub-penny cryptocurrencies, journal your trades, track investments and monitor your portfolio performance in real time.',
+  icons: {
+    icon: '/lowin.jpeg',
+    apple: '/lowin.jpeg',
+  },
 }
 
 export const viewport = {
