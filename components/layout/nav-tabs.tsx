@@ -30,7 +30,7 @@ const sources: { key: SourceFilter; label: string }[] = [
 
 export function NavTabs({ activeTab, onTabChange, sourceFilter, onSourceChange }: NavTabsProps) {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-zinc-800 px-4 sm:px-6 gap-2 py-2 sm:py-0">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#874708]/20 px-4 sm:px-6 gap-2 py-2 sm:py-0">
       <div className="flex gap-1 overflow-x-auto">
         {tabs.map((tab) => (
           <button
@@ -39,7 +39,7 @@ export function NavTabs({ activeTab, onTabChange, sourceFilter, onSourceChange }
             className={cn(
               'px-3 py-2.5 text-sm font-medium transition-colors border-b-2 whitespace-nowrap',
               activeTab === tab.key
-                ? 'border-emerald-500 text-white'
+                ? 'border-[#FF8D19] text-white'
                 : 'border-transparent text-zinc-500 hover:text-zinc-300'
             )}
           >
@@ -55,7 +55,7 @@ export function NavTabs({ activeTab, onTabChange, sourceFilter, onSourceChange }
             className={cn(
               'px-2.5 py-1.5 text-xs rounded font-medium transition-colors whitespace-nowrap',
               sourceFilter === source.key
-                ? 'bg-zinc-800 text-white'
+                ? 'bg-[#2a1a00] text-white'
                 : 'text-zinc-500 hover:text-zinc-300'
             )}
           >

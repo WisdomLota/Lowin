@@ -147,26 +147,26 @@ export default function PortfolioPage() {
   }, [purchases, priceMap])
 
   return (
-    <div className="min-h-screen bg-zinc-950">
+    <div className="min-h-screen bg-[#0F0800]">
       <Header />
 
       {/* Summary Bar */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-zinc-800 border-b border-zinc-800">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-[#2a1a00] border-b border-[#874708]/20">
         {[
           { label: 'Total Invested', value: formatUsd(summary.totalInvested), color: 'text-white' },
           { label: 'Current Value', value: formatUsd(summary.currentValue), color: 'text-white' },
           {
             label: 'Total P/L',
             value: `${summary.totalPL >= 0 ? '+' : ''}${formatUsd(summary.totalPL)}`,
-            color: summary.totalPL >= 0 ? 'text-emerald-400' : 'text-red-400',
+            color: summary.totalPL >= 0 ? 'text-[#32BC00]' : 'text-[#F32400]',
           },
           {
             label: 'P/L %',
             value: `${summary.plPercentage >= 0 ? '+' : ''}${summary.plPercentage.toFixed(2)}%`,
-            color: summary.plPercentage >= 0 ? 'text-emerald-400' : 'text-red-400',
+            color: summary.plPercentage >= 0 ? 'text-[#32BC00]' : 'text-[#F32400]',
           },
         ].map((stat) => (
-          <div key={stat.label} className="bg-zinc-950 px-4 sm:px-6 py-4">
+          <div key={stat.label} className="bg-[#0F0800] px-4 sm:px-6 py-4">
             <p className="text-xs text-zinc-500">{stat.label}</p>
             <p className={cn('text-lg font-mono mt-0.5', stat.color)}>{stat.value}</p>
           </div>
@@ -174,7 +174,7 @@ export default function PortfolioPage() {
       </div>
 
       {/* Tab Switcher */}
-      <div className="flex border-b border-zinc-800 px-4 sm:px-6">
+      <div className="flex border-b border-[#874708]/20 px-4 sm:px-6">
         {(['purchases', 'watchlist'] as PortfolioTab[]).map((tab) => (
           <button
             key={tab}
@@ -182,7 +182,7 @@ export default function PortfolioPage() {
             className={cn(
               'px-4 py-2.5 text-sm font-medium border-b-2 capitalize transition-colors',
               activeTab === tab
-                ? 'border-emerald-500 text-white'
+                ? 'border-[#FF8D19] text-white'
                 : 'border-transparent text-zinc-500 hover:text-zinc-300'
             )}
           >
@@ -197,7 +197,7 @@ export default function PortfolioPage() {
           {purchasesLoading ? (
             <div className="flex items-center justify-center py-16">
               <div className="flex items-center gap-2 text-zinc-500 text-sm">
-                <div className="w-3 h-3 border-2 border-zinc-600 border-t-emerald-500 rounded-full animate-spin" />
+                <div className="w-3 h-3 border-2 border-zinc-600 border-t-[#FF8D19] rounded-full animate-spin" />
                 Loading purchases...
               </div>
             </div>
@@ -209,7 +209,7 @@ export default function PortfolioPage() {
           ) : (
             <table className="w-full min-w-150">
               <thead>
-                <tr className="text-xs text-zinc-500 border-b border-zinc-800">
+                <tr className="text-xs text-zinc-500 border-b border-[#874708]/20">
                   <th className="text-left py-3 px-4 sm:px-6 font-medium">Coin</th>
                   <th className="text-right py-3 px-2 font-medium">Quantity</th>
                   <th className="text-right py-3 px-2 font-medium">Buy Price</th>
@@ -229,7 +229,7 @@ export default function PortfolioPage() {
                   const plPct = invested > 0 ? (pl / invested) * 100 : 0
 
                   return (
-                    <tr key={purchase.id} onClick={() => openPurchaseCoin(purchase)} className="border-b border-zinc-800/50 hover:bg-zinc-900/50 cursor-pointer">
+                    <tr key={purchase.id} onClick={() => openPurchaseCoin(purchase)} className="border-b border-[#874708]/10 hover:bg-[#1a0f00]/50 cursor-pointer">
                       <td className="py-3 px-4 sm:px-6">
                         <span className="text-sm font-medium text-white">{purchase.coin_name}</span>
                         <span className="text-xs text-zinc-500 ml-2">{purchase.coin_symbol}</span>
@@ -245,7 +245,7 @@ export default function PortfolioPage() {
                       </td>
                       <td className={cn(
                         'py-3 px-2 text-right text-sm font-mono',
-                        pl >= 0 ? 'text-emerald-400' : 'text-red-400'
+                        pl >= 0 ? 'text-[#32BC00]' : 'text-[#F32400]'
                       )}>
                         <div>{pl >= 0 ? '+' : ''}{formatUsd(pl)}</div>
                         <div className="text-xs opacity-70">
@@ -267,7 +267,7 @@ export default function PortfolioPage() {
                             removePurchase(purchase.id)
                             toast.success(`${purchase.coin_symbol} purchase deleted`)
                           }}
-                          className="text-zinc-600 hover:text-red-400 hover:bg-transparent text-xs"
+                          className="text-zinc-600 hover:text-[#F32400] hover:bg-transparent text-xs"
                         >
                           Delete
                         </Button>
@@ -287,7 +287,7 @@ export default function PortfolioPage() {
           {watchlistLoading ? (
             <div className="flex items-center justify-center py-16">
               <div className="flex items-center gap-2 text-zinc-500 text-sm">
-                <div className="w-3 h-3 border-2 border-zinc-600 border-t-emerald-500 rounded-full animate-spin" />
+                <div className="w-3 h-3 border-2 border-zinc-600 border-t-[#FF8D19] rounded-full animate-spin" />
                 Loading watchlist...
               </div>
             </div>
@@ -299,7 +299,7 @@ export default function PortfolioPage() {
           ) : (
             <table className="w-full min-w-137.5">
               <thead>
-                <tr className="text-xs text-zinc-500 border-b border-zinc-800">
+                <tr className="text-xs text-zinc-500 border-b border-[#874708]/20">
                   <th className="text-left py-3 px-4 sm:px-6 font-medium">Coin</th>
                   <th className="text-right py-3 px-2 font-medium">Current Price</th>
                   <th className="text-right py-3 px-2 font-medium">24h %</th>
@@ -316,7 +316,7 @@ export default function PortfolioPage() {
                     (c) => c.symbol === item.coin_symbol
                   )
                   return (
-                    <tr key={item.id} onClick={() => openWatchlistCoin(item)} className="border-b border-zinc-800/50 hover:bg-zinc-900/50 cursor-pointer">
+                    <tr key={item.id} onClick={() => openWatchlistCoin(item)} className="border-b border-[#874708]/10 hover:bg-[#1a0f00]/50 cursor-pointer">
                       <td className="py-3 px-4 sm:px-6">
                         <span className="text-sm font-medium text-white">{item.coin_name}</span>
                         <span className="text-xs text-zinc-500 ml-2">{item.coin_symbol}</span>
@@ -327,8 +327,8 @@ export default function PortfolioPage() {
                       <td className={cn(
                         'py-3 px-2 text-right text-sm font-mono',
                         liveCoin && liveCoin.price_change_percentage_24h >= 0
-                          ? 'text-emerald-400'
-                          : 'text-red-400'
+                          ? 'text-[#32BC00]'
+                          : 'text-[#F32400]'
                       )}>
                         {liveCoin
                           ? `${liveCoin.price_change_percentage_24h >= 0 ? '+' : ''}${liveCoin.price_change_percentage_24h.toFixed(2)}%`
@@ -351,7 +351,7 @@ export default function PortfolioPage() {
                             removeWatchlist(item.id)
                             toast.success(`${item.coin_symbol} removed from watchlist`)
                           }}
-                          className="text-zinc-600 hover:text-red-400 hover:bg-transparent text-xs"
+                          className="text-zinc-600 hover:text-[#F32400] hover:bg-transparent text-xs"
                         >
                           Remove
                         </Button>

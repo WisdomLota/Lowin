@@ -81,7 +81,7 @@ export function AddInvestmentModal({ open, onClose, onSubmit, defaultType }: Add
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogContent className="bg-zinc-900 border-zinc-800 text-white max-w-lg! max-h-[90vh] overflow-y-auto">
+      <DialogContent className="bg-[#1a0f00] border-[#874708]/20 text-white max-w-lg! max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-white">
             Add {form.type === 'mutual_fund' ? 'Mutual Fund' : 'Stock'}
@@ -92,7 +92,7 @@ export function AddInvestmentModal({ open, onClose, onSubmit, defaultType }: Add
           <div>
             <Label className="text-zinc-400 text-xs">Type</Label>
             <select value={form.type} onChange={(e) => updateField('type', e.target.value)}
-              className="w-full mt-1 rounded-md bg-zinc-800 border border-zinc-700 text-white text-sm px-3 py-2 outline-none">
+              className="w-full mt-1 rounded-md bg-[#2a1a00] border border-[#874708]/30 text-white text-sm px-3 py-2 outline-none">
               <option value="mutual_fund">Mutual Fund</option>
               <option value="stock">Stock</option>
             </select>
@@ -100,22 +100,22 @@ export function AddInvestmentModal({ open, onClose, onSubmit, defaultType }: Add
           <div>
             <Label className="text-zinc-400 text-xs">Buy Date</Label>
             <Input type="date" value={form.buy_date} onChange={(e) => updateField('buy_date', e.target.value)}
-              className="bg-zinc-800 border-zinc-700 text-white mt-1 text-sm" />
+              className="bg-[#2a1a00] border-[#874708]/30 text-white mt-1 text-sm" />
           </div>
           <div className="col-span-2">
             <Label className="text-zinc-400 text-xs">Title / Fund Name</Label>
             <Input placeholder="e.g. STANBIC IBTC IMAAN FUND" value={form.title} onChange={(e) => updateField('title', e.target.value)}
-              className="bg-zinc-800 border-zinc-700 text-white mt-1 text-sm" />
+              className="bg-[#2a1a00] border-[#874708]/30 text-white mt-1 text-sm" />
           </div>
           <div>
             <Label className="text-zinc-400 text-xs">Platform</Label>
             <Input placeholder="e.g. Palmpay Mutual Funds" value={form.platform} onChange={(e) => updateField('platform', e.target.value)}
-              className="bg-zinc-800 border-zinc-700 text-white mt-1 text-sm" />
+              className="bg-[#2a1a00] border-[#874708]/30 text-white mt-1 text-sm" />
           </div>
           <div>
             <Label className="text-zinc-400 text-xs">Currency</Label>
             <select value={form.currency} onChange={(e) => updateField('currency', e.target.value)}
-              className="w-full mt-1 rounded-md bg-zinc-800 border border-zinc-700 text-white text-sm px-3 py-2 outline-none">
+              className="w-full mt-1 rounded-md bg-[#2a1a00] border border-[#874708]/30 text-white text-sm px-3 py-2 outline-none">
               <option value="NGN">NGN (₦)</option>
               <option value="USD">USD ($)</option>
             </select>
@@ -123,41 +123,41 @@ export function AddInvestmentModal({ open, onClose, onSubmit, defaultType }: Add
           <div>
             <Label className="text-zinc-400 text-xs">Amount Invested</Label>
             <Input type="number" step="any" placeholder="100000" value={form.amount} onChange={(e) => updateField('amount', e.target.value)}
-              className="bg-zinc-800 border-zinc-700 text-white mt-1 text-sm" />
+              className="bg-[#2a1a00] border-[#874708]/30 text-white mt-1 text-sm" />
           </div>
           <div>
             <Label className="text-zinc-400 text-xs">Processing Fee</Label>
             <Input type="number" step="any" placeholder="1500" value={form.processing_fee} onChange={(e) => updateField('processing_fee', e.target.value)}
-              className="bg-zinc-800 border-zinc-700 text-white mt-1 text-sm" />
+              className="bg-[#2a1a00] border-[#874708]/30 text-white mt-1 text-sm" />
           </div>
           <div>
             <Label className="text-zinc-400 text-xs">Expected Return %</Label>
             <Input type="number" step="any" placeholder="0.99" value={form.expected_return_pct} onChange={(e) => updateField('expected_return_pct', e.target.value)}
-              className="bg-zinc-800 border-zinc-700 text-white mt-1 text-sm" />
+              className="bg-[#2a1a00] border-[#874708]/30 text-white mt-1 text-sm" />
           </div>
           {form.type === 'stock' && (
             <>
               <div>
                 <Label className="text-zinc-400 text-xs">Unit Price</Label>
                 <Input type="number" step="any" placeholder="92.50" value={form.unit_price} onChange={(e) => updateField('unit_price', e.target.value)}
-                  className="bg-zinc-800 border-zinc-700 text-white mt-1 text-sm" />
+                  className="bg-[#2a1a00] border-[#874708]/30 text-white mt-1 text-sm" />
               </div>
               <div>
                 <Label className="text-zinc-400 text-xs">Amount of Units</Label>
                 <Input type="number" step="any" placeholder="100" value={form.units} onChange={(e) => updateField('units', e.target.value)}
-                  className="bg-zinc-800 border-zinc-700 text-white mt-1 text-sm" />
+                  className="bg-[#2a1a00] border-[#874708]/30 text-white mt-1 text-sm" />
               </div>
             </>
           )}
           <div className="col-span-2">
             <Label className="text-zinc-400 text-xs">Notes (optional)</Label>
             <Input placeholder="Any additional notes..." value={form.notes} onChange={(e) => updateField('notes', e.target.value)}
-              className="bg-zinc-800 border-zinc-700 text-white mt-1 text-sm" />
+              className="bg-[#2a1a00] border-[#874708]/30 text-white mt-1 text-sm" />
           </div>
         </div>
 
         <Button onClick={handleSubmit} disabled={loading}
-          className="w-full mt-3 bg-emerald-600 hover:bg-emerald-700 text-white">
+          className="w-full mt-3 bg-[#FF8D19] hover:bg-[#e67d15] text-white">
           {loading ? 'Saving...' : 'Add Investment'}
         </Button>
       </DialogContent>

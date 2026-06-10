@@ -117,7 +117,7 @@ export default function DashboardPage() {
   const paginatedCoins = filteredCoins.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   return (
-    <div className="min-h-screen bg-zinc-950">
+    <div className="min-h-screen bg-[#0F0800]">
       <Header />
       <NavTabs
         activeTab={activeTab}
@@ -132,7 +132,7 @@ export default function DashboardPage() {
           placeholder="Search by name or symbol..."
           value={search}
           onChange={(e) => handleSearchChange(e.target.value)}
-          className="w-full sm:max-w-sm bg-zinc-900 border-zinc-800 text-white placeholder:text-zinc-600"
+          className="w-full sm:max-w-sm bg-[#1a0f00] border-[#874708]/20 text-white placeholder:text-zinc-600"
         />
       </div>
 
@@ -140,14 +140,14 @@ export default function DashboardPage() {
         {isLoading && (
           <div className="flex items-center justify-center py-20">
             <div className="flex items-center gap-3 text-zinc-500">
-              <div className="w-4 h-4 border-2 border-zinc-600 border-t-emerald-500 rounded-full animate-spin" />
+              <div className="w-4 h-4 border-2 border-zinc-600 border-t-[#FF8D19] rounded-full animate-spin" />
               <span className="text-sm">Loading coins...</span>
             </div>
           </div>
         )}
 
         {error && (
-          <div className="flex flex-col items-center justify-center py-20 text-red-400">
+          <div className="flex flex-col items-center justify-center py-20 text-[#F32400]">
             <p className="text-lg">Failed to load data</p>
             <p className="text-sm mt-1 text-zinc-500">
               Check your connection and try refreshing
@@ -169,13 +169,13 @@ export default function DashboardPage() {
 
             {/* Pagination Controls */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-2 py-4 border-t border-zinc-800">
+              <div className="flex items-center justify-center gap-2 py-4 border-t border-[#874708]/20">
                 <Button
                   variant="outline"
                   size="sm"
                   disabled={page <= 1}
                   onClick={() => setPage((p) => p - 1)}
-                  className="border-zinc-700 text-zinc-400 hover:bg-zinc-800 disabled:opacity-30"
+                  className="border-[#874708]/30 text-zinc-400 hover:bg-[#2a1a00] disabled:opacity-30"
                 >
                   Previous
                 </Button>
@@ -187,7 +187,7 @@ export default function DashboardPage() {
                   size="sm"
                   disabled={page >= totalPages}
                   onClick={() => setPage((p) => p + 1)}
-                  className="border-zinc-700 text-zinc-400 hover:bg-zinc-800 disabled:opacity-30"
+                  className="border-[#874708]/30 text-zinc-400 hover:bg-[#2a1a00] disabled:opacity-30"
                 >
                   Next
                 </Button>

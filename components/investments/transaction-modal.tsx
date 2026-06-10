@@ -80,7 +80,7 @@ export function TransactionModal({ open, onClose, onSubmit, investmentId, invest
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogContent className="bg-zinc-900 border-zinc-800 text-white max-w-sm!">
+      <DialogContent className="bg-[#1a0f00] border-[#874708]/20 text-white max-w-sm!">
         <DialogHeader>
           <DialogTitle className="text-white text-sm">
             {txType === 'value_update' ? 'Update Value' : txType === 'withdrawal' ? 'Record Withdrawal' : 'Add Deposit'} — {investmentTitle}
@@ -91,7 +91,7 @@ export function TransactionModal({ open, onClose, onSubmit, investmentId, invest
           <div>
             <Label className="text-zinc-400 text-xs">Action</Label>
             <select value={txType} onChange={(e) => setTxType(e.target.value as any)}
-              className="w-full mt-1 rounded-md bg-zinc-800 border border-zinc-700 text-white text-sm px-3 py-2 outline-none">
+              className="w-full mt-1 rounded-md bg-[#2a1a00] border border-[#874708]/30 text-white text-sm px-3 py-2 outline-none">
               <option value="value_update">Update Current Value</option>
               <option value="deposit">Additional Deposit</option>
               <option value="withdrawal">Withdrawal</option>
@@ -103,7 +103,7 @@ export function TransactionModal({ open, onClose, onSubmit, investmentId, invest
             </Label>
             <Input type="number" step="any" placeholder="105000" value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              className="bg-zinc-800 border-zinc-700 text-white mt-1 text-sm" />
+              className="bg-[#2a1a00] border-[#874708]/30 text-white mt-1 text-sm" />
           </div>
           {txType === 'withdrawal' && currentValue !== undefined && (
             <p className="text-xs text-zinc-500 -mt-1">
@@ -113,23 +113,23 @@ export function TransactionModal({ open, onClose, onSubmit, investmentId, invest
           <div>
             <Label className="text-zinc-400 text-xs">Date</Label>
             <Input type="date" value={date} onChange={(e) => setDate(e.target.value)}
-              className="bg-zinc-800 border-zinc-700 text-white mt-1 text-sm" />
+              className="bg-[#2a1a00] border-[#874708]/30 text-white mt-1 text-sm" />
           </div>
           <div>
             <Label className="text-zinc-400 text-xs">Processing Fee</Label>
             <Input type="number" step="any" placeholder="0" value={fee}
               onChange={(e) => setFee(e.target.value)}
-              className="bg-zinc-800 border-zinc-700 text-white mt-1 text-sm" />
+              className="bg-[#2a1a00] border-[#874708]/30 text-white mt-1 text-sm" />
           </div>
           <div>
             <Label className="text-zinc-400 text-xs">Notes (optional)</Label>
             <Input placeholder="Optional note..." value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="bg-zinc-800 border-zinc-700 text-white mt-1 text-sm" />
+              className="bg-[#2a1a00] border-[#874708]/30 text-white mt-1 text-sm" />
           </div>
 
           <Button onClick={handleSubmit} disabled={loading}
-            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white">
+            className="w-full bg-[#FF8D19] hover:bg-[#e67d15] text-white">
             {loading ? 'Saving...' : 'Submit'}
           </Button>
         </div>

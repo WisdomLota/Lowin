@@ -4,6 +4,17 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Lowin brand tokens */
+:root {
+  --lowin-bronze: #874708;
+  --lowin-black: #0F0800;
+  --lowin-cream: #FFF7F0;
+  --lowin-orange: #FF8D19;
+  --lowin-green: #32BC00;
+  --lowin-red: #F32400;
+  --lowin-surface: #1a0f00;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

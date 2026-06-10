@@ -28,13 +28,13 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex bg-zinc-950">
+    <div className="min-h-screen flex bg-[#0F0800]">
       {/* Left panel — branding */}
-      <div className="hidden lg:flex lg:w-1/2 flex-col justify-center items-center px-12 border-r border-zinc-800/50 relative overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 flex-col justify-center items-center px-12 border-r border-[#874708]/10 relative overflow-hidden">
         {/* Subtle gradient background */}
-        <div className="absolute inset-0 bg-linear-to-br from-emerald-950/20 via-zinc-950 to-zinc-950" />
+        <div className="absolute inset-0 bg-linear-to-br from-[#874708]/10 via-zinc-950 to-zinc-950" />
         <div className="relative z-10 max-w-md text-center">
-          <img src="/lowin.jpeg" alt="Lowin" className="w-20 h-20 rounded-2xl mx-auto mb-6 shadow-lg shadow-emerald-900/20" />
+          <img src="/lowinBrandLogo.png" alt="Lowin" className="w-20 h-20 rounded-2xl mx-auto mb-6 shadow-lg shadow-[#874708]/30" />
           <h1 className="text-4xl font-bold tracking-tight text-white mb-3">LOWIN</h1>
           <p className="text-zinc-400 text-sm leading-relaxed">
             Discover sub-penny cryptocurrencies, journal your trades,
@@ -42,15 +42,15 @@ export default function RegisterPage() {
           </p>
           <div className="flex justify-center gap-6 mt-8">
             <div className="text-center">
-              <p className="text-lg font-mono font-semibold text-emerald-400">3+</p>
+              <p className="text-lg font-mono font-semibold text-[#32BC00]">3+</p>
               <p className="text-xs text-zinc-500">Exchanges</p>
             </div>
             <div className="text-center">
-              <p className="text-lg font-mono font-semibold text-emerald-400">≤$0.01</p>
+              <p className="text-lg font-mono font-semibold text-[#32BC00]">≤$0.01</p>
               <p className="text-xs text-zinc-500">Price Filter</p>
             </div>
             <div className="text-center">
-              <p className="text-lg font-mono font-semibold text-emerald-400">Real-time</p>
+              <p className="text-lg font-mono font-semibold text-[#32BC00]">Real-time</p>
               <p className="text-xs text-zinc-500">Price Data</p>
             </div>
           </div>
@@ -62,7 +62,7 @@ export default function RegisterPage() {
         <div className="w-full max-w-sm">
           {/* Mobile logo */}
           <div className="lg:hidden text-center mb-8">
-            <img src="/lowin.jpeg" alt="Lowin" className="w-14 h-14 rounded-xl mx-auto mb-3 shadow-lg shadow-emerald-900/20" />
+            <img src="/lowinBrandLogo.png" alt="Lowin" className="w-14 h-14 rounded-xl mx-auto mb-3 shadow-lg shadow-[#874708]/30" />
             <h1 className="text-2xl font-bold tracking-tight text-white">LOWIN</h1>
           </div>
 
@@ -72,16 +72,16 @@ export default function RegisterPage() {
           </div>
 
           {success ? (
-            <div className="text-center space-y-4 bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+            <div className="text-center space-y-4 bg-[#1a0f00] border border-[#874708]/20 rounded-xl p-6">
               <div className="w-10 h-10 rounded-full bg-emerald-600/20 flex items-center justify-center mx-auto">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                   stroke="#34d399" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
               </div>
-              <p className="text-emerald-400 text-sm">{success}</p>
+              <p className="text-[#32BC00] text-sm">{success}</p>
               <Link href="/login">
-                <Button variant="outline" className="border-zinc-700 text-zinc-300 hover:bg-zinc-800">
+                <Button variant="outline" className="border-[#874708]/30 text-zinc-300 hover:bg-[#2a1a00]">
                   Back to Sign In
                 </Button>
               </Link>
@@ -97,7 +97,7 @@ export default function RegisterPage() {
                     type="email"
                     required
                     placeholder="you@example.com"
-                    className="bg-zinc-900 border-zinc-800 text-white mt-1.5 h-10 focus:border-emerald-600 focus:ring-emerald-600/20"
+                    className="bg-[#1a0f00] border-[#874708]/20 text-white mt-1.5 h-10 focus:border-[#FF8D19] focus:ring-emerald-600/20"
                   />
                 </div>
                 <div>
@@ -109,13 +109,13 @@ export default function RegisterPage() {
                     required
                     minLength={6}
                     placeholder="Minimum 6 characters"
-                    className="bg-zinc-900 border-zinc-800 text-white mt-1.5 h-10 focus:border-emerald-600 focus:ring-emerald-600/20"
+                    className="bg-[#1a0f00] border-[#874708]/20 text-white mt-1.5 h-10 focus:border-[#FF8D19] focus:ring-emerald-600/20"
                   />
                 </div>
 
                 {error && (
-                  <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
-                    <p className="text-red-400 text-sm">{error}</p>
+                  <div className="bg-[#F32400]/10 border border-[#F32400]/20 rounded-lg px-3 py-2">
+                    <p className="text-[#F32400] text-sm">{error}</p>
                   </div>
                 )}
 
@@ -130,7 +130,7 @@ export default function RegisterPage() {
 
               <p className="text-center text-sm text-zinc-500 mt-6">
                 Already have an account?{' '}
-                <Link href="/login" className="text-emerald-400 hover:text-emerald-300 font-medium">
+                <Link href="/login" className="text-[#32BC00] hover:text-[#32BC00] font-medium">
                   Sign in
                 </Link>
               </p>

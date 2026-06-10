@@ -51,9 +51,9 @@ export function exportTradesToPDF(trades: Trade[], summaries: MonthlySummary[], 
       <td>${t.leverage}</td>
       <td>${t.open_price}</td>
       <td>${t.close_price}</td>
-      <td style="color:${t.pl_type === 'P' ? '#34d399' : '#f87171'}">${t.pl_type}</td>
-      <td style="color:${t.pl_type === 'P' ? '#34d399' : '#f87171'}">${t.pl_percentage}%</td>
-      <td style="color:${t.pl_type === 'P' ? '#34d399' : '#f87171'}">$${t.amount_pl.toFixed(4)}</td>
+      <td style="color:${t.pl_type === 'P' ? '#32BC00' : '#F32400'}">${t.pl_type}</td>
+      <td style="color:${t.pl_type === 'P' ? '#32BC00' : '#F32400'}">${t.pl_percentage}%</td>
+      <td style="color:${t.pl_type === 'P' ? '#32BC00' : '#F32400'}">$${t.amount_pl.toFixed(4)}</td>
       <td>${t.lg_st}</td>
       <td>${t.open_time || ''}</td>
       <td>${t.close_time || ''}</td>
@@ -72,7 +72,7 @@ export function exportTradesToPDF(trades: Trade[], summaries: MonthlySummary[], 
       <td>${s.profits}</td>
       <td>${s.losses}</td>
       <td>${s.winRate.toFixed(1)}%</td>
-      <td style="color:${s.totalPL >= 0 ? '#34d399' : '#f87171'}">$${s.totalPL.toFixed(2)}</td>
+      <td style="color:${s.totalPL >= 0 ? '#32BC00' : '#F32400'}">$${s.totalPL.toFixed(2)}</td>
     </tr>`
     )
     .join('')

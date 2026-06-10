@@ -57,7 +57,7 @@ export function PriceAlertModal({ coin, open, onClose }: PriceAlertModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogContent className="bg-zinc-900 border-zinc-800 text-white max-w-sm!">
+      <DialogContent className="bg-[#1a0f00] border-[#874708]/20 text-white max-w-sm!">
         <DialogHeader>
           <DialogTitle className="text-white">Set Price Alert — {coin.symbol}</DialogTitle>
         </DialogHeader>
@@ -70,7 +70,7 @@ export function PriceAlertModal({ coin, open, onClose }: PriceAlertModalProps) {
           <div>
             <Label className="text-zinc-400 text-xs">Alert when price goes</Label>
             <select value={direction} onChange={(e) => setDirection(e.target.value as any)}
-              className="w-full mt-1 rounded-md bg-zinc-800 border border-zinc-700 text-white text-sm px-3 py-2 outline-none">
+              className="w-full mt-1 rounded-md bg-[#2a1a00] border border-[#874708]/30 text-white text-sm px-3 py-2 outline-none">
               <option value="above">Above</option>
               <option value="below">Below</option>
             </select>
@@ -80,11 +80,11 @@ export function PriceAlertModal({ coin, open, onClose }: PriceAlertModalProps) {
             <Label className="text-zinc-400 text-xs">Target Price (USD)</Label>
             <Input type="number" step="any" placeholder="0.001" value={targetPrice}
               onChange={(e) => setTargetPrice(e.target.value)}
-              className="bg-zinc-800 border-zinc-700 text-white mt-1 text-sm" />
+              className="bg-[#2a1a00] border-[#874708]/30 text-white mt-1 text-sm" />
           </div>
 
           <Button onClick={handleSubmit} disabled={loading}
-            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white">
+            className="w-full bg-[#FF8D19] hover:bg-[#e67d15] text-white">
             {loading ? 'Setting...' : 'Set Alert'}
           </Button>
         </div>

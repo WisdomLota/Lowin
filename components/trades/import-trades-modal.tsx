@@ -104,7 +104,7 @@ export function ImportTradesModal({ open, onClose, onSuccess }: ImportTradesModa
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogContent className="bg-zinc-900 border-zinc-800 text-white max-w-lg!">
+      <DialogContent className="bg-[#1a0f00] border-[#874708]/20 text-white max-w-lg!">
         <DialogHeader>
           <DialogTitle className="text-white">Import Trades from Excel</DialogTitle>
         </DialogHeader>
@@ -115,7 +115,7 @@ export function ImportTradesModal({ open, onClose, onSuccess }: ImportTradesModa
             <select
               value={fileType}
               onChange={(e) => { setFileType(e.target.value as any); setPreview(null) }}
-              className="w-full mt-1 rounded-md bg-zinc-800 border border-zinc-700 text-white text-sm px-3 py-2 outline-none"
+              className="w-full mt-1 rounded-md bg-[#2a1a00] border border-[#874708]/30 text-white text-sm px-3 py-2 outline-none"
             >
               <option value="demo">
                 Trading Demo (DATE, NAME, AMT, LEV, OPEN, CLOSE, P/L, %P/L, AMT P/L, LG/ST, COMMENTS)
@@ -131,7 +131,7 @@ export function ImportTradesModal({ open, onClose, onSuccess }: ImportTradesModa
             <select
               value={tradeMode}
               onChange={(e) => setTradeMode(e.target.value as any)}
-              className="w-full mt-1 rounded-md bg-zinc-800 border border-zinc-700 text-white text-sm px-3 py-2 outline-none"
+              className="w-full mt-1 rounded-md bg-[#2a1a00] border border-[#874708]/30 text-white text-sm px-3 py-2 outline-none"
             >
               <option value="real">Real Trades</option>
               <option value="demo">Demo Trades</option>
@@ -144,7 +144,7 @@ export function ImportTradesModal({ open, onClose, onSuccess }: ImportTradesModa
               type="file"
               accept=".xlsx,.xls"
               onChange={(e) => { setFile(e.target.files?.[0] || null); setPreview(null) }}
-              className="w-full mt-1 text-sm text-zinc-400 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-sm file:bg-zinc-800 file:text-zinc-300 hover:file:bg-zinc-700"
+              className="w-full mt-1 text-sm text-zinc-400 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-sm file:bg-[#2a1a00] file:text-zinc-300 hover:file:bg-zinc-700"
             />
           </div>
 
@@ -152,14 +152,14 @@ export function ImportTradesModal({ open, onClose, onSuccess }: ImportTradesModa
             <Button
               onClick={handlePreview}
               disabled={!file || loading}
-              className="w-full bg-zinc-800 hover:bg-zinc-700 text-white"
+              className="w-full bg-[#2a1a00] hover:bg-[#2a1a00] text-white"
             >
               {loading ? 'Parsing...' : 'Preview Import'}
             </Button>
           ) : (
             <div className="space-y-3">
               {/* Preview summary */}
-              <div className="rounded-lg bg-zinc-800 p-3">
+              <div className="rounded-lg bg-[#2a1a00] p-3">
                 <p className="text-sm text-zinc-300">
                   Found <span className="text-white font-semibold">{preview.length}</span> trades
                 </p>
@@ -167,7 +167,7 @@ export function ImportTradesModal({ open, onClose, onSuccess }: ImportTradesModa
                   {preview.slice(0, 10).map((t, i) => (
                     <div key={i} className="flex justify-between text-zinc-400">
                       <span>{t.date} — {t.name}</span>
-                      <span className={t.pl_type === 'P' ? 'text-emerald-400' : 'text-red-400'}>
+                      <span className={t.pl_type === 'P' ? 'text-[#32BC00]' : 'text-[#F32400]'}>
                         {t.pl_type} {t.pl_percentage}% (${t.amount_pl.toFixed(4)})
                       </span>
                     </div>
@@ -182,14 +182,14 @@ export function ImportTradesModal({ open, onClose, onSuccess }: ImportTradesModa
                 <Button
                   onClick={() => setPreview(null)}
                   variant="outline"
-                  className="flex-1 border-zinc-700 text-zinc-400 hover:bg-zinc-800"
+                  className="flex-1 border-[#874708]/30 text-zinc-400 hover:bg-[#2a1a00]"
                 >
                   Cancel
                 </Button>
                 <Button
                   onClick={handleImport}
                   disabled={loading}
-                  className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+                  className="flex-1 bg-[#FF8D19] hover:bg-[#e67d15] text-white"
                 >
                   {loading ? 'Importing...' : `Import ${preview.length} Trades`}
                 </Button>

@@ -65,7 +65,7 @@ export function PriceChart({ data, isLoading }: PriceChartProps) {
     const firstPrice = data[0]?.value ?? 0
     const lastPrice = data[data.length - 1]?.value ?? 0
     const isPositive = lastPrice >= firstPrice
-    const lineColor = isPositive ? '#34d399' : '#f87171'
+    const lineColor = isPositive ? '#32BC00' : '#F32400'
     const areaTop = isPositive ? 'rgba(52, 211, 153, 0.15)' : 'rgba(248, 113, 113, 0.15)'
     const areaBottom = 'rgba(0, 0, 0, 0)'
 
@@ -102,7 +102,7 @@ export function PriceChart({ data, isLoading }: PriceChartProps) {
     return (
       <div className="h-80 flex items-center justify-center">
         <div className="flex items-center gap-2 text-zinc-500 text-sm">
-          <div className="w-3 h-3 border-2 border-zinc-600 border-t-emerald-500 rounded-full animate-spin" />
+          <div className="w-3 h-3 border-2 border-zinc-600 border-t-[#FF8D19] rounded-full animate-spin" />
           Loading chart...
         </div>
       </div>

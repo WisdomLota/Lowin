@@ -184,14 +184,14 @@ export function CoinDetailModal({ coin, open, onClose }: CoinDetailModalProps) {
   return (
     <>
       <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-        <DialogContent className="bg-zinc-900 border-zinc-800 text-white max-w-[95vw]! sm:max-w-4xl! p-0 gap-0 max-h-[90vh] overflow-y-auto">
+        <DialogContent className="bg-[#1a0f00] border-[#874708]/20 text-white max-w-[95vw]! sm:max-w-4xl! p-0 gap-0 max-h-[90vh] overflow-y-auto">
           {/* Header */}
           <DialogHeader className="px-4 sm:px-6 pt-4 sm:pt-6 pb-3">
             <div className="flex items-center gap-3">
               {coin.image ? (
                 <img src={coin.image} alt={coin.name} className="w-10 h-10 rounded-full" />
               ) : (
-                <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-sm text-zinc-500">
+                <div className="w-10 h-10 rounded-full bg-[#2a1a00] flex items-center justify-center text-sm text-zinc-500">
                   {coin.symbol.charAt(0)}
                 </div>
               )}
@@ -209,7 +209,7 @@ export function CoinDetailModal({ coin, open, onClose }: CoinDetailModalProps) {
               <span
                 className={cn(
                   'text-sm font-mono',
-                  coin.price_change_percentage_24h >= 0 ? 'text-emerald-400' : 'text-red-400'
+                  coin.price_change_percentage_24h >= 0 ? 'text-[#32BC00]' : 'text-[#F32400]'
                 )}
               >
                 {coin.price_change_percentage_24h >= 0 ? '+' : ''}
@@ -224,7 +224,7 @@ export function CoinDetailModal({ coin, open, onClose }: CoinDetailModalProps) {
           </div>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-zinc-800 mx-3 sm:mx-6 mt-4 rounded-lg overflow-hidden">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-[#2a1a00] mx-3 sm:mx-6 mt-4 rounded-lg overflow-hidden">
             {[
               { label: 'Market Cap', value: formatCompact(coin.market_cap) },
               { label: '24h Volume', value: formatCompact(coin.total_volume) },
@@ -237,7 +237,7 @@ export function CoinDetailModal({ coin, open, onClose }: CoinDetailModalProps) {
               },
               { label: 'MC Rank', value: coin.market_cap_rank ? `#${coin.market_cap_rank}` : '—' },
             ].map((stat) => (
-              <div key={stat.label} className="bg-zinc-900 px-4 py-3">
+              <div key={stat.label} className="bg-[#1a0f00] px-4 py-3">
                 <p className="text-xs text-zinc-500">{stat.label}</p>
                 <p className="text-sm font-mono text-zinc-200 mt-0.5">{stat.value}</p>
               </div>
@@ -251,7 +251,7 @@ export function CoinDetailModal({ coin, open, onClose }: CoinDetailModalProps) {
                 size="sm"
                 onClick={handleWatchlist}
                 disabled={watchlistLoading}
-                className="bg-zinc-800 text-zinc-300 hover:bg-zinc-700"
+                className="bg-[#2a1a00] text-zinc-300 hover:bg-[#2a1a00]"
               >
                 {watchlistLoading ? '...' : 'Remove from Watchlist'}
               </Button>
@@ -261,11 +261,11 @@ export function CoinDetailModal({ coin, open, onClose }: CoinDetailModalProps) {
                   placeholder="Why are you watching this? (optional)"
                   value={watchlistComment}
                   onChange={(e) => setWatchlistComment(e.target.value)}
-                  className="bg-zinc-800 border-zinc-700 text-white text-sm h-8"
+                  className="bg-[#2a1a00] border-[#874708]/30 text-white text-sm h-8"
                   onKeyDown={(e) => { if (e.key === 'Enter') handleWatchlist() }}
                 />
                 <Button size="sm" onClick={handleWatchlist} disabled={watchlistLoading}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white whitespace-nowrap">
+                  className="bg-[#FF8D19] hover:bg-[#e67d15] text-white whitespace-nowrap">
                   {watchlistLoading ? '...' : 'Add'}
                 </Button>
                 <Button size="sm" variant="ghost" onClick={() => setShowCommentInput(false)}
@@ -277,7 +277,7 @@ export function CoinDetailModal({ coin, open, onClose }: CoinDetailModalProps) {
               <Button
                 size="sm"
                 onClick={() => setShowCommentInput(true)}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                className="bg-[#FF8D19] hover:bg-[#e67d15] text-white"
               >
                 Add to Watchlist
               </Button>
@@ -285,7 +285,7 @@ export function CoinDetailModal({ coin, open, onClose }: CoinDetailModalProps) {
             <Button
               size="sm"
               variant="outline"
-              className="border-emerald-600 text-emerald-400 hover:bg-emerald-600/10"
+              className="border-[#FF8D19] text-[#32BC00] hover:bg-[#FF8D19]/10"
               onClick={() => setPurchaseOpen(true)}
             >
               Log Purchase
@@ -293,7 +293,7 @@ export function CoinDetailModal({ coin, open, onClose }: CoinDetailModalProps) {
             <Button
               size="sm"
               variant="outline"
-              className="border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+              className="border-[#874708]/30 text-zinc-300 hover:bg-[#2a1a00]"
               onClick={() => window.open(bybitUrl, '_blank')}
             >
               View on Bybit
@@ -310,7 +310,7 @@ export function CoinDetailModal({ coin, open, onClose }: CoinDetailModalProps) {
               <Button
                 size="sm"
                 variant="outline"
-                className="border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+                className="border-[#874708]/30 text-zinc-300 hover:bg-[#2a1a00]"
                 onClick={() => window.open(coingeckoUrl, '_blank')}
               >
                 View on CoinGecko

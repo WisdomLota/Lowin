@@ -86,7 +86,7 @@ export function PurchaseFormModal({ coin, open, onClose, onSuccess }: PurchaseFo
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogContent className="bg-zinc-900 border-zinc-800 text-white max-w-sm">
+      <DialogContent className="bg-zinc-900 border-[#874708]/20 text-white max-w-sm">
         <DialogHeader>
           <DialogTitle className="text-white">
             Log Purchase — {coin.symbol}
@@ -102,7 +102,7 @@ export function PurchaseFormModal({ coin, open, onClose, onSuccess }: PurchaseFo
               placeholder="e.g. 1000000"
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
-              className="bg-zinc-800 border-zinc-700 text-white mt-1"
+              className="bg-[#2a1a00] border-[#874708]/30 text-white mt-1"
             />
           </div>
 
@@ -114,7 +114,7 @@ export function PurchaseFormModal({ coin, open, onClose, onSuccess }: PurchaseFo
               placeholder="e.g. 0.00045"
               value={buyPrice}
               onChange={(e) => setBuyPrice(e.target.value)}
-              className="bg-zinc-800 border-zinc-700 text-white mt-1"
+              className="bg-[#2a1a00] border-[#874708]/30 text-white mt-1"
             />
           </div>
 
@@ -123,7 +123,7 @@ export function PurchaseFormModal({ coin, open, onClose, onSuccess }: PurchaseFo
             <select
               value={exchange}
               onChange={(e) => setExchange(e.target.value)}
-              className="w-full mt-1 rounded-md bg-zinc-800 border border-zinc-700 text-white text-sm px-3 py-2 outline-none focus:ring-1 focus:ring-emerald-500"
+              className="w-full mt-1 rounded-md bg-[#2a1a00] border border-[#874708]/30 text-white text-sm px-3 py-2 outline-none focus:ring-1 focus:ring-emerald-500"
             >
               <option value="bybit">Bybit</option>
               <option value="binance">Binance</option>
@@ -139,7 +139,7 @@ export function PurchaseFormModal({ coin, open, onClose, onSuccess }: PurchaseFo
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="bg-zinc-800 border-zinc-700 text-white mt-1"
+              className="bg-[#2a1a00] border-[#874708]/30 text-white mt-1"
             />
           </div>
 
@@ -149,16 +149,16 @@ export function PurchaseFormModal({ coin, open, onClose, onSuccess }: PurchaseFo
               placeholder="e.g. Bought the dip"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="bg-zinc-800 border-zinc-700 text-white mt-1"
+              className="bg-[#2a1a00] border-[#874708]/30 text-white mt-1"
             />
           </div>
 
-          {error && <p className="text-red-400 text-sm">{error}</p>}
+          {error && <p className="text-[#F32400] text-sm">{error}</p>}
 
           <Button
             onClick={handleSubmit}
             disabled={loading}
-            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+            className="w-full bg-[#FF8D19] hover:bg-[#e67d15] text-white"
           >
             {loading ? 'Saving...' : 'Log Purchase'}
           </Button>

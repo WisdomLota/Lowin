@@ -42,7 +42,7 @@ export function CoinTable({ coins, onCoinClick }: CoinTableProps) {
     <div className="overflow-x-auto">
       <table className="w-full min-w-125">
         <thead>
-          <tr className="text-xs text-zinc-500 border-b border-zinc-800">
+          <tr className="text-xs text-zinc-500 border-b border-[#874708]/20">
             <th className="text-left py-3 px-3 sm:px-6 font-medium hidden sm:table-cell">#</th>
             <th className="text-left py-3 px-2 font-medium">Coin</th>
             <th className="text-right py-3 px-2 font-medium">Price</th>
@@ -57,7 +57,7 @@ export function CoinTable({ coins, onCoinClick }: CoinTableProps) {
             <tr
               key={coin.id}
               onClick={() => onCoinClick(coin)}
-              className="border-b border-zinc-800/50 hover:bg-zinc-900/50 cursor-pointer transition-colors"
+              className="border-b border-[#874708]/10 hover:bg-[#1a0f00]/50 cursor-pointer transition-colors"
             >
               <td className="py-3 px-3 sm:px-6 text-sm text-zinc-500 hidden sm:table-cell">{index + 1}</td>
               <td className="py-3 px-2">
@@ -69,7 +69,7 @@ export function CoinTable({ coins, onCoinClick }: CoinTableProps) {
                       className="w-6 h-6 rounded-full"
                     />
                   ) : (
-                    <div className="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center text-xs text-zinc-500">
+                    <div className="w-6 h-6 rounded-full bg-[#2a1a00] flex items-center justify-center text-xs text-zinc-500">
                       {coin.symbol.charAt(0)}
                     </div>
                   )}
@@ -90,8 +90,8 @@ export function CoinTable({ coins, onCoinClick }: CoinTableProps) {
                 className={cn(
                   'py-3 px-2 text-right text-sm font-mono',
                   coin.price_change_percentage_24h >= 0
-                    ? 'text-emerald-400'
-                    : 'text-red-400'
+                    ? 'text-[#32BC00]'
+                    : 'text-[#F32400]'
                 )}
               >
                 {coin.price_change_percentage_24h >= 0 ? '+' : ''}

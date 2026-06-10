@@ -63,7 +63,7 @@ function TradesTable({ trades, onDelete, onSelect }: { trades: any[]; onDelete: 
     <div className="overflow-x-auto">
       <table className="w-full min-w-225">
         <thead>
-          <tr className="text-xs text-zinc-500 border-b border-zinc-800">
+          <tr className="text-xs text-zinc-500 border-b border-[#874708]/20">
             <th className="text-left py-2.5 px-3 font-medium">#</th>
             <th className="text-left py-2.5 px-3 font-medium">Date</th>
             <th className="text-left py-2.5 px-3 font-medium">Name</th>
@@ -86,7 +86,7 @@ function TradesTable({ trades, onDelete, onSelect }: { trades: any[]; onDelete: 
         </thead>
         <tbody>
           {trades.map((trade, i) => (
-            <tr key={trade.id} onClick={() => onSelect(trade)} className="border-b border-zinc-800/50 hover:bg-zinc-900/50 cursor-pointer">
+            <tr key={trade.id} onClick={() => onSelect(trade)} className="border-b border-[#874708]/10 hover:bg-[#1a0f00]/50 cursor-pointer">
               <td className="py-2.5 px-3 text-xs text-zinc-500">{i + 1}</td>
               <td className="py-2.5 px-3 text-sm text-zinc-300">{trade.date}</td>
               <td className="py-2.5 px-3 text-sm font-medium text-white">{trade.name}</td>
@@ -96,15 +96,15 @@ function TradesTable({ trades, onDelete, onSelect }: { trades: any[]; onDelete: 
               <td className="py-2.5 px-3 text-sm text-right font-mono text-zinc-300">{trade.open_price}</td>
               <td className="py-2.5 px-3 text-sm text-right font-mono text-zinc-300">{trade.close_price}</td>
               <td className={cn('py-2.5 px-3 text-sm text-center font-semibold',
-                trade.pl_type === 'P' ? 'text-emerald-400' : 'text-red-400')}>
+                trade.pl_type === 'P' ? 'text-[#32BC00]' : 'text-[#F32400]')}>
                 {trade.pl_type}
               </td>
               <td className={cn('py-2.5 px-3 text-sm text-right font-mono',
-                trade.pl_type === 'P' ? 'text-emerald-400' : 'text-red-400')}>
+                trade.pl_type === 'P' ? 'text-[#32BC00]' : 'text-[#F32400]')}>
                 {trade.pl_percentage}%
               </td>
               <td className={cn('py-2.5 px-3 text-sm text-right font-mono',
-                trade.pl_type === 'P' ? 'text-emerald-400' : 'text-red-400')}>
+                trade.pl_type === 'P' ? 'text-[#32BC00]' : 'text-[#F32400]')}>
                 {trade.amount_pl.toFixed(4)}
               </td>
               <td className="py-2.5 px-3 text-sm text-center text-zinc-400">{trade.lg_st}</td>
@@ -118,7 +118,7 @@ function TradesTable({ trades, onDelete, onSelect }: { trades: any[]; onDelete: 
               <td className="py-2.5 px-3 text-right">
                 <Button variant="ghost" size="sm"
                   onClick={(e) => { e.stopPropagation(); onDelete(trade.id); toast.success('Trade deleted') }}
-                  className="text-zinc-600 hover:text-red-400 hover:bg-transparent text-xs">
+                  className="text-zinc-600 hover:text-[#F32400] hover:bg-transparent text-xs">
                   Del
                 </Button>
               </td>
@@ -141,19 +141,19 @@ function StatsBar({ trades, label }: { trades: any[]; label?: string }) {
   return (
     <div>
       {label && (
-        <div className="px-4 sm:px-6 py-2 border-b border-zinc-800">
+        <div className="px-4 sm:px-6 py-2 border-b border-[#874708]/20">
           <span className="text-sm font-medium text-zinc-300">{label}</span>
         </div>
       )}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-px bg-zinc-800">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-px bg-[#2a1a00]">
         {[
           { l: 'Trades', v: trades.length.toString(), c: 'text-white' },
-          { l: 'Wins', v: profits.toString(), c: 'text-emerald-400' },
-          { l: 'Losses', v: losses.toString(), c: 'text-red-400' },
-          { l: 'Win Rate', v: `${winRate.toFixed(1)}%`, c: winRate >= 50 ? 'text-emerald-400' : 'text-red-400' },
-          { l: 'Net P/L', v: `${totalPL >= 0 ? '+' : ''}$${totalPL.toFixed(2)}`, c: totalPL >= 0 ? 'text-emerald-400' : 'text-red-400' },
+          { l: 'Wins', v: profits.toString(), c: 'text-[#32BC00]' },
+          { l: 'Losses', v: losses.toString(), c: 'text-[#F32400]' },
+          { l: 'Win Rate', v: `${winRate.toFixed(1)}%`, c: winRate >= 50 ? 'text-[#32BC00]' : 'text-[#F32400]' },
+          { l: 'Net P/L', v: `${totalPL >= 0 ? '+' : ''}$${totalPL.toFixed(2)}`, c: totalPL >= 0 ? 'text-[#32BC00]' : 'text-[#F32400]' },
         ].map((s) => (
-          <div key={s.l} className="bg-zinc-950 px-4 sm:px-6 py-3">
+          <div key={s.l} className="bg-[#0F0800] px-4 sm:px-6 py-3">
             <p className="text-xs text-zinc-500">{s.l}</p>
             <p className={cn('text-base sm:text-lg font-mono mt-0.5', s.c)}>{s.v}</p>
           </div>
@@ -180,22 +180,22 @@ function TradeDetailModal({ trade, open, onClose }: { trade: Trade | null; open:
     { label: 'Close Time', value: trade.close_time || '—' },
     { label: 'Close Date', value: trade.close_date || trade.date },
     { label: 'Duration', value: calcDuration(trade) },
-    { label: 'P/L', value: trade.pl_type === 'P' ? 'Profit' : 'Loss', color: trade.pl_type === 'P' ? 'text-emerald-400' : 'text-red-400' },
-    { label: 'P/L %', value: `${trade.pl_percentage}%`, color: trade.pl_type === 'P' ? 'text-emerald-400' : 'text-red-400' },
-    { label: 'Amount P/L', value: `$${trade.amount_pl.toFixed(4)}`, color: trade.pl_type === 'P' ? 'text-emerald-400' : 'text-red-400' },
+    { label: 'P/L', value: trade.pl_type === 'P' ? 'Profit' : 'Loss', color: trade.pl_type === 'P' ? 'text-[#32BC00]' : 'text-[#F32400]' },
+    { label: 'P/L %', value: `${trade.pl_percentage}%`, color: trade.pl_type === 'P' ? 'text-[#32BC00]' : 'text-[#F32400]' },
+    { label: 'Amount P/L', value: `$${trade.amount_pl.toFixed(4)}`, color: trade.pl_type === 'P' ? 'text-[#32BC00]' : 'text-[#F32400]' },
   ]
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogContent className="bg-zinc-900 border-zinc-800 text-white max-w-md! p-0 gap-0">
+      <DialogContent className="bg-[#1a0f00] border-[#874708]/20 text-white max-w-md! p-0 gap-0">
         <DialogHeader className="px-5 pt-5 pb-3">
           <DialogTitle className="text-lg text-white flex items-center gap-2">
             {trade.name}
             <span className={cn('text-xs px-2 py-0.5 rounded',
-              trade.pl_type === 'P' ? 'bg-emerald-600/20 text-emerald-400' : 'bg-red-600/20 text-red-400')}>
+              trade.pl_type === 'P' ? 'bg-[#FF8D19]/20 text-[#32BC00]' : 'bg-red-600/20 text-[#F32400]')}>
               {trade.pl_type === 'P' ? 'Profit' : 'Loss'}
             </span>
-            <span className="text-xs px-2 py-0.5 rounded bg-zinc-800 text-zinc-400">
+            <span className="text-xs px-2 py-0.5 rounded bg-[#2a1a00] text-zinc-400">
               {trade.trade_mode === 'real' ? 'Real' : 'Demo'}
             </span>
           </DialogTitle>
@@ -212,7 +212,7 @@ function TradeDetailModal({ trade, open, onClose }: { trade: Trade | null; open:
 
         {/* Hint - full text */}
         {trade.hint && (
-          <div className="px-5 py-3 border-t border-zinc-800">
+          <div className="px-5 py-3 border-t border-[#874708]/20">
             <p className="text-xs text-zinc-500 mb-1">Hint</p>
             <p className="text-sm text-zinc-300 whitespace-pre-wrap">{trade.hint}</p>
           </div>
@@ -220,15 +220,15 @@ function TradeDetailModal({ trade, open, onClose }: { trade: Trade | null; open:
 
         {/* Comments - full text */}
         {trade.comments && (
-          <div className="px-5 py-3 border-t border-zinc-800">
+          <div className="px-5 py-3 border-t border-[#874708]/20">
             <p className="text-xs text-zinc-500 mb-1">Comments</p>
             <p className="text-sm text-zinc-300 whitespace-pre-wrap">{trade.comments}</p>
           </div>
         )}
 
-        <div className="px-5 py-3 border-t border-zinc-800">
+        <div className="px-5 py-3 border-t border-[#874708]/20">
           <Button variant="ghost" size="sm" onClick={onClose}
-            className="w-full text-zinc-400 hover:text-white hover:bg-zinc-800">
+            className="w-full text-zinc-400 hover:text-white hover:bg-[#2a1a00]">
             Close
           </Button>
         </div>
@@ -335,13 +335,13 @@ export default function JournalPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950">
+    <div className="min-h-screen bg-[#0F0800]">
       <Header />
 
       {/* Mode Toggle */}
-      <div className="px-4 sm:px-6 py-3 border-b border-zinc-800 flex items-center justify-between">
+      <div className="px-4 sm:px-6 py-3 border-b border-[#874708]/20 flex items-center justify-between">
         <span className="text-sm text-zinc-400">Trading Mode</span>
-        <div className="flex gap-1 border border-zinc-800 rounded-lg p-0.5">
+        <div className="flex gap-1 border border-[#874708]/20 rounded-lg p-0.5">
           {(['real', 'demo', 'combined'] as const).map((mode) => (
             <button
               key={mode}
@@ -349,9 +349,9 @@ export default function JournalPage() {
               className={cn(
                 'px-4 py-1.5 text-sm rounded font-medium capitalize transition-colors',
                 tradeFilter === mode
-                  ? mode === 'demo' ? 'bg-amber-600/20 text-amber-400 border border-amber-600/30'
-                    : mode === 'real' ? 'bg-emerald-600/20 text-emerald-400 border border-emerald-600/30'
-                    : 'bg-zinc-800 text-white border border-zinc-700'
+                  ? mode === 'demo' ? 'bg-[#FF8D19]/20 text-[#FF8D19] border border-[#FF8D19]/30'
+                    : mode === 'real' ? 'bg-[#FF8D19]/20 text-[#32BC00] border border-[#FF8D19]/30'
+                    : 'bg-[#2a1a00] text-white border border-[#874708]/30'
                   : 'text-zinc-500 hover:text-zinc-300 border border-transparent'
               )}
             >
@@ -368,7 +368,7 @@ export default function JournalPage() {
       <StatsBar trades={currentMonthTrades} label={`Current Month — ${getMonthLabel(currentMonthKey)}`} />
 
       {/* Controls */}
-      <div className="px-4 sm:px-6 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-800 border-t border-t-zinc-800">
+      <div className="px-4 sm:px-6 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#874708]/20 border-t border-t-zinc-800">
         <div className="flex gap-1">
           {(['trades', 'monthly', 'yearly'] as ViewMode[]).map((mode) => (
             <button
@@ -377,7 +377,7 @@ export default function JournalPage() {
               className={cn(
                 'px-3 py-1.5 text-sm rounded font-medium capitalize transition-colors',
                 viewMode === mode
-                  ? 'bg-zinc-800 text-white'
+                  ? 'bg-[#2a1a00] text-white'
                   : 'text-zinc-500 hover:text-zinc-300'
               )}
             >
@@ -388,27 +388,27 @@ export default function JournalPage() {
         <div className="flex gap-2 flex-wrap">
           {selectedMonth && (
             <Button size="sm" variant="outline" onClick={() => setSelectedMonth(null)}
-              className="border-zinc-700 text-zinc-400 hover:bg-zinc-800 text-xs">
+              className="border-[#874708]/30 text-zinc-400 hover:bg-[#2a1a00] text-xs">
               Show All Trades
             </Button>
           )}
           <Button size="sm" variant="outline" onClick={() => {
             exportTradesToExcel(displayedTrades, `lowin-trades-${new Date().toISOString().split('T')[0]}`)
             toast.success('Excel file downloaded')
-          }} className="border-zinc-700 text-zinc-400 hover:bg-zinc-800 text-xs">
+          }} className="border-[#874708]/30 text-zinc-400 hover:bg-[#2a1a00] text-xs">
             Export Excel
           </Button>
           <Button size="sm" variant="outline" onClick={() => {
             exportTradesToPDF(displayedTrades, monthlySummaries, `lowin-trades-${new Date().toISOString().split('T')[0]}`)
-          }} className="border-zinc-700 text-zinc-400 hover:bg-zinc-800 text-xs">
+          }} className="border-[#874708]/30 text-zinc-400 hover:bg-[#2a1a00] text-xs">
             Export PDF
           </Button>
           <Button size="sm" variant="outline" onClick={() => setImportOpen(true)}
-            className="border-zinc-700 text-zinc-400 hover:bg-zinc-800 text-xs">
+            className="border-[#874708]/30 text-zinc-400 hover:bg-[#2a1a00] text-xs">
             Import Excel
           </Button>
           <Button size="sm" onClick={() => setFormOpen(true)}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs">
+            className="bg-[#FF8D19] hover:bg-[#e67d15] text-white text-xs">
             + Log Trade
           </Button>
         </div>
@@ -418,7 +418,7 @@ export default function JournalPage() {
         {loading ? (
           <div className="flex items-center justify-center py-16">
             <div className="flex items-center gap-2 text-zinc-500 text-sm">
-              <div className="w-3 h-3 border-2 border-zinc-600 border-t-emerald-500 rounded-full animate-spin" />
+              <div className="w-3 h-3 border-2 border-zinc-600 border-t-[#FF8D19] rounded-full animate-spin" />
               Loading trades...
             </div>
           </div>
@@ -426,7 +426,7 @@ export default function JournalPage() {
           /* ---- TRADES VIEW ---- */
           <>
             {selectedMonth && (
-              <div className="px-4 sm:px-6 py-2 border-b border-zinc-800">
+              <div className="px-4 sm:px-6 py-2 border-b border-[#874708]/20">
                 <span className="text-sm text-zinc-400">
                   Showing trades for <span className="text-white font-medium">{getMonthLabel(selectedMonth)}</span>
                 </span>
@@ -448,7 +448,7 @@ export default function JournalPage() {
                   {/* Month row */}
                   <div
                     onClick={() => handleMonthClick(s.month)}
-                    className="flex items-center justify-between px-4 sm:px-6 py-3 hover:bg-zinc-900/50 cursor-pointer transition-colors"
+                    className="flex items-center justify-between px-4 sm:px-6 py-3 hover:bg-[#1a0f00]/50 cursor-pointer transition-colors"
                   >
                     <div className="flex items-center gap-4">
                       <span className={cn(
@@ -459,14 +459,14 @@ export default function JournalPage() {
                     </div>
                     <div className="flex items-center gap-6 text-sm">
                       <span className="text-zinc-400">{s.totalTrades} trades</span>
-                      <span className="text-emerald-400">{s.profits}W</span>
-                      <span className="text-red-400">{s.losses}L</span>
+                      <span className="text-[#32BC00]">{s.profits}W</span>
+                      <span className="text-[#F32400]">{s.losses}L</span>
                       <span className={cn('font-mono',
-                        s.winRate >= 50 ? 'text-emerald-400' : 'text-red-400')}>
+                        s.winRate >= 50 ? 'text-[#32BC00]' : 'text-[#F32400]')}>
                         {s.winRate.toFixed(0)}%
                       </span>
                       <span className={cn('font-mono min-w-20 text-right',
-                        s.totalPL >= 0 ? 'text-emerald-400' : 'text-red-400')}>
+                        s.totalPL >= 0 ? 'text-[#32BC00]' : 'text-[#F32400]')}>
                         {s.totalPL >= 0 ? '+' : ''}${s.totalPL.toFixed(2)}
                       </span>
                       <Button variant="ghost" size="sm"
@@ -479,7 +479,7 @@ export default function JournalPage() {
 
                   {/* Expanded trades for this month */}
                   {expandedMonth === s.month && (
-                    <div className="bg-zinc-900/30 border-t border-zinc-800">
+                    <div className="bg-[#1a0f00]/30 border-t border-[#874708]/20">
                       <TradesTable trades={expandedMonthTrades} onDelete={removeTrade} onSelect={setSelectedTrade} />
                     </div>
                   )}
@@ -497,34 +497,34 @@ export default function JournalPage() {
           ) : (
             <div className="space-y-4 p-4 sm:p-6">
               {yearlySummaries.map((y) => (
-                <div key={y.year} className="border border-zinc-800 rounded-lg overflow-hidden">
+                <div key={y.year} className="border border-[#874708]/20 rounded-lg overflow-hidden">
                   {/* Year header stats */}
-                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-px bg-zinc-800">
-                    <div className="bg-zinc-900 px-4 py-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-px bg-[#2a1a00]">
+                    <div className="bg-[#1a0f00] px-4 py-3">
                       <p className="text-xs text-zinc-500">Year</p>
                       <p className="text-lg font-bold text-white">{y.year}</p>
                     </div>
-                    <div className="bg-zinc-900 px-4 py-3">
+                    <div className="bg-[#1a0f00] px-4 py-3">
                       <p className="text-xs text-zinc-500">Trades</p>
                       <p className="text-lg font-mono text-white">{y.totalTrades}</p>
                     </div>
-                    <div className="bg-zinc-900 px-4 py-3">
+                    <div className="bg-[#1a0f00] px-4 py-3">
                       <p className="text-xs text-zinc-500">Win Rate</p>
-                      <p className={cn('text-lg font-mono', y.winRate >= 50 ? 'text-emerald-400' : 'text-red-400')}>
+                      <p className={cn('text-lg font-mono', y.winRate >= 50 ? 'text-[#32BC00]' : 'text-[#F32400]')}>
                         {y.winRate.toFixed(1)}%
                       </p>
                     </div>
-                    <div className="bg-zinc-900 px-4 py-3">
+                    <div className="bg-[#1a0f00] px-4 py-3">
                       <p className="text-xs text-zinc-500">W / L</p>
                       <p className="text-lg font-mono text-white">
-                        <span className="text-emerald-400">{y.profits}</span>
+                        <span className="text-[#32BC00]">{y.profits}</span>
                         {' / '}
-                        <span className="text-red-400">{y.losses}</span>
+                        <span className="text-[#F32400]">{y.losses}</span>
                       </p>
                     </div>
-                    <div className="bg-zinc-900 px-4 py-3">
+                    <div className="bg-[#1a0f00] px-4 py-3">
                       <p className="text-xs text-zinc-500">Net P/L</p>
-                      <p className={cn('text-lg font-mono', y.totalPL >= 0 ? 'text-emerald-400' : 'text-red-400')}>
+                      <p className={cn('text-lg font-mono', y.totalPL >= 0 ? 'text-[#32BC00]' : 'text-[#F32400]')}>
                         {y.totalPL >= 0 ? '+' : ''}${y.totalPL.toFixed(2)}
                       </p>
                     </div>
@@ -536,7 +536,7 @@ export default function JournalPage() {
                       <div key={m.month}>
                         <div
                           onClick={() => handleMonthClick(m.month)}
-                          className="flex items-center justify-between px-4 py-2.5 hover:bg-zinc-900/50 cursor-pointer transition-colors"
+                          className="flex items-center justify-between px-4 py-2.5 hover:bg-[#1a0f00]/50 cursor-pointer transition-colors"
                         >
                           <div className="flex items-center gap-3">
                             <span className={cn(
@@ -548,11 +548,11 @@ export default function JournalPage() {
                           <div className="flex items-center gap-4 text-sm">
                             <span className="text-zinc-500">{m.totalTrades}</span>
                             <span className={cn('font-mono text-xs',
-                              m.winRate >= 50 ? 'text-emerald-400' : 'text-red-400')}>
+                              m.winRate >= 50 ? 'text-[#32BC00]' : 'text-[#F32400]')}>
                               {m.winRate.toFixed(0)}% WR
                             </span>
                             <span className={cn('font-mono text-xs min-w-17.5 text-right',
-                              m.totalPL >= 0 ? 'text-emerald-400' : 'text-red-400')}>
+                              m.totalPL >= 0 ? 'text-[#32BC00]' : 'text-[#F32400]')}>
                               {m.totalPL >= 0 ? '+' : ''}${m.totalPL.toFixed(2)}
                             </span>
                           </div>
@@ -560,7 +560,7 @@ export default function JournalPage() {
 
                         {/* Expanded trades */}
                         {expandedMonth === m.month && (
-                          <div className="bg-zinc-900/30 border-t border-zinc-800">
+                          <div className="bg-[#1a0f00]/30 border-t border-[#874708]/20">
                             <TradesTable trades={expandedMonthTrades} onDelete={removeTrade} onSelect={setSelectedTrade} />
                           </div>
                         )}

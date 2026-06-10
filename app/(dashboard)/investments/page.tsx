@@ -86,7 +86,7 @@ export default function InvestmentsPage() {
           <div key={inv.id}>
             <div
               onClick={() => setExpandedInv(expandedInv === inv.id ? null : inv.id)}
-              className="flex items-center justify-between px-4 py-3 hover:bg-zinc-900/50 cursor-pointer transition-colors"
+              className="flex items-center justify-between px-4 py-3 hover:bg-[#1a0f00]/50 cursor-pointer transition-colors"
             >
               <div className="flex items-center gap-3">
                 <span className={cn('text-xs transition-transform text-zinc-500',
@@ -99,23 +99,23 @@ export default function InvestmentsPage() {
               <div className="flex items-center gap-4 text-sm">
                 <span className="text-zinc-400 font-mono">{formatCurrency(inv.totalDeposited, inv.currency)}</span>
                 <span className="text-white font-mono">{formatCurrency(inv.currentValue, inv.currency)}</span>
-                <span className={cn('font-mono', inv.netPL >= 0 ? 'text-emerald-400' : 'text-red-400')}>
+                <span className={cn('font-mono', inv.netPL >= 0 ? 'text-[#32BC00]' : 'text-[#F32400]')}>
                   {inv.netPL >= 0 ? '+' : '-'}{formatCurrency(inv.netPL, inv.currency)}
                 </span>
               </div>
             </div>
 
             {expandedInv === inv.id && (
-              <div className="bg-zinc-900/30 border-t border-zinc-800 px-4 py-3">
+              <div className="bg-[#1a0f00]/30 border-t border-[#874708]/20 px-4 py-3">
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-3">
                   {[
                     { l: 'Invested', v: formatCurrency(inv.totalDeposited, inv.currency) },
                     { l: 'Fee', v: formatCurrency(inv.processing_fee, inv.currency) },
                     { l: 'Withdrawn', v: formatCurrency(inv.totalWithdrawn, inv.currency) },
                     { l: 'Current Value', v: formatCurrency(inv.currentValue, inv.currency) },
-                    { l: 'Net P/L', v: `${inv.netPL >= 0 ? '+' : '-'}${formatCurrency(inv.netPL, inv.currency)}`, c: inv.netPL >= 0 ? 'text-emerald-400' : 'text-red-400' },
+                    { l: 'Net P/L', v: `${inv.netPL >= 0 ? '+' : '-'}${formatCurrency(inv.netPL, inv.currency)}`, c: inv.netPL >= 0 ? 'text-[#32BC00]' : 'text-[#F32400]' },
                   ].map((s) => (
-                    <div key={s.l} className="bg-zinc-800/50 rounded px-3 py-2">
+                    <div key={s.l} className="bg-[#2a1a00]/50 rounded px-3 py-2">
                       <p className="text-xs text-zinc-500">{s.l}</p>
                       <p className={cn('text-sm font-mono text-zinc-200', (s as any).c)}>{s.v}</p>
                     </div>
@@ -135,22 +135,22 @@ export default function InvestmentsPage() {
                 <div className="flex gap-2 mb-3">
                   <Button size="sm" variant="outline"
                     onClick={() => setTxTarget({ id: inv.id, title: inv.title, type: 'value_update' })}
-                    className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 text-xs">
+                    className="border-[#874708]/30 text-zinc-300 hover:bg-[#2a1a00] text-xs">
                     Update Value
                   </Button>
                   <Button size="sm" variant="outline"
                     onClick={() => setTxTarget({ id: inv.id, title: inv.title, type: 'deposit' })}
-                    className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 text-xs">
+                    className="border-[#874708]/30 text-zinc-300 hover:bg-[#2a1a00] text-xs">
                     Add Deposit
                   </Button>
                   <Button size="sm" variant="outline"
                     onClick={() => setTxTarget({ id: inv.id, title: inv.title, type: 'withdrawal' })}
-                    className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 text-xs">
+                    className="border-[#874708]/30 text-zinc-300 hover:bg-[#2a1a00] text-xs">
                     Withdrawal
                   </Button>
                   <Button size="sm" variant="ghost"
                     onClick={() => { removeInvestment(inv.id); toast.success('Investment removed') }}
-                    className="text-zinc-600 hover:text-red-400 text-xs ml-auto">
+                    className="text-zinc-600 hover:text-[#F32400] text-xs ml-auto">
                     Delete
                   </Button>
                 </div>
@@ -160,12 +160,12 @@ export default function InvestmentsPage() {
                     <p className="text-xs text-zinc-500 mb-1">Transaction History</p>
                     <div className="space-y-1">
                       {inv.transactions.map((tx) => (
-                        <div key={tx.id} className="flex items-center justify-between text-xs bg-zinc-800/30 rounded px-3 py-1.5">
+                        <div key={tx.id} className="flex items-center justify-between text-xs bg-[#2a1a00]/30 rounded px-3 py-1.5">
                           <div className="flex items-center gap-2">
                             <span className={cn('px-1.5 py-0.5 rounded text-xs',
-                              tx.type === 'deposit' ? 'bg-emerald-600/20 text-emerald-400'
-                                : tx.type === 'withdrawal' ? 'bg-red-600/20 text-red-400'
-                                : 'bg-blue-600/20 text-blue-400'
+                              tx.type === 'deposit' ? 'bg-[#FF8D19]/20 text-[#32BC00]'
+                                : tx.type === 'withdrawal' ? 'bg-red-600/20 text-[#F32400]'
+                                : 'bg-[#FF8D19]/20 text-[#FF8D19]'
                             )}>
                               {tx.type === 'value_update' ? 'Value' : tx.type === 'deposit' ? 'Deposit' : 'Withdraw'}
                             </span>
@@ -176,7 +176,7 @@ export default function InvestmentsPage() {
                             <span className="font-mono text-zinc-200">{formatCurrency(tx.amount, inv.currency)}</span>
                             <button
                               onClick={() => { removeTransaction(tx.id); toast.success('Transaction removed') }}
-                              className="text-zinc-600 hover:text-red-400">
+                              className="text-zinc-600 hover:text-[#F32400]">
                               ×
                             </button>
                           </div>
@@ -194,21 +194,21 @@ export default function InvestmentsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950">
+    <div className="min-h-screen bg-[#0F0800]">
       <Header />
 
       {/* Summary Bar */}
       {/* NGN Summary */}
       {(summary.ngn.totalInvested > 0) && (
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-px bg-zinc-800 border-b border-zinc-800">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-px bg-[#2a1a00] border-b border-[#874708]/20">
           {[
             { l: 'Invested (₦)', v: formatCurrency(summary.ngn.totalInvested, 'NGN'), c: 'text-white' },
             { l: 'Current Value', v: formatCurrency(summary.ngn.currentValue, 'NGN'), c: 'text-white' },
             { l: 'Fees', v: formatCurrency(summary.ngn.totalFees, 'NGN'), c: 'text-amber-400' },
             { l: 'Withdrawn', v: formatCurrency(summary.ngn.totalWithdrawn, 'NGN'), c: 'text-zinc-300' },
-            { l: 'Net P/L', v: `${summary.ngn.netPL >= 0 ? '+' : '-'}${formatCurrency(summary.ngn.netPL, 'NGN')}`, c: summary.ngn.netPL >= 0 ? 'text-emerald-400' : 'text-red-400' },
+            { l: 'Net P/L', v: `${summary.ngn.netPL >= 0 ? '+' : '-'}${formatCurrency(summary.ngn.netPL, 'NGN')}`, c: summary.ngn.netPL >= 0 ? 'text-[#32BC00]' : 'text-[#F32400]' },
           ].map((s) => (
-            <div key={s.l} className="bg-zinc-950 px-4 sm:px-6 py-3">
+            <div key={s.l} className="bg-[#0F0800] px-4 sm:px-6 py-3">
               <p className="text-xs text-zinc-500">{s.l}</p>
               <p className={cn('text-base sm:text-lg font-mono mt-0.5', s.c)}>{s.v}</p>
             </div>
@@ -217,15 +217,15 @@ export default function InvestmentsPage() {
       )}
       {/* USD Summary */}
       {(summary.usd.totalInvested > 0) && (
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-px bg-zinc-800 border-b border-zinc-800">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-px bg-[#2a1a00] border-b border-[#874708]/20">
           {[
             { l: 'Invested ($)', v: formatCurrency(summary.usd.totalInvested, 'USD'), c: 'text-white' },
             { l: 'Current Value', v: formatCurrency(summary.usd.currentValue, 'USD'), c: 'text-white' },
             { l: 'Fees', v: formatCurrency(summary.usd.totalFees, 'USD'), c: 'text-amber-400' },
             { l: 'Withdrawn', v: formatCurrency(summary.usd.totalWithdrawn, 'USD'), c: 'text-zinc-300' },
-            { l: 'Net P/L', v: `${summary.usd.netPL >= 0 ? '+' : '-'}${formatCurrency(summary.usd.netPL, 'USD')}`, c: summary.usd.netPL >= 0 ? 'text-emerald-400' : 'text-red-400' },
+            { l: 'Net P/L', v: `${summary.usd.netPL >= 0 ? '+' : '-'}${formatCurrency(summary.usd.netPL, 'USD')}`, c: summary.usd.netPL >= 0 ? 'text-[#32BC00]' : 'text-[#F32400]' },
           ].map((s) => (
-            <div key={s.l} className="bg-zinc-950 px-4 sm:px-6 py-3">
+            <div key={s.l} className="bg-[#0F0800] px-4 sm:px-6 py-3">
               <p className="text-xs text-zinc-500">{s.l}</p>
               <p className={cn('text-base sm:text-lg font-mono mt-0.5', s.c)}>{s.v}</p>
             </div>
@@ -234,7 +234,7 @@ export default function InvestmentsPage() {
       )}
 
       {/* Tab Switcher + Actions */}
-      <div className="px-4 sm:px-6 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-800">
+      <div className="px-4 sm:px-6 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#874708]/20">
         <div className="flex gap-1">
           {([['mutual_fund', 'Mutual Funds'], ['stock', 'Stocks']] as const).map(([key, label]) => (
             <button
@@ -242,7 +242,7 @@ export default function InvestmentsPage() {
               onClick={() => setActiveTab(key)}
               className={cn(
                 'px-3 py-1.5 text-sm rounded font-medium transition-colors',
-                activeTab === key ? 'bg-zinc-800 text-white' : 'text-zinc-500 hover:text-zinc-300'
+                activeTab === key ? 'bg-[#2a1a00] text-white' : 'text-zinc-500 hover:text-zinc-300'
               )}
             >
               {label}
@@ -250,7 +250,7 @@ export default function InvestmentsPage() {
           ))}
         </div>
         <Button size="sm" onClick={() => setAddOpen(true)}
-          className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs">
+          className="bg-[#FF8D19] hover:bg-[#e67d15] text-white text-xs">
           + Add {activeTab === 'mutual_fund' ? 'Fund' : 'Stock'}
         </Button>
       </div>
@@ -260,7 +260,7 @@ export default function InvestmentsPage() {
         {loading ? (
           <div className="flex items-center justify-center py-16">
             <div className="flex items-center gap-2 text-zinc-500 text-sm">
-              <div className="w-3 h-3 border-2 border-zinc-600 border-t-emerald-500 rounded-full animate-spin" />
+              <div className="w-3 h-3 border-2 border-zinc-600 border-t-[#FF8D19] rounded-full animate-spin" />
               Loading investments...
             </div>
           </div>
@@ -272,31 +272,31 @@ export default function InvestmentsPage() {
                 <p className="text-xs text-zinc-500 mb-2 px-1">₦ Naira Investments</p>
                 <div className="space-y-4">
                   {ngnGroups.map((group) => (
-                    <div key={group.platform} className="border border-zinc-800 rounded-lg overflow-hidden">
-                      <div className="grid grid-cols-2 sm:grid-cols-6 gap-px bg-zinc-800">
-                        <div className="bg-zinc-900 px-4 py-3">
+                    <div key={group.platform} className="border border-[#874708]/20 rounded-lg overflow-hidden">
+                      <div className="grid grid-cols-2 sm:grid-cols-6 gap-px bg-[#2a1a00]">
+                        <div className="bg-[#1a0f00] px-4 py-3">
                           <p className="text-xs text-zinc-500">Platform</p>
                           <p className="text-sm font-medium text-white mt-0.5">{group.platform}</p>
                         </div>
-                        <div className="bg-zinc-900 px-4 py-3">
+                        <div className="bg-[#1a0f00] px-4 py-3">
                           <p className="text-xs text-zinc-500">Invested</p>
                           <p className="text-sm font-mono text-white mt-0.5">{formatCurrency(group.totalInvested)}</p>
                         </div>
-                        <div className="bg-zinc-900 px-4 py-3">
+                        <div className="bg-[#1a0f00] px-4 py-3">
                           <p className="text-xs text-zinc-500">Fees</p>
                           <p className="text-sm font-mono text-amber-400 mt-0.5">{formatCurrency(group.totalFees)}</p>
                         </div>
-                        <div className="bg-zinc-900 px-4 py-3">
+                        <div className="bg-[#1a0f00] px-4 py-3">
                           <p className="text-xs text-zinc-500">Withdrawn</p>
                           <p className="text-sm font-mono text-zinc-300 mt-0.5">{formatCurrency(group.totalWithdrawn)}</p>
                         </div>
-                        <div className="bg-zinc-900 px-4 py-3">
+                        <div className="bg-[#1a0f00] px-4 py-3">
                           <p className="text-xs text-zinc-500">Current Value</p>
                           <p className="text-sm font-mono text-white mt-0.5">{formatCurrency(group.currentValue)}</p>
                         </div>
-                        <div className="bg-zinc-900 px-4 py-3">
+                        <div className="bg-[#1a0f00] px-4 py-3">
                           <p className="text-xs text-zinc-500">Net P/L</p>
-                          <p className={cn('text-sm font-mono mt-0.5', group.netPL >= 0 ? 'text-emerald-400' : 'text-red-400')}>
+                          <p className={cn('text-sm font-mono mt-0.5', group.netPL >= 0 ? 'text-[#32BC00]' : 'text-[#F32400]')}>
                             {group.netPL >= 0 ? '+' : '-'}{formatCurrency(group.netPL)}
                           </p>
                         </div>
@@ -314,31 +314,31 @@ export default function InvestmentsPage() {
                 <p className="text-xs text-zinc-500 mb-2 px-1">$ Dollar Investments</p>
                 <div className="space-y-4">
                   {usdGroups.map((group) => (
-                    <div key={group.platform} className="border border-zinc-800 rounded-lg overflow-hidden">
-                      <div className="grid grid-cols-2 sm:grid-cols-6 gap-px bg-zinc-800">
-                        <div className="bg-zinc-900 px-4 py-3">
+                    <div key={group.platform} className="border border-[#874708]/20 rounded-lg overflow-hidden">
+                      <div className="grid grid-cols-2 sm:grid-cols-6 gap-px bg-[#2a1a00]">
+                        <div className="bg-[#1a0f00] px-4 py-3">
                           <p className="text-xs text-zinc-500">Platform</p>
                           <p className="text-sm font-medium text-white mt-0.5">{group.platform}</p>
                         </div>
-                        <div className="bg-zinc-900 px-4 py-3">
+                        <div className="bg-[#1a0f00] px-4 py-3">
                           <p className="text-xs text-zinc-500">Invested</p>
                           <p className="text-sm font-mono text-white mt-0.5">{formatCurrency(group.totalInvested, 'USD')}</p>
                         </div>
-                        <div className="bg-zinc-900 px-4 py-3">
+                        <div className="bg-[#1a0f00] px-4 py-3">
                           <p className="text-xs text-zinc-500">Fees</p>
                           <p className="text-sm font-mono text-amber-400 mt-0.5">{formatCurrency(group.totalFees, 'USD')}</p>
                         </div>
-                        <div className="bg-zinc-900 px-4 py-3">
+                        <div className="bg-[#1a0f00] px-4 py-3">
                           <p className="text-xs text-zinc-500">Withdrawn</p>
                           <p className="text-sm font-mono text-zinc-300 mt-0.5">{formatCurrency(group.totalWithdrawn, 'USD')}</p>
                         </div>
-                        <div className="bg-zinc-900 px-4 py-3">
+                        <div className="bg-[#1a0f00] px-4 py-3">
                           <p className="text-xs text-zinc-500">Current Value</p>
                           <p className="text-sm font-mono text-white mt-0.5">{formatCurrency(group.currentValue, 'USD')}</p>
                         </div>
-                        <div className="bg-zinc-900 px-4 py-3">
+                        <div className="bg-[#1a0f00] px-4 py-3">
                           <p className="text-xs text-zinc-500">Net P/L</p>
-                          <p className={cn('text-sm font-mono mt-0.5', group.netPL >= 0 ? 'text-emerald-400' : 'text-red-400')}>
+                          <p className={cn('text-sm font-mono mt-0.5', group.netPL >= 0 ? 'text-[#32BC00]' : 'text-[#F32400]')}>
                             {group.netPL >= 0 ? '+' : '-'}{formatCurrency(group.netPL, 'USD')}
                           </p>
                         </div>
@@ -362,8 +362,8 @@ export default function InvestmentsPage() {
         {/* Monthly Earnings for current tab */}
         {monthlyPerformanceForTab.length > 0 && (
           <div className="p-4 sm:p-6 pt-0">
-            <div className="border border-zinc-800 rounded-lg overflow-hidden">
-              <div className="px-4 py-3 border-b border-zinc-800">
+            <div className="border border-[#874708]/20 rounded-lg overflow-hidden">
+              <div className="px-4 py-3 border-b border-[#874708]/20">
                 <p className="text-sm font-medium text-zinc-300">
                   Monthly Earnings — {activeTab === 'mutual_fund' ? 'Mutual Funds' : 'Stocks'}
                 </p>
@@ -374,7 +374,7 @@ export default function InvestmentsPage() {
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-sm font-medium text-zinc-300">{m.label}</span>
                       <span className={cn('text-sm font-mono font-semibold',
-                        m.monthEarning >= 0 ? 'text-emerald-400' : 'text-red-400')}>
+                        m.monthEarning >= 0 ? 'text-[#32BC00]' : 'text-[#F32400]')}>
                         {m.monthEarning >= 0 ? '+' : '-'}{formatCurrency(m.monthEarning)}
                       </span>
                     </div>
@@ -385,7 +385,7 @@ export default function InvestmentsPage() {
                         <span>Value: {formatCurrency(m.totalValue)}</span>
                       </div>
                       <span className={cn('text-xs font-mono',
-                        m.earningPct >= 0 ? 'text-emerald-400' : 'text-red-400')}>
+                        m.earningPct >= 0 ? 'text-[#32BC00]' : 'text-[#F32400]')}>
                         {m.earningPct >= 0 ? '+' : ''}{m.earningPct.toFixed(2)}%
                       </span>
                     </div>
@@ -399,8 +399,8 @@ export default function InvestmentsPage() {
         {/* Earnings Chart */}
         {monthlyPerformanceCombined.length > 0 && (
           <div className="p-4 sm:p-6 pt-0">
-            <div className="border border-zinc-800 rounded-lg overflow-hidden">
-              <div className="px-4 py-3 border-b border-zinc-800">
+            <div className="border border-[#874708]/20 rounded-lg overflow-hidden">
+              <div className="px-4 py-3 border-b border-[#874708]/20">
                 <p className="text-sm font-medium text-zinc-300">Earnings Overview</p>
               </div>
               <div className="px-2 sm:px-4 py-4">
@@ -433,8 +433,8 @@ export default function InvestmentsPage() {
                     <Tooltip
                       cursor={{ fill: 'rgba(255,255,255,0.03)' }}
                       contentStyle={{
-                        background: '#18181b',
-                        border: '1px solid #3f3f46',
+                        background: '#1a0f00',
+                        border: '1px solid rgba(135,71,8,0.3)',
                         borderRadius: '8px',
                         color: '#fff',
                         fontSize: '12px',
@@ -450,7 +450,7 @@ export default function InvestmentsPage() {
                       {monthlyPerformanceCombined.map((m, idx) => (
                         <Cell
                           key={idx}
-                          fill={m.monthEarning >= 0 ? '#34d399' : '#f87171'}
+                          fill={m.monthEarning >= 0 ? '#32BC00' : '#F32400'}
                           fillOpacity={0.85}
                         />
                       ))}
@@ -465,8 +465,8 @@ export default function InvestmentsPage() {
         {/* Combined Monthly Earnings */}
         {monthlyPerformanceCombined.length > 0 && (
           <div className="p-4 sm:p-6 pt-0">
-            <div className="border border-zinc-800 rounded-lg overflow-hidden">
-              <div className="px-4 py-3 border-b border-zinc-800">
+            <div className="border border-[#874708]/20 rounded-lg overflow-hidden">
+              <div className="px-4 py-3 border-b border-[#874708]/20">
                 <p className="text-sm font-medium text-zinc-300">Monthly Earnings — All Investments</p>
               </div>
               <div className="divide-y divide-zinc-800/50">
@@ -475,7 +475,7 @@ export default function InvestmentsPage() {
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-sm font-medium text-zinc-300">{m.label}</span>
                       <span className={cn('text-sm font-mono font-semibold',
-                        m.monthEarning >= 0 ? 'text-emerald-400' : 'text-red-400')}>
+                        m.monthEarning >= 0 ? 'text-[#32BC00]' : 'text-[#F32400]')}>
                         {m.monthEarning >= 0 ? '+' : '-'}{formatCurrency(m.monthEarning)}
                       </span>
                     </div>
@@ -486,7 +486,7 @@ export default function InvestmentsPage() {
                         <span>Value: {formatCurrency(m.totalValue)}</span>
                       </div>
                       <span className={cn('text-xs font-mono',
-                        m.earningPct >= 0 ? 'text-emerald-400' : 'text-red-400')}>
+                        m.earningPct >= 0 ? 'text-[#32BC00]' : 'text-[#F32400]')}>
                         {m.earningPct >= 0 ? '+' : ''}{m.earningPct.toFixed(2)}%
                       </span>
                     </div>

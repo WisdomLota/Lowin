@@ -92,7 +92,7 @@ export function TradeFormModal({ open, onClose, onSubmit }: TradeFormModalProps)
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogContent className="bg-zinc-900 border-zinc-800 text-white max-w-lg! max-h-[90vh] overflow-y-auto">
+      <DialogContent className="bg-[#1a0f00] border-[#874708]/20 text-white max-w-lg! max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-white">Log Trade</DialogTitle>
         </DialogHeader>
@@ -101,7 +101,7 @@ export function TradeFormModal({ open, onClose, onSubmit }: TradeFormModalProps)
           <div>
             <Label className="text-zinc-400 text-xs">Mode</Label>
             <select value={form.trade_mode} onChange={(e) => updateField('trade_mode', e.target.value)}
-              className="w-full mt-1 rounded-md bg-zinc-800 border border-zinc-700 text-white text-sm px-3 py-2 outline-none">
+              className="w-full mt-1 rounded-md bg-[#2a1a00] border border-[#874708]/30 text-white text-sm px-3 py-2 outline-none">
               <option value="real">Real</option>
               <option value="demo">Demo</option>
             </select>
@@ -109,32 +109,32 @@ export function TradeFormModal({ open, onClose, onSubmit }: TradeFormModalProps)
           <div>
             <Label className="text-zinc-400 text-xs">Date</Label>
             <Input type="date" value={form.date} onChange={(e) => updateField('date', e.target.value)}
-              className="bg-zinc-800 border-zinc-700 text-white mt-1 text-sm" />
+              className="bg-[#2a1a00] border-[#874708]/30 text-white mt-1 text-sm" />
           </div>
           <div>
             <Label className="text-zinc-400 text-xs">Name / Pair</Label>
             <Input placeholder="e.g. PENGU" value={form.name} onChange={(e) => updateField('name', e.target.value)}
-              className="bg-zinc-800 border-zinc-700 text-white mt-1 text-sm" />
+              className="bg-[#2a1a00] border-[#874708]/30 text-white mt-1 text-sm" />
           </div>
           <div>
             <Label className="text-zinc-400 text-xs">Amount (USD)</Label>
             <Input type="number" step="any" placeholder="10.24" value={form.amount} onChange={(e) => updateField('amount', e.target.value)}
-              className="bg-zinc-800 border-zinc-700 text-white mt-1 text-sm" />
+              className="bg-[#2a1a00] border-[#874708]/30 text-white mt-1 text-sm" />
           </div>
           <div>
             <Label className="text-zinc-400 text-xs">Staked</Label>
             <Input type="number" step="any" value={form.staked} onChange={(e) => updateField('staked', e.target.value)}
-              className="bg-zinc-800 border-zinc-700 text-white mt-1 text-sm" />
+              className="bg-[#2a1a00] border-[#874708]/30 text-white mt-1 text-sm" />
           </div>
           <div>
             <Label className="text-zinc-400 text-xs">Leverage</Label>
             <Input placeholder="e.g. 10X" value={form.leverage} onChange={(e) => updateField('leverage', e.target.value)}
-              className="bg-zinc-800 border-zinc-700 text-white mt-1 text-sm" />
+              className="bg-[#2a1a00] border-[#874708]/30 text-white mt-1 text-sm" />
           </div>
           <div>
             <Label className="text-zinc-400 text-xs">Direction</Label>
             <select value={form.lg_st} onChange={(e) => updateField('lg_st', e.target.value)}
-              className="w-full mt-1 rounded-md bg-zinc-800 border border-zinc-700 text-white text-sm px-3 py-2 outline-none">
+              className="w-full mt-1 rounded-md bg-[#2a1a00] border border-[#874708]/30 text-white text-sm px-3 py-2 outline-none">
               <option value="ST">Short</option>
               <option value="LG">Long</option>
             </select>
@@ -142,32 +142,32 @@ export function TradeFormModal({ open, onClose, onSubmit }: TradeFormModalProps)
           <div>
               <Label className="text-zinc-400 text-xs">Open Time</Label>
               <Input type="time" value={form.open_time} onChange={(e) => updateField('open_time', e.target.value)}
-                className="bg-zinc-800 border-zinc-700 text-white mt-1 text-sm" />
+                className="bg-[#2a1a00] border-[#874708]/30 text-white mt-1 text-sm" />
             </div>
             <div>
               <Label className="text-zinc-400 text-xs">Close Time</Label>
               <Input type="time" value={form.close_time} onChange={(e) => updateField('close_time', e.target.value)}
-                className="bg-zinc-800 border-zinc-700 text-white mt-1 text-sm" />
+                className="bg-[#2a1a00] border-[#874708]/30 text-white mt-1 text-sm" />
             </div>
             <div>
               <Label className="text-zinc-400 text-xs">Close Date (if different)</Label>
               <Input type="date" value={form.close_date} onChange={(e) => updateField('close_date', e.target.value)}
-                className="bg-zinc-800 border-zinc-700 text-white mt-1 text-sm" />
+                className="bg-[#2a1a00] border-[#874708]/30 text-white mt-1 text-sm" />
             </div>
           <div>
             <Label className="text-zinc-400 text-xs">Open Price</Label>
             <Input type="number" step="any" value={form.open_price} onChange={(e) => updateField('open_price', e.target.value)}
-              className="bg-zinc-800 border-zinc-700 text-white mt-1 text-sm" />
+              className="bg-[#2a1a00] border-[#874708]/30 text-white mt-1 text-sm" />
           </div>
           <div>
             <Label className="text-zinc-400 text-xs">Close Price</Label>
             <Input type="number" step="any" value={form.close_price} onChange={(e) => updateField('close_price', e.target.value)}
-              className="bg-zinc-800 border-zinc-700 text-white mt-1 text-sm" />
+              className="bg-[#2a1a00] border-[#874708]/30 text-white mt-1 text-sm" />
           </div>
           <div>
             <Label className="text-zinc-400 text-xs">P/L Type</Label>
             <select value={form.pl_type} onChange={(e) => updateField('pl_type', e.target.value)}
-              className="w-full mt-1 rounded-md bg-zinc-800 border border-zinc-700 text-white text-sm px-3 py-2 outline-none">
+              className="w-full mt-1 rounded-md bg-[#2a1a00] border border-[#874708]/30 text-white text-sm px-3 py-2 outline-none">
               <option value="P">Profit</option>
               <option value="L">Loss</option>
             </select>
@@ -175,27 +175,27 @@ export function TradeFormModal({ open, onClose, onSubmit }: TradeFormModalProps)
           <div>
             <Label className="text-zinc-400 text-xs">P/L %</Label>
             <Input type="number" step="any" placeholder="12" value={form.pl_percentage} onChange={(e) => updateField('pl_percentage', e.target.value)}
-              className="bg-zinc-800 border-zinc-700 text-white mt-1 text-sm" />
+              className="bg-[#2a1a00] border-[#874708]/30 text-white mt-1 text-sm" />
           </div>
           <div className="col-span-2">
             <Label className="text-zinc-400 text-xs">Amount P/L (USD)</Label>
             <Input type="number" step="any" placeholder="1.1273" value={form.amount_pl} onChange={(e) => updateField('amount_pl', e.target.value)}
-              className="bg-zinc-800 border-zinc-700 text-white mt-1 text-sm" />
+              className="bg-[#2a1a00] border-[#874708]/30 text-white mt-1 text-sm" />
           </div>
           <div className="col-span-2">
             <Label className="text-zinc-400 text-xs">Hint</Label>
             <Input placeholder="Trading signal or hint..." value={form.hint} onChange={(e) => updateField('hint', e.target.value)}
-              className="bg-zinc-800 border-zinc-700 text-white mt-1 text-sm" />
+              className="bg-[#2a1a00] border-[#874708]/30 text-white mt-1 text-sm" />
           </div>
           <div className="col-span-2">
             <Label className="text-zinc-400 text-xs">Comments</Label>
             <Input placeholder="Trade notes..." value={form.comments} onChange={(e) => updateField('comments', e.target.value)}
-              className="bg-zinc-800 border-zinc-700 text-white mt-1 text-sm" />
+              className="bg-[#2a1a00] border-[#874708]/30 text-white mt-1 text-sm" />
           </div>
         </div>
 
         <Button onClick={handleSubmit} disabled={loading}
-          className="w-full mt-3 bg-emerald-600 hover:bg-emerald-700 text-white">
+          className="w-full mt-3 bg-[#FF8D19] hover:bg-[#e67d15] text-white">
           {loading ? 'Saving...' : 'Log Trade'}
         </Button>
       </DialogContent>
