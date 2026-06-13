@@ -267,9 +267,9 @@ export function useInvestments() {
             prevValue = prevMonthValue
           } else {
             // First value_update for this investment is in this month
-            // Use cost basis as starting point (what was invested before this month)
+            // Use cost basis as starting point (what was invested BEFORE this month)
             let basis = 0
-            if (inv.buy_date.substring(0, 7) <= monthKey) {
+            if (inv.buy_date.substring(0, 7) < monthKey) {
               basis += inv.amount + inv.processing_fee
               basis += invTxs.filter((t) => t.type === 'deposit' && t.date.substring(0, 7) < monthKey).reduce((s, t) => s + t.amount, 0)
               basis -= invTxs.filter((t) => t.type === 'withdrawal' && t.date.substring(0, 7) < monthKey).reduce((s, t) => s + t.amount, 0)
