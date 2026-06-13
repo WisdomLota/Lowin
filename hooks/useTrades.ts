@@ -116,6 +116,14 @@ export function useTrades() {
     setTrades((prev) => prev.filter((t) => t.id !== id))
   }
 
+  const updateTradeMode = async (id: string, mode: 'demo' | 'real') => {
+    const supabase = createClient()
+    const { error } = await supabase.from('trades').update({ trade_mode: mode }).eq('id', id)
+    if (error) return { error: error.message }
+    setTrades((prev) => prev.map((t) => t.id === id ? { ...t, trade_mode: mode } : t))
+    return { error: null }
+  }
+
   const getMonthlySummaries = useCallback((): MonthlySummary[] => {
     const grouped = new Map<string, Trade[]>()
 
@@ -173,5 +181,5 @@ export function useTrades() {
       .sort((a, b) => b.year - a.year)
   }, [trades, getMonthlySummaries])
 
-  return { trades, loading, addTrade, removeTrade, fetchTrades, getMonthlySummaries, getYearlySummaries }
+  return { trades, loading, addTrade, removeTrade, updateTradeMode, fetchTrades, getMonthlySummaries, getYearlySummaries }
 }

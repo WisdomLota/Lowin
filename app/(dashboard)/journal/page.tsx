@@ -163,7 +163,7 @@ function StatsBar({ trades, label }: { trades: any[]; label?: string }) {
   )
 }
 
-function TradeDetailModal({ trade, open, onClose }: { trade: Trade | null; open: boolean; onClose: () => void }) {
+function TradeDetailModal({ trade, open, onClose, onSwitchMode }: { trade: Trade | null; open: boolean; onClose: () => void; onSwitchMode?: (id: string, mode: 'demo' | 'real') => void }) {
   if (!trade) return null
 
   const rows = [
@@ -226,6 +226,24 @@ function TradeDetailModal({ trade, open, onClose }: { trade: Trade | null; open:
           </div>
         )}
 
+        {/* Mode Switcher */}
+        {onSwitchMode && (
+          <div className="px-5 py-3 border-t border-[#874708]/20 flex items-center justify-between">
+            <span className="text-xs text-zinc-500">Switch Mode</span>
+            <button
+              onClick={() => onSwitchMode(trade.id, trade.trade_mode === 'real' ? 'demo' : 'real')}
+              className={cn(
+                'px-3 py-1 text-xs rounded font-medium transition-colors',
+                trade.trade_mode === 'real'
+                  ? 'bg-[#FF8D19]/20 text-[#FF8D19] hover:bg-[#FF8D19]/30'
+                  : 'bg-[#32BC00]/20 text-[#32BC00] hover:bg-[#32BC00]/30'
+              )}
+            >
+              Switch to {trade.trade_mode === 'real' ? 'Demo' : 'Real'}
+            </button>
+          </div>
+        )}
+
         <div className="px-5 py-3 border-t border-[#874708]/20">
           <Button variant="ghost" size="sm" onClick={onClose}
             className="w-full text-zinc-400 hover:text-white hover:bg-[#2a1a00]">
@@ -238,7 +256,7 @@ function TradeDetailModal({ trade, open, onClose }: { trade: Trade | null; open:
 }
 
 export default function JournalPage() {
-  const { trades, loading, addTrade, removeTrade, fetchTrades, getMonthlySummaries, getYearlySummaries } = useTrades()
+  const { trades, loading, addTrade, removeTrade, updateTradeMode, fetchTrades, getMonthlySummaries, getYearlySummaries } = useTrades()
   const [formOpen, setFormOpen] = useState(false)
   const [importOpen, setImportOpen] = useState(false)
   const [viewMode, setViewMode] = useState<ViewMode>('trades')
@@ -576,7 +594,18 @@ export default function JournalPage() {
 
       <TradeFormModal open={formOpen} onClose={() => setFormOpen(false)} onSubmit={addTrade} />
       <ImportTradesModal open={importOpen} onClose={() => setImportOpen(false)} onSuccess={() => fetchTrades()} />
-      <TradeDetailModal trade={selectedTrade} open={!!selectedTrade} onClose={() => setSelectedTrade(null)} />
+      <TradeDetailModal
+        trade={selectedTrade}
+        open={!!selectedTrade}
+        onClose={() => setSelectedTrade(null)}
+        onSwitchMode={async (id, mode) => {
+          const result = await updateTradeMode(id, mode)
+          if (!result.error) {
+            toast.success(`Trade switched to ${mode}`)
+            setSelectedTrade((prev) => prev ? { ...prev, trade_mode: mode } : null)
+          }
+        }}
+      />
     </div>
   )
 }

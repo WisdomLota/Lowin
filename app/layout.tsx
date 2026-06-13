@@ -12,6 +12,7 @@ export const metadata: Metadata = {
   description: 'Discover sub-penny cryptocurrencies, journal your trades, track investments and monitor your portfolio performance in real time.',
   icons: {
     icon: '/lowinBrandLogo.png',
+    shortcut: '/lowinBrandLogo.png',
     apple: '/lowinBrandLogo.png',
   },
 }
