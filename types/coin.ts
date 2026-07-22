@@ -10,6 +10,7 @@ export interface Coin {
   circulating_supply: number
   market_cap_rank: number | null
   source: 'coingecko' | 'bybit' | 'binance'
+  market: 'spot' | 'perpetual'
   // Used for "New" tab — CoinGecko doesn't provide listing date,
   // so we'll approximate based on low market cap rank
   listed_recently?: boolean

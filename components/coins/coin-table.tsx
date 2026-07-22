@@ -49,6 +49,7 @@ export function CoinTable({ coins, onCoinClick }: CoinTableProps) {
             <th className="text-right py-3 px-2 font-medium">24h %</th>
             <th className="text-right py-3 px-2 font-medium hidden sm:table-cell">Market Cap</th>
             <th className="text-right py-3 px-2 font-medium">Volume (24h)</th>
+            <th className="text-right py-3 px-2 font-medium">Market</th>
             <th className="text-right py-3 px-2 sm:px-6 font-medium">Source</th>
           </tr>
         </thead>
@@ -102,6 +103,19 @@ export function CoinTable({ coins, onCoinClick }: CoinTableProps) {
               </td>
               <td className="py-3 px-2 text-right text-sm text-zinc-400">
                 {coin.total_volume > 0 ? formatCompact(coin.total_volume) : '—'}
+              </td>
+              <td className="py-3 px-2 text-right">
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    'text-xs font-normal',
+                    coin.market === 'perpetual'
+                      ? 'border-purple-500/30 text-purple-400'
+                      : 'border-zinc-500/30 text-zinc-400'
+                  )}
+                >
+                  {coin.market === 'perpetual' ? 'PERP' : 'SPOT'}
+                </Badge>
               </td>
               <td className="py-3 px-2 sm:px-6 text-right">
                 <Badge

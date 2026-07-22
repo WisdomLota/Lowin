@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useCoins } from '@/hooks/useCoins'
 import { Header } from '@/components/layout/header'
-import { NavTabs, TabKey, SourceFilter } from '@/components/layout/nav-tabs'
+import { NavTabs, TabKey, SourceFilter, MarketFilter } from '@/components/layout/nav-tabs'
 import { CoinTable } from '@/components/coins/coin-table'
 import { CoinDetailModal } from '@/components/coins/coin-detail-modal'
 import { Coin } from '@/types/coin'
@@ -17,6 +17,7 @@ export default function DashboardPage() {
   const { data, isLoading, error } = useCoins()
   const [activeTab, setActiveTab] = useState<TabKey>('all')
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>('all')
+  const [marketFilter, setMarketFilter] = useState<MarketFilter>('all')
   const [selectedCoin, setSelectedCoin] = useState<Coin | null>(null)
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
@@ -58,6 +59,10 @@ export default function DashboardPage() {
     setSourceFilter(source)
     setPage(1)
   }
+  const handleMarketChange = (market: MarketFilter) => {
+    setMarketFilter(market)
+    setPage(1)
+  }
   const handleSearchChange = (value: string) => {
     setSearch(value)
     setPage(1)
@@ -81,6 +86,10 @@ export default function DashboardPage() {
     // Source filter
     if (sourceFilter !== 'all') {
       coins = coins.filter((c) => c.source === sourceFilter)
+    }
+    // Market filter
+    if (marketFilter !== 'all') {
+      coins = coins.filter((c) => c.market === marketFilter)
     }
 
     // Tab sorting
@@ -110,7 +119,7 @@ export default function DashboardPage() {
       default:
         return coins
     }
-  }, [data?.coins, activeTab, sourceFilter, search])
+  }, [data?.coins, activeTab, sourceFilter, marketFilter, search])
 
   // Pagination
   const totalPages = Math.ceil(filteredCoins.length / PAGE_SIZE)
@@ -124,6 +133,8 @@ export default function DashboardPage() {
         onTabChange={handleTabChange}
         sourceFilter={sourceFilter}
         onSourceChange={handleSourceChange}
+        marketFilter={marketFilter}
+        onMarketChange={handleMarketChange}
       />
 
       {/* Search Bar */}
