@@ -103,6 +103,7 @@ export default function PortfolioPage() {
         circulating_supply: 0,
         market_cap_rank: null,
         source: item.source as 'coingecko' | 'bybit',
+        market: 'spot', // Default to spot if not known
       })
     }
   }
@@ -124,6 +125,7 @@ export default function PortfolioPage() {
         circulating_supply: 0,
         market_cap_rank: null,
         source: 'coingecko',
+        market: 'spot', // Default to spot if not known
       })
     }
   }
