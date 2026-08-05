@@ -10,7 +10,7 @@ import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 
-type InvTab = 'mutual_fund' | 'stock'
+type InvTab = 'mutual_fund' | 'stock' | 'treasury_bill'
 
 function formatCurrency(amount: number, currency: string = 'NGN'): string {
   const symbol = currency === 'USD' ? '$' : '₦'
@@ -19,7 +19,7 @@ function formatCurrency(amount: number, currency: string = 'NGN'): string {
 
 export default function InvestmentsPage() {
   const {
-    loading, addInvestment, removeInvestment,
+    investments, loading, addInvestment, removeInvestment,
     addTransaction, removeTransaction,
     getPlatformGroups, getMonthlyPerformance, getEnrichedInvestments,
   } = useInvestments()
@@ -30,6 +30,8 @@ export default function InvestmentsPage() {
   const [expandedInv, setExpandedInv] = useState<string | null>(null)
 
   const allPlatformGroups = useMemo(() => getPlatformGroups(activeTab), [getPlatformGroups, activeTab])
+
+  const [showAllTxForInv, setShowAllTxForInv] = useState<string | null>(null)
 
   // Separate by currency
   const ngnGroups = useMemo(() => allPlatformGroups.map((g) => ({
@@ -78,6 +80,11 @@ export default function InvestmentsPage() {
   const monthlyPerformanceForTab = useMemo(() => getMonthlyPerformance(activeTab), [getMonthlyPerformance, activeTab])
   const monthlyPerformanceCombined = useMemo(() => getMonthlyPerformance(), [getMonthlyPerformance])
   const enrichedInvestments = useMemo(() => getEnrichedInvestments(), [getEnrichedInvestments])
+  const existingPlatforms = useMemo(() => {
+    const platforms = new Set<string>()
+    for (const inv of investments) platforms.add(inv.platform)
+    return Array.from(platforms).sort()
+  }, [investments])
 
   function renderInvestmentsList(group: typeof ngnGroups[number]) {
     return (
@@ -101,6 +108,9 @@ export default function InvestmentsPage() {
                 <span className="text-white font-mono">{formatCurrency(inv.currentValue, inv.currency)}</span>
                 <span className={cn('font-mono', inv.netPL >= 0 ? 'text-[#32BC00]' : 'text-[#F32400]')}>
                   {inv.netPL >= 0 ? '+' : '-'}{formatCurrency(inv.netPL, inv.currency)}
+                  <span className="text-xs ml-1 opacity-70">
+                    ({inv.totalDeposited > 0 ? `${((inv.netPL / inv.totalDeposited) * 100).toFixed(1)}%` : '0%'})
+                  </span>
                 </span>
               </div>
             </div>
@@ -159,7 +169,7 @@ export default function InvestmentsPage() {
                   <div>
                     <p className="text-xs text-zinc-500 mb-1">Transaction History</p>
                     <div className="space-y-1">
-                      {inv.transactions.map((tx) => (
+                      {(showAllTxForInv === inv.id ? inv.transactions : inv.transactions.slice(0, 10)).map((tx) => (
                         <div key={tx.id} className="flex items-center justify-between text-xs bg-[#2a1a00]/30 rounded px-3 py-1.5">
                           <div className="flex items-center gap-2">
                             <span className={cn('px-1.5 py-0.5 rounded text-xs',
@@ -183,6 +193,22 @@ export default function InvestmentsPage() {
                         </div>
                       ))}
                     </div>
+                    {inv.transactions.length > 10 && showAllTxForInv !== inv.id && (
+                      <button
+                        onClick={() => setShowAllTxForInv(inv.id)}
+                        className="w-full text-center text-xs text-[#FF8D19] hover:text-[#FF8D19]/80 py-2"
+                      >
+                        Show all {inv.transactions.length} transactions
+                      </button>
+                    )}
+                    {showAllTxForInv === inv.id && inv.transactions.length > 10 && (
+                      <button
+                        onClick={() => setShowAllTxForInv(null)}
+                        className="w-full text-center text-xs text-zinc-500 hover:text-zinc-400 py-2"
+                      >
+                        Show less
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
@@ -236,7 +262,7 @@ export default function InvestmentsPage() {
       {/* Tab Switcher + Actions */}
       <div className="px-4 sm:px-6 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#874708]/20">
         <div className="flex gap-1">
-          {([['mutual_fund', 'Mutual Funds'], ['stock', 'Stocks']] as const).map(([key, label]) => (
+          {([['mutual_fund', 'Mutual Funds'], ['stock', 'Stocks'], ['treasury_bill', 'T-Bills']] as const).map(([key, label]) => (
             <button
               key={key}
               onClick={() => setActiveTab(key)}
@@ -251,7 +277,7 @@ export default function InvestmentsPage() {
         </div>
         <Button size="sm" onClick={() => setAddOpen(true)}
           className="bg-[#FF8D19] hover:bg-[#e67d15] text-white text-xs">
-          + Add {activeTab === 'mutual_fund' ? 'Fund' : 'Stock'}
+          + Add {activeTab === 'mutual_fund' ? 'Fund' : activeTab === 'treasury_bill' ? 'T-Bill' : 'Stock'}
         </Button>
       </div>
 
@@ -299,6 +325,9 @@ export default function InvestmentsPage() {
                           <p className={cn('text-sm font-mono mt-0.5', group.netPL >= 0 ? 'text-[#32BC00]' : 'text-[#F32400]')}>
                             {group.netPL >= 0 ? '+' : '-'}{formatCurrency(group.netPL)}
                           </p>
+                          <p className={cn('text-xs font-mono', group.totalInvested > 0 ? (group.netPL >= 0 ? 'text-[#32BC00]' : 'text-[#F32400]') : 'text-zinc-500')}>
+                            {group.totalInvested > 0 ? `${group.netPL >= 0 ? '+' : ''}${((group.netPL / group.totalInvested) * 100).toFixed(2)}%` : ''}
+                          </p>
                         </div>
                       </div>
                       {renderInvestmentsList(group)}
@@ -339,7 +368,10 @@ export default function InvestmentsPage() {
                         <div className="bg-[#1a0f00] px-4 py-3">
                           <p className="text-xs text-zinc-500">Net P/L</p>
                           <p className={cn('text-sm font-mono mt-0.5', group.netPL >= 0 ? 'text-[#32BC00]' : 'text-[#F32400]')}>
-                            {group.netPL >= 0 ? '+' : '-'}{formatCurrency(group.netPL, 'USD')}
+                            {group.netPL >= 0 ? '+' : '-'}{formatCurrency(group.netPL)}
+                          </p>
+                          <p className={cn('text-xs font-mono', group.totalInvested > 0 ? (group.netPL >= 0 ? 'text-[#32BC00]' : 'text-[#F32400]') : 'text-zinc-500')}>
+                            {group.totalInvested > 0 ? `${group.netPL >= 0 ? '+' : ''}${((group.netPL / group.totalInvested) * 100).toFixed(2)}%` : ''}
                           </p>
                         </div>
                       </div>
@@ -352,7 +384,7 @@ export default function InvestmentsPage() {
 
             {ngnGroups.length === 0 && usdGroups.length === 0 && (
               <div className="flex flex-col items-center justify-center py-16 text-zinc-500">
-                <p className="text-lg">No {activeTab === 'mutual_fund' ? 'mutual funds' : 'stocks'} yet</p>
+                <p className="text-lg">No {activeTab === 'mutual_fund' ? 'mutual funds' : activeTab === 'treasury_bill' ? 'treasury bills' : 'stocks'} yet</p>
                 <p className="text-sm mt-1">Click the button above to add your first one</p>
               </div>
             )}
@@ -365,7 +397,7 @@ export default function InvestmentsPage() {
             <div className="border border-[#874708]/20 rounded-lg overflow-hidden">
               <div className="px-4 py-3 border-b border-[#874708]/20">
                 <p className="text-sm font-medium text-zinc-300">
-                  Monthly Earnings — {activeTab === 'mutual_fund' ? 'Mutual Funds' : 'Stocks'}
+                  Monthly Earnings — {activeTab === 'mutual_fund' ? 'Mutual Funds' : activeTab === 'treasury_bill' ? 'Treasury Bills' : 'Stocks'}
                 </p>
               </div>
               <div className="divide-y divide-zinc-800/50">
@@ -503,6 +535,7 @@ export default function InvestmentsPage() {
         onClose={() => setAddOpen(false)}
         onSubmit={addInvestment}
         defaultType={activeTab}
+        existingPlatforms={existingPlatforms}
       />
 
       {txTarget && (

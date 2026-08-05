@@ -32,7 +32,7 @@ function formatUsd(value: number): string {
 export default function PortfolioPage() {
   const [activeTab, setActiveTab] = useState<PortfolioTab>('purchases')
   const [selectedCoin, setSelectedCoin] = useState<Coin | null>(null)
-  const { items: watchlist, loading: watchlistLoading, remove: removeWatchlist } = useWatchlist()
+  const { items: watchlist, loading: watchlistLoading, remove: removeWatchlist, toggleStar } = useWatchlist()
   const { items: purchases, loading: purchasesLoading, remove: removePurchase, refetch: refetchPurchases } = usePurchases()
   const { data: coinsData } = useCoins()
 
@@ -217,6 +217,7 @@ export default function PortfolioPage() {
                   <th className="text-right py-3 px-2 font-medium">Buy Price</th>
                   <th className="text-right py-3 px-2 font-medium">Current Price</th>
                   <th className="text-right py-3 px-2 font-medium">P&L</th>
+                  <th className="text-right py-3 px-2 font-medium">Market</th>
                   <th className="text-right py-3 px-2 font-medium">Exchange</th>
                   <th className="text-right py-3 px-2 font-medium">Date</th>
                   <th className="text-right py-3 px-4 sm:px-6 font-medium"></th>
@@ -253,6 +254,9 @@ export default function PortfolioPage() {
                         <div className="text-xs opacity-70">
                           {plPct >= 0 ? '+' : ''}{plPct.toFixed(2)}%
                         </div>
+                      </td>
+                      <td className="py-3 px-2 text-right">
+                        <span className="text-xs px-1.5 py-0.5 rounded border border-zinc-500/30 text-zinc-400">SPOT</span>
                       </td>
                       <td className="py-3 px-2 text-right text-xs text-zinc-500 capitalize">
                         {purchase.exchange}
@@ -302,9 +306,11 @@ export default function PortfolioPage() {
             <table className="w-full min-w-137.5">
               <thead>
                 <tr className="text-xs text-zinc-500 border-b border-[#874708]/20">
-                  <th className="text-left py-3 px-4 sm:px-6 font-medium">Coin</th>
+                  <th className="text-center py-3 px-2 font-medium w-8"></th>
+                  <th className="text-left py-3 px-2 font-medium">Coin</th>
                   <th className="text-right py-3 px-2 font-medium">Current Price</th>
                   <th className="text-right py-3 px-2 font-medium">24h %</th>
+                  <th className="text-right py-3 px-2 font-medium">Market</th>
                   <th className="text-right py-3 px-2 font-medium">Source</th>
                   <th className="text-right py-3 px-2 font-medium">Added</th>
                   <th className="text-left py-3 px-2 font-medium">Note</th>
@@ -319,7 +325,15 @@ export default function PortfolioPage() {
                   )
                   return (
                     <tr key={item.id} onClick={() => openWatchlistCoin(item)} className="border-b border-[#874708]/10 hover:bg-[#1a0f00]/50 cursor-pointer">
-                      <td className="py-3 px-4 sm:px-6">
+                      <td className="py-3 px-2 text-center">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); toggleStar(item.id) }}
+                          className={cn('text-lg transition-colors', item.starred ? 'text-[#FF8D19]' : 'text-zinc-600 hover:text-[#FF8D19]/50')}
+                        >
+                          {item.starred ? '★' : '☆'}
+                        </button>
+                      </td>
+                      <td className="py-3 px-2">
                         <span className="text-sm font-medium text-white">{item.coin_name}</span>
                         <span className="text-xs text-zinc-500 ml-2">{item.coin_symbol}</span>
                       </td>
@@ -335,6 +349,15 @@ export default function PortfolioPage() {
                         {liveCoin
                           ? `${liveCoin.price_change_percentage_24h >= 0 ? '+' : ''}${liveCoin.price_change_percentage_24h.toFixed(2)}%`
                           : '—'}
+                      </td>
+                      <td className="py-3 px-2 text-right">
+                        <span className={cn('text-xs px-1.5 py-0.5 rounded border',
+                          liveCoin?.market === 'perpetual'
+                            ? 'border-purple-500/30 text-purple-400'
+                            : 'border-zinc-500/30 text-zinc-400'
+                        )}>
+                          {liveCoin?.market === 'perpetual' ? 'PERP' : 'SPOT'}
+                        </span>
                       </td>
                       <td className="py-3 px-2 text-right text-xs text-zinc-500 capitalize">
                         {item.source}

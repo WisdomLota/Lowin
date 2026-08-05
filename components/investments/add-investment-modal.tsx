@@ -16,10 +16,11 @@ interface AddInvestmentModalProps {
   open: boolean
   onClose: () => void
   onSubmit: (inv: any) => Promise<{ error: string | null }>
-  defaultType: 'mutual_fund' | 'stock'
+  defaultType: 'mutual_fund' | 'stock' | 'treasury_bill'
+  existingPlatforms?: string[]
 }
 
-export function AddInvestmentModal({ open, onClose, onSubmit, defaultType }: AddInvestmentModalProps) {
+export function AddInvestmentModal({ open, onClose, onSubmit, defaultType, existingPlatforms = [] }: AddInvestmentModalProps) {
   const [loading, setLoading] = useState(false)
   const [form, setForm] = useState({
     type: defaultType,
@@ -84,7 +85,7 @@ export function AddInvestmentModal({ open, onClose, onSubmit, defaultType }: Add
       <DialogContent className="bg-[#1a0f00] border-[#874708]/20 text-white max-w-lg! max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-white">
-            Add {form.type === 'mutual_fund' ? 'Mutual Fund' : 'Stock'}
+            Add {form.type === 'mutual_fund' ? 'Mutual Fund' : form.type === 'treasury_bill' ? 'Treasury Bill' : 'Stock'}
           </DialogTitle>
         </DialogHeader>
 
@@ -95,6 +96,7 @@ export function AddInvestmentModal({ open, onClose, onSubmit, defaultType }: Add
               className="w-full mt-1 rounded-md bg-[#2a1a00] border border-[#874708]/30 text-white text-sm px-3 py-2 outline-none">
               <option value="mutual_fund">Mutual Fund</option>
               <option value="stock">Stock</option>
+              <option value="treasury_bill">Treasury Bill</option>
             </select>
           </div>
           <div>
@@ -107,12 +109,34 @@ export function AddInvestmentModal({ open, onClose, onSubmit, defaultType }: Add
             <Input placeholder="e.g. STANBIC IBTC IMAAN FUND" value={form.title} onChange={(e) => updateField('title', e.target.value)}
               className="bg-[#2a1a00] border-[#874708]/30 text-white mt-1 text-sm" />
           </div>
-          <div>
+          <div className={existingPlatforms.length > 0 ? 'col-span-2' : ''}>
             <Label className="text-zinc-400 text-xs">Platform</Label>
-            <Input placeholder="e.g. Palmpay Mutual Funds" value={form.platform} onChange={(e) => updateField('platform', e.target.value)}
-              className="bg-[#2a1a00] border-[#874708]/30 text-white mt-1 text-sm" />
+            {existingPlatforms.length > 0 ? (
+              <div className="flex gap-2 mt-1">
+                <select
+                  value={existingPlatforms.includes(form.platform) ? form.platform : '__custom__'}
+                  onChange={(e) => {
+                    if (e.target.value === '__custom__') updateField('platform', '')
+                    else updateField('platform', e.target.value)
+                  }}
+                  className="flex-1 rounded-md bg-[#2a1a00] border border-[#874708]/30 text-white text-sm px-3 py-2 outline-none"
+                >
+                  <option value="__custom__">New platform...</option>
+                  {existingPlatforms.map((p) => (
+                    <option key={p} value={p}>{p}</option>
+                  ))}
+                </select>
+                {!existingPlatforms.includes(form.platform) && (
+                  <Input placeholder="Platform name" value={form.platform} onChange={(e) => updateField('platform', e.target.value)}
+                    className="flex-1 bg-[#2a1a00] border-[#874708]/30 text-white text-sm" />
+                )}
+              </div>
+            ) : (
+              <Input placeholder="e.g. Palmpay Mutual Funds" value={form.platform} onChange={(e) => updateField('platform', e.target.value)}
+                className="bg-[#2a1a00] border-[#874708]/30 text-white mt-1 text-sm" />
+            )}
           </div>
-          <div>
+          <div className={existingPlatforms.length > 0 ? '' : ''}>
             <Label className="text-zinc-400 text-xs">Currency</Label>
             <select value={form.currency} onChange={(e) => updateField('currency', e.target.value)}
               className="w-full mt-1 rounded-md bg-[#2a1a00] border border-[#874708]/30 text-white text-sm px-3 py-2 outline-none">

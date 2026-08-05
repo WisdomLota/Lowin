@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase'
 
 export interface Investment {
   id: string
-  type: 'mutual_fund' | 'stock'
+  type: 'mutual_fund' | 'stock' | 'treasury_bill'
   title: string
   platform: string
   amount: number
@@ -149,7 +149,7 @@ export function useInvestments() {
   }, [investments, transactions])
 
   // Group by platform
-  const getPlatformGroups = useCallback((type: 'mutual_fund' | 'stock'): PlatformGroup[] => {
+  const getPlatformGroups = useCallback((type: 'mutual_fund' | 'stock' | 'treasury_bill'): PlatformGroup[] => {
     const enriched = getEnrichedInvestments().filter((i) => i.type === type)
     const grouped = new Map<string, InvestmentWithData[]>()
 
@@ -170,7 +170,7 @@ export function useInvestments() {
   }, [getEnrichedInvestments])
 
   // Monthly performance: per-investment earnings summed up
-  const getMonthlyPerformance = useCallback((filterType?: 'mutual_fund' | 'stock') => {
+  const getMonthlyPerformance = useCallback((filterType?: 'mutual_fund' | 'stock' | 'treasury_bill') => {
     const allEnriched = getEnrichedInvestments()
     const enriched = filterType ? allEnriched.filter((i) => i.type === filterType) : allEnriched
     if (enriched.length === 0) return []

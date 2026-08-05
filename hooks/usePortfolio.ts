@@ -11,6 +11,7 @@ export interface WatchlistItem {
   source: string
   added_at: string
   comment: string | null
+  starred: boolean
 }
 
 export interface Purchase {
@@ -51,7 +52,15 @@ export function useWatchlist() {
     setItems((prev) => prev.filter((item) => item.id !== id))
   }
 
-  return { items, loading, refetch: fetch, remove }
+  const toggleStar = async (id: string) => {
+    const item = items.find((i) => i.id === id)
+    if (!item) return
+    const supabase = createClient()
+    await supabase.from('watchlist').update({ starred: !item.starred }).eq('id', id)
+    setItems((prev) => prev.map((i) => i.id === id ? { ...i, starred: !i.starred } : i))
+  }
+
+  return { items, loading, refetch: fetch, remove, toggleStar }
 }
 
 export function usePurchases() {
