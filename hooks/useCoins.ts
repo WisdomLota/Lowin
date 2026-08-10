@@ -19,7 +19,7 @@ async function fetchBybitClient(): Promise<Coin[]> {
     return data.result.list
       .filter((t: any) => {
         const price = parseFloat(t.lastPrice)
-        return t.symbol.endsWith('USDT') && price > 0 && price <= 0.01 && parseFloat(t.volume24h) > 0
+        return t.symbol.endsWith('USDT') && price > 0 && price <= 1 && parseFloat(t.volume24h) > 0
       })
       .map((t: any): Coin => {
         const symbol = t.symbol.replace('USDT', '')
@@ -55,7 +55,7 @@ async function fetchBybitPerpsClient(): Promise<Coin[]> {
     return data.result.list
       .filter((t: any) => {
         const price = parseFloat(t.lastPrice)
-        return t.symbol.endsWith('USDT') && price > 0 && price <= 0.01 && parseFloat(t.volume24h) > 0
+        return t.symbol.endsWith('USDT') && price > 0 && price <= 1 && parseFloat(t.volume24h) > 0
       })
       .map((t: any): Coin => {
         const symbol = t.symbol.replace('USDT', '')
@@ -90,7 +90,7 @@ async function fetchBinancePerpsClient(): Promise<Coin[]> {
     return data
       .filter((t: any) => {
         const price = parseFloat(t.lastPrice)
-        return t.symbol.endsWith('USDT') && price > 0 && price <= 0.01 && parseFloat(t.quoteVolume) > 0
+        return t.symbol.endsWith('USDT') && price > 0 && price <= 1 && parseFloat(t.quoteVolume) > 0
       })
       .map((t: any): Coin => {
         const symbol = t.symbol.replace('USDT', '')
@@ -125,7 +125,7 @@ async function fetchBinanceClient(): Promise<Coin[]> {
     return data
       .filter((t: any) => {
         const price = parseFloat(t.lastPrice)
-        return t.symbol.endsWith('USDT') && price > 0 && price <= 0.01 && parseFloat(t.quoteVolume) > 0
+        return t.symbol.endsWith('USDT') && price > 0 && price <= 1 && parseFloat(t.quoteVolume) > 0
       })
       .map((t: any): Coin => {
         const symbol = t.symbol.replace('USDT', '')

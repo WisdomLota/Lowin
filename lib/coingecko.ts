@@ -19,7 +19,7 @@ export async function fetchCoinGeckoCoins(page = 1): Promise<Coin[]> {
   const data = await res.json()
 
   return data
-    .filter((coin: any) => coin.current_price !== null && coin.current_price <= 0.01 && coin.current_price > 0)
+    .filter((coin: any) => coin.current_price !== null && coin.current_price <= 1 && coin.current_price > 0)
     .map((coin: any): Coin => ({
       id: coin.id,
       symbol: coin.symbol.toUpperCase(),

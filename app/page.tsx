@@ -3,13 +3,13 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useCoins } from '@/hooks/useCoins'
 import { Header } from '@/components/layout/header'
-import { NavTabs, TabKey, SourceFilter, MarketFilter } from '@/components/layout/nav-tabs'
 import { CoinTable } from '@/components/coins/coin-table'
 import { CoinDetailModal } from '@/components/coins/coin-detail-modal'
 import { Coin } from '@/types/coin'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { useNotifications } from '@/hooks/useNotifications'
+import { NavTabs, TabKey, SourceFilter, MarketFilter, PriceFilter } from '@/components/layout/nav-tabs'
 
 const PAGE_SIZE = 50
 
@@ -18,6 +18,7 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<TabKey>('all')
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>('all')
   const [marketFilter, setMarketFilter] = useState<MarketFilter>('all')
+  const [priceFilter, setPriceFilter] = useState<PriceFilter>('0.01')
   const [selectedCoin, setSelectedCoin] = useState<Coin | null>(null)
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
@@ -63,6 +64,10 @@ export default function DashboardPage() {
     setMarketFilter(market)
     setPage(1)
   }
+  const handlePriceChange = (price: PriceFilter) => {
+    setPriceFilter(price)
+    setPage(1)
+  }
   const handleSearchChange = (value: string) => {
     setSearch(value)
     setPage(1)
@@ -92,6 +97,10 @@ export default function DashboardPage() {
       coins = coins.filter((c) => c.market === marketFilter)
     }
 
+    // Price filter
+    const maxPrice = parseFloat(priceFilter)
+    coins = coins.filter((c) => c.current_price <= maxPrice)
+
     // Tab sorting
     switch (activeTab) {
       case 'new':
@@ -119,7 +128,7 @@ export default function DashboardPage() {
       default:
         return coins
     }
-  }, [data?.coins, activeTab, sourceFilter, marketFilter, search])
+  }, [data?.coins, activeTab, sourceFilter, marketFilter, priceFilter, search])
 
   // Pagination
   const totalPages = Math.ceil(filteredCoins.length / PAGE_SIZE)
@@ -135,6 +144,8 @@ export default function DashboardPage() {
         onSourceChange={handleSourceChange}
         marketFilter={marketFilter}
         onMarketChange={handleMarketChange}
+        priceFilter={priceFilter}
+        onPriceChange={handlePriceChange}
       />
 
       {/* Search Bar */}
