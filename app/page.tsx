@@ -105,8 +105,9 @@ export default function DashboardPage() {
     switch (activeTab) {
       case 'new':
         return [...coins]
-          .filter((c) => c.market_cap > 0)
-          .sort((a, b) => a.market_cap - b.market_cap)
+          .filter((c) => c.source === 'bybit' || c.source === 'binance')
+          .sort((a, b) => b.total_volume - a.total_volume)
+          .slice(0, 100)
       case 'gainers':
         return [...coins]
           .sort((a, b) => b.price_change_percentage_24h - a.price_change_percentage_24h)
