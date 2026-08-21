@@ -98,9 +98,9 @@ export async function GET(request: Request) {
 
       // Send Telegram notification
       const lines = newCoins
-        .filter((c: any) => c.price <= 1)
+        .filter((c: any) => c.price <= 1 && c.volume > 1000)
         .slice(0, 20)
-        .map((c: any) => `• <b>${c.symbol}</b> — $${c.price < 0.01 ? c.price.toFixed(8) : c.price.toFixed(4)} (${c.change >= 0 ? '+' : ''}${c.change.toFixed(1)}%) Vol: $${(c.volume / 1000).toFixed(1)}K`)
+        .map((c: any) => `• <b>${c.symbol}</b> [${c.source === 'binance' ? 'Binance' : 'CoinGecko'}] — $${c.price < 0.01 ? c.price.toFixed(8) : c.price.toFixed(4)} (${c.change >= 0 ? '+' : ''}${c.change.toFixed(1)}%) Vol: $${(c.volume / 1000).toFixed(1)}K`)
 
       if (lines.length > 0) {
         const message = `🆕 <b>New Listings (≤$1)</b>\n\n${lines.join('\n')}\n\n🔗 Check Lowin for details`
