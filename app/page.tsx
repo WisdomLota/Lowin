@@ -22,8 +22,21 @@ export default function DashboardPage() {
   const [selectedCoin, setSelectedCoin] = useState<Coin | null>(null)
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
+  const [newCoinSymbols, setNewCoinSymbols] = useState<Set<string>>(new Set())
 
   const { checkDelistings, checkPriceAlerts, checkDelistingWarnings } = useNotifications()
+
+  // Fetch genuinely new coins from known_coins table
+  useEffect(() => {
+    fetch('/api/coins/new')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.coins?.length > 0) {
+          setNewCoinSymbols(new Set(data.coins.map((c: any) => c.symbol)))
+        }
+      })
+      .catch(() => {})
+  }, [])
 
   // Check for delistings and price alerts when data loads
   useEffect(() => {
@@ -104,6 +117,12 @@ export default function DashboardPage() {
     // Tab sorting
     switch (activeTab) {
       case 'new':
+        if (newCoinSymbols.size > 0) {
+          return [...coins]
+            .filter((c) => newCoinSymbols.has(c.symbol))
+            .sort((a, b) => b.total_volume - a.total_volume)
+        }
+        // Fallback if no new coins tracked yet
         return [...coins]
           .filter((c) => c.source === 'bybit' || c.source === 'binance')
           .sort((a, b) => b.total_volume - a.total_volume)
@@ -129,7 +148,7 @@ export default function DashboardPage() {
       default:
         return coins
     }
-  }, [data?.coins, activeTab, sourceFilter, marketFilter, priceFilter, search])
+  }, [data?.coins, activeTab, sourceFilter, marketFilter, priceFilter, search, newCoinSymbols])
 
   // Pagination
   const totalPages = Math.ceil(filteredCoins.length / PAGE_SIZE)
@@ -183,6 +202,11 @@ export default function DashboardPage() {
             <div className="px-4 sm:px-6 py-2 flex items-center justify-between">
               <span className="text-xs text-zinc-600">
                 {filteredCoins.length} coins · Page {page} of {totalPages || 1}
+                {activeTab === 'new' && (
+                  <span className={newCoinSymbols.size > 0 ? 'text-[#32BC00] ml-2' : 'text-zinc-500 ml-2'}>
+                    {newCoinSymbols.size > 0 ? '● New listings (last 7 days)' : '● Showing by volume (no new listings yet)'}
+                  </span>
+                )}
               </span>
               <span className="text-xs text-zinc-600">
                 Updated: {new Date(data.updated_at).toLocaleTimeString()}
