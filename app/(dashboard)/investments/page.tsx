@@ -80,6 +80,30 @@ export default function InvestmentsPage() {
   const monthlyPerformanceForTab = useMemo(() => getMonthlyPerformance(activeTab), [getMonthlyPerformance, activeTab])
   const monthlyPerformanceCombined = useMemo(() => getMonthlyPerformance(), [getMonthlyPerformance])
   const enrichedInvestments = useMemo(() => getEnrichedInvestments(), [getEnrichedInvestments])
+  // Total portfolio across ALL investment types (not just active tab)
+  const totalPortfolio = useMemo(() => {
+    const all = getEnrichedInvestments()
+    const ngn = all.filter((i) => i.currency !== 'USD')
+    const usd = all.filter((i) => i.currency === 'USD')
+    return {
+      ngn: {
+        invested: ngn.reduce((s, i) => s + i.totalDeposited, 0),
+        currentValue: ngn.reduce((s, i) => s + i.currentValue, 0),
+        netPL: ngn.reduce((s, i) => s + i.netPL, 0),
+        fees: ngn.reduce((s, i) => s + i.processing_fee, 0),
+        withdrawn: ngn.reduce((s, i) => s + i.totalWithdrawn, 0),
+      },
+      usd: {
+        invested: usd.reduce((s, i) => s + i.totalDeposited, 0),
+        currentValue: usd.reduce((s, i) => s + i.currentValue, 0),
+        netPL: usd.reduce((s, i) => s + i.netPL, 0),
+        fees: usd.reduce((s, i) => s + i.processing_fee, 0),
+        withdrawn: usd.reduce((s, i) => s + i.totalWithdrawn, 0),
+      },
+    }
+  }, [getEnrichedInvestments])
+
+  const [showPortfolioSummary, setShowPortfolioSummary] = useState(false)
   const existingPlatforms = useMemo(() => {
     const platforms = new Set<string>()
     for (const inv of investments) platforms.add(inv.platform)
@@ -232,11 +256,12 @@ export default function InvestmentsPage() {
             { l: 'Current Value', v: formatCurrency(summary.ngn.currentValue, 'NGN'), c: 'text-white' },
             { l: 'Fees', v: formatCurrency(summary.ngn.totalFees, 'NGN'), c: 'text-amber-400' },
             { l: 'Withdrawn', v: formatCurrency(summary.ngn.totalWithdrawn, 'NGN'), c: 'text-zinc-300' },
-            { l: 'Net P/L', v: `${summary.ngn.netPL >= 0 ? '+' : '-'}${formatCurrency(summary.ngn.netPL, 'NGN')}`, c: summary.ngn.netPL >= 0 ? 'text-[#32BC00]' : 'text-[#F32400]' },
+            { l: 'Net P/L', v: `${summary.ngn.netPL >= 0 ? '+' : '-'}${formatCurrency(summary.ngn.netPL, 'NGN')}`, c: summary.ngn.netPL >= 0 ? 'text-[#32BC00]' : 'text-[#F32400]', pct: summary.ngn.totalInvested > 0 ? `${summary.ngn.netPL >= 0 ? '+' : ''}${((summary.ngn.netPL / summary.ngn.totalInvested) * 100).toFixed(2)}%` : '' },
           ].map((s) => (
             <div key={s.l} className="bg-[#0F0800] px-4 sm:px-6 py-3">
               <p className="text-xs text-zinc-500">{s.l}</p>
               <p className={cn('text-base sm:text-lg font-mono mt-0.5', s.c)}>{s.v}</p>
+              {(s as any).pct && <p className={cn('text-xs font-mono', s.c)}>{(s as any).pct}</p>}
             </div>
           ))}
         </div>
@@ -249,15 +274,89 @@ export default function InvestmentsPage() {
             { l: 'Current Value', v: formatCurrency(summary.usd.currentValue, 'USD'), c: 'text-white' },
             { l: 'Fees', v: formatCurrency(summary.usd.totalFees, 'USD'), c: 'text-amber-400' },
             { l: 'Withdrawn', v: formatCurrency(summary.usd.totalWithdrawn, 'USD'), c: 'text-zinc-300' },
-            { l: 'Net P/L', v: `${summary.usd.netPL >= 0 ? '+' : '-'}${formatCurrency(summary.usd.netPL, 'USD')}`, c: summary.usd.netPL >= 0 ? 'text-[#32BC00]' : 'text-[#F32400]' },
+            { l: 'Net P/L', v: `${summary.usd.netPL >= 0 ? '+' : '-'}${formatCurrency(summary.usd.netPL, 'USD')}`, c: summary.usd.netPL >= 0 ? 'text-[#32BC00]' : 'text-[#F32400]', pct: summary.usd.totalInvested > 0 ? `${summary.usd.netPL >= 0 ? '+' : ''}${((summary.usd.netPL / summary.usd.totalInvested) * 100).toFixed(2)}%` : '' },
           ].map((s) => (
             <div key={s.l} className="bg-[#0F0800] px-4 sm:px-6 py-3">
               <p className="text-xs text-zinc-500">{s.l}</p>
               <p className={cn('text-base sm:text-lg font-mono mt-0.5', s.c)}>{s.v}</p>
+              {(s as any).pct && <p className={cn('text-xs font-mono', s.c)}>{(s as any).pct}</p>}
             </div>
           ))}
         </div>
       )}
+
+      {/* Total Portfolio Worth Button + Summary */}
+      <div className="px-4 sm:px-6 py-2 border-b border-[#874708]/20">
+        <button
+          onClick={() => setShowPortfolioSummary(!showPortfolioSummary)}
+          className="text-xs font-medium text-[#FF8D19] hover:text-[#FF8D19]/80 transition-colors flex items-center gap-1"
+        >
+          {showPortfolioSummary ? '▼' : '▶'} Total Portfolio Worth
+        </button>
+
+        {showPortfolioSummary && (
+          <div className="mt-3 space-y-2">
+            {totalPortfolio.ngn.invested > 0 && (
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-px bg-[#2a1a00] rounded-lg overflow-hidden">
+                <div className="bg-[#1a0f00] px-4 py-3">
+                  <p className="text-xs text-zinc-500">Total Invested (₦)</p>
+                  <p className="text-sm font-mono text-white mt-0.5">{formatCurrency(totalPortfolio.ngn.invested, 'NGN')}</p>
+                </div>
+                <div className="bg-[#1a0f00] px-4 py-3">
+                  <p className="text-xs text-zinc-500">Current Worth</p>
+                  <p className="text-sm font-mono text-white mt-0.5">{formatCurrency(totalPortfolio.ngn.currentValue, 'NGN')}</p>
+                </div>
+                <div className="bg-[#1a0f00] px-4 py-3">
+                  <p className="text-xs text-zinc-500">Total Fees</p>
+                  <p className="text-sm font-mono text-amber-400 mt-0.5">{formatCurrency(totalPortfolio.ngn.fees, 'NGN')}</p>
+                </div>
+                <div className="bg-[#1a0f00] px-4 py-3">
+                  <p className="text-xs text-zinc-500">Total Withdrawn</p>
+                  <p className="text-sm font-mono text-zinc-300 mt-0.5">{formatCurrency(totalPortfolio.ngn.withdrawn, 'NGN')}</p>
+                </div>
+                <div className="bg-[#1a0f00] px-4 py-3">
+                  <p className="text-xs text-zinc-500">Total Net P/L</p>
+                  <p className={cn('text-sm font-mono mt-0.5', totalPortfolio.ngn.netPL >= 0 ? 'text-[#32BC00]' : 'text-[#F32400]')}>
+                    {totalPortfolio.ngn.netPL >= 0 ? '+' : '-'}{formatCurrency(totalPortfolio.ngn.netPL, 'NGN')}
+                  </p>
+                  <p className={cn('text-xs font-mono', totalPortfolio.ngn.netPL >= 0 ? 'text-[#32BC00]' : 'text-[#F32400]')}>
+                    {totalPortfolio.ngn.invested > 0 ? `${totalPortfolio.ngn.netPL >= 0 ? '+' : ''}${((totalPortfolio.ngn.netPL / totalPortfolio.ngn.invested) * 100).toFixed(2)}%` : ''}
+                  </p>
+                </div>
+              </div>
+            )}
+            {totalPortfolio.usd.invested > 0 && (
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-px bg-[#2a1a00] rounded-lg overflow-hidden">
+                <div className="bg-[#1a0f00] px-4 py-3">
+                  <p className="text-xs text-zinc-500">Total Invested ($)</p>
+                  <p className="text-sm font-mono text-white mt-0.5">{formatCurrency(totalPortfolio.usd.invested, 'USD')}</p>
+                </div>
+                <div className="bg-[#1a0f00] px-4 py-3">
+                  <p className="text-xs text-zinc-500">Current Worth</p>
+                  <p className="text-sm font-mono text-white mt-0.5">{formatCurrency(totalPortfolio.usd.currentValue, 'USD')}</p>
+                </div>
+                <div className="bg-[#1a0f00] px-4 py-3">
+                  <p className="text-xs text-zinc-500">Total Fees</p>
+                  <p className="text-sm font-mono text-amber-400 mt-0.5">{formatCurrency(totalPortfolio.usd.fees, 'USD')}</p>
+                </div>
+                <div className="bg-[#1a0f00] px-4 py-3">
+                  <p className="text-xs text-zinc-500">Total Withdrawn</p>
+                  <p className="text-sm font-mono text-zinc-300 mt-0.5">{formatCurrency(totalPortfolio.usd.withdrawn, 'USD')}</p>
+                </div>
+                <div className="bg-[#1a0f00] px-4 py-3">
+                  <p className="text-xs text-zinc-500">Total Net P/L</p>
+                  <p className={cn('text-sm font-mono mt-0.5', totalPortfolio.usd.netPL >= 0 ? 'text-[#32BC00]' : 'text-[#F32400]')}>
+                    {totalPortfolio.usd.netPL >= 0 ? '+' : '-'}{formatCurrency(totalPortfolio.usd.netPL, 'USD')}
+                  </p>
+                  <p className={cn('text-xs font-mono', totalPortfolio.usd.netPL >= 0 ? 'text-[#32BC00]' : 'text-[#F32400]')}>
+                    {totalPortfolio.usd.invested > 0 ? `${totalPortfolio.usd.netPL >= 0 ? '+' : ''}${((totalPortfolio.usd.netPL / totalPortfolio.usd.invested) * 100).toFixed(2)}%` : ''}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Tab Switcher + Actions */}
       <div className="px-4 sm:px-6 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#874708]/20">
@@ -432,28 +531,32 @@ export default function InvestmentsPage() {
         {monthlyPerformanceCombined.length > 0 && (
           <div className="p-4 sm:p-6 pt-0">
             <div className="border border-[#874708]/20 rounded-lg overflow-hidden">
-              <div className="px-4 py-3 border-b border-[#874708]/20">
+              <div className="px-4 py-3 border-b border-[#874708]/20 flex items-center justify-between">
                 <p className="text-sm font-medium text-zinc-300">Earnings Overview</p>
+                <div className="flex items-center gap-4 text-xs">
+                  <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-[#32BC00]" /> Profit</span>
+                  <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-[#F32400]" /> Loss</span>
+                </div>
               </div>
-              <div className="px-2 sm:px-4 py-4">
-                <ResponsiveContainer width="100%" height={260}>
+              <div className="px-2 sm:px-4 py-6">
+                <ResponsiveContainer width="100%" height={280}>
                   <BarChart
                     data={monthlyPerformanceCombined.map((m) => ({
-                      name: m.label.replace(' (to date)', '').split(' ')[0].substring(0, 3),
+                      name: m.label.split(' ')[0].substring(0, 3),
                       earning: Math.round(m.monthEarning),
                       fullLabel: m.label,
                       pct: m.earningPct,
                     }))}
-                    margin={{ top: 5, right: 10, left: 10, bottom: 5 }}
+                    margin={{ top: 20, right: 10, left: 10, bottom: 5 }}
                   >
                     <XAxis
                       dataKey="name"
-                      tick={{ fill: '#71717a', fontSize: 12 }}
-                      axisLine={{ stroke: '#27272a' }}
+                      tick={{ fill: '#a1a1aa', fontSize: 12 }}
+                      axisLine={{ stroke: '#874708', strokeOpacity: 0.2 }}
                       tickLine={false}
                     />
                     <YAxis
-                      tick={{ fill: '#71717a', fontSize: 11 }}
+                      tick={{ fill: '#a1a1aa', fontSize: 11 }}
                       axisLine={false}
                       tickLine={false}
                       tickFormatter={(v) => {
@@ -463,27 +566,35 @@ export default function InvestmentsPage() {
                       }}
                     />
                     <Tooltip
-                      cursor={{ fill: 'rgba(255,255,255,0.03)' }}
+                      cursor={{ fill: 'rgba(135,71,8,0.08)' }}
                       contentStyle={{
-                        background: '#1a0f00',
-                        border: '1px solid rgba(135,71,8,0.3)',
-                        borderRadius: '8px',
+                        background: '#0F0800',
+                        border: '1px solid rgba(135,71,8,0.4)',
+                        borderRadius: '10px',
                         color: '#fff',
-                        fontSize: '12px',
-                        padding: '8px 12px',
+                        fontSize: '13px',
+                        padding: '10px 14px',
+                        boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
                       }}
-                      formatter={(value) => [formatCurrency(Number(value)), 'Earning']}
+                      itemStyle={{ color: '#fff' }}
+                      labelStyle={{ color: '#a1a1aa', fontSize: '11px', marginBottom: '4px' }}
+                      formatter={(value) => {
+                        const num = Number(value)
+                        const color = num >= 0 ? '#32BC00' : '#F32400'
+                        return [<span style={{ color, fontFamily: 'monospace', fontWeight: 600 }}>{num >= 0 ? '+' : '-'}{formatCurrency(num)}</span>, 'Earning']
+                      }}
                       labelFormatter={(_, payload) => {
                         const item = payload?.[0]?.payload
-                        return item?.fullLabel || ''
+                        if (!item) return ''
+                        return `${item.fullLabel} (${item.pct >= 0 ? '+' : ''}${item.pct.toFixed(2)}%)`
                       }}
                     />
-                    <Bar dataKey="earning" radius={[6, 6, 0, 0]} maxBarSize={60}>
+                    <Bar dataKey="earning" radius={[8, 8, 0, 0]} maxBarSize={50}>
                       {monthlyPerformanceCombined.map((m, idx) => (
                         <Cell
                           key={idx}
                           fill={m.monthEarning >= 0 ? '#32BC00' : '#F32400'}
-                          fillOpacity={0.85}
+                          fillOpacity={0.8}
                         />
                       ))}
                     </Bar>
