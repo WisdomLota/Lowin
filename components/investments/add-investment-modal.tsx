@@ -16,7 +16,7 @@ interface AddInvestmentModalProps {
   open: boolean
   onClose: () => void
   onSubmit: (inv: any) => Promise<{ error: string | null }>
-  defaultType: 'mutual_fund' | 'stock' | 'treasury_bill'
+  defaultType: 'mutual_fund' | 'stock' | 'treasury_bill' | 'savings'
   existingPlatforms?: string[]
 }
 
@@ -85,7 +85,7 @@ export function AddInvestmentModal({ open, onClose, onSubmit, defaultType, exist
       <DialogContent className="bg-[#1a0f00] border-[#874708]/20 text-white max-w-lg! max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-white">
-            Add {form.type === 'mutual_fund' ? 'Mutual Fund' : form.type === 'treasury_bill' ? 'Treasury Bill' : 'Stock'}
+            Add {form.type === 'mutual_fund' ? 'Mutual Fund' : form.type === 'treasury_bill' ? 'Treasury Bill' : form.type === 'savings' ? 'Savings' : 'Stock'}
           </DialogTitle>
         </DialogHeader>
 
@@ -96,7 +96,7 @@ export function AddInvestmentModal({ open, onClose, onSubmit, defaultType, exist
               className="w-full mt-1 rounded-md bg-[#2a1a00] border border-[#874708]/30 text-white text-sm px-3 py-2 outline-none">
               <option value="mutual_fund">Mutual Fund</option>
               <option value="stock">Stock</option>
-              <option value="treasury_bill">Treasury Bill</option>
+              <option value="savings">Savings</option>
             </select>
           </div>
           <div>

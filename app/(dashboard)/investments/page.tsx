@@ -8,9 +8,15 @@ import { TransactionModal } from '@/components/investments/transaction-modal'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 
-type InvTab = 'mutual_fund' | 'stock' | 'treasury_bill'
+type InvTab = 'mutual_fund' | 'stock' | 'treasury_bill' | 'savings'
 
 function formatCurrency(amount: number, currency: string = 'NGN'): string {
   const symbol = currency === 'USD' ? '$' : '₦'
@@ -21,7 +27,7 @@ export default function InvestmentsPage() {
   const {
     investments, loading, addInvestment, removeInvestment,
     addTransaction, removeTransaction,
-    getPlatformGroups, getMonthlyPerformance, getEnrichedInvestments,
+    getPlatformGroups, getMonthlyPerformance, getEnrichedInvestments, getYearlyReturns,
   } = useInvestments()
 
   const [activeTab, setActiveTab] = useState<InvTab>('mutual_fund')
@@ -32,6 +38,7 @@ export default function InvestmentsPage() {
   const allPlatformGroups = useMemo(() => getPlatformGroups(activeTab), [getPlatformGroups, activeTab])
 
   const [showAllTxForInv, setShowAllTxForInv] = useState<string | null>(null)
+  const [yearlyReturnsTarget, setYearlyReturnsTarget] = useState<{ title: string; ids?: string[] } | null>(null)
 
   // Separate by currency
   const ngnGroups = useMemo(() => allPlatformGroups.map((g) => ({
@@ -182,10 +189,10 @@ export default function InvestmentsPage() {
                     className="border-[#874708]/30 text-zinc-300 hover:bg-[#2a1a00] text-xs">
                     Withdrawal
                   </Button>
-                  <Button size="sm" variant="ghost"
-                    onClick={() => { removeInvestment(inv.id); toast.success('Investment removed') }}
-                    className="text-zinc-600 hover:text-[#F32400] text-xs ml-auto">
-                    Delete
+                  <Button size="sm" variant="outline"
+                    onClick={() => setYearlyReturnsTarget({ title: inv.title, ids: [inv.id] })}
+                    className="border-[#874708]/30 text-[#FF8D19] hover:bg-[#2a1a00] text-xs">
+                    📊 Yearly
                   </Button>
                 </div>
 
@@ -285,6 +292,32 @@ export default function InvestmentsPage() {
         </div>
       )}
 
+      {/* Yearly Returns Buttons for section summaries */}
+      <div className="px-4 sm:px-6 py-1.5 border-b border-[#874708]/20 flex gap-3">
+        {summary.ngn.totalInvested > 0 && (
+          <button
+            onClick={() => setYearlyReturnsTarget({ title: `${activeTab === 'mutual_fund' ? 'Mutual Funds' : activeTab === 'stock' ? 'Stocks' : activeTab === 'treasury_bill' ? 'T-Bills' : 'Savings'} (₦)`, ids: enrichedInvestments.filter((i) => i.type === activeTab && i.currency !== 'USD').map((i) => i.id) })}
+            className="text-xs text-[#FF8D19] hover:text-[#FF8D19]/80 font-medium"
+          >
+            📊 Yearly Returns (₦)
+          </button>
+        )}
+        {summary.usd.totalInvested > 0 && (
+          <button
+            onClick={() => setYearlyReturnsTarget({ title: `${activeTab === 'mutual_fund' ? 'Mutual Funds' : activeTab === 'stock' ? 'Stocks' : activeTab === 'treasury_bill' ? 'T-Bills' : 'Savings'} ($)`, ids: enrichedInvestments.filter((i) => i.type === activeTab && i.currency === 'USD').map((i) => i.id) })}
+            className="text-xs text-[#FF8D19] hover:text-[#FF8D19]/80 font-medium"
+          >
+            📊 Yearly Returns ($)
+          </button>
+        )}
+        <button
+          onClick={() => setYearlyReturnsTarget({ title: 'All Investments' })}
+          className="text-xs text-zinc-500 hover:text-zinc-400 font-medium"
+        >
+          📊 All Yearly Returns
+        </button>
+      </div>
+
       {/* Total Portfolio Worth Button + Summary */}
       <div className="px-4 sm:px-6 py-2 border-b border-[#874708]/20">
         <button
@@ -297,7 +330,7 @@ export default function InvestmentsPage() {
         {showPortfolioSummary && (
           <div className="mt-3 space-y-2">
             {totalPortfolio.ngn.invested > 0 && (
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-px bg-[#2a1a00] rounded-lg overflow-hidden">
+              <div className="grid grid-cols-2 sm:grid-cols-6 gap-px bg-[#2a1a00] rounded-lg overflow-hidden">
                 <div className="bg-[#1a0f00] px-4 py-3">
                   <p className="text-xs text-zinc-500">Total Invested (₦)</p>
                   <p className="text-sm font-mono text-white mt-0.5">{formatCurrency(totalPortfolio.ngn.invested, 'NGN')}</p>
@@ -326,7 +359,7 @@ export default function InvestmentsPage() {
               </div>
             )}
             {totalPortfolio.usd.invested > 0 && (
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-px bg-[#2a1a00] rounded-lg overflow-hidden">
+              <div className="grid grid-cols-2 sm:grid-cols-6 gap-px bg-[#2a1a00] rounded-lg overflow-hidden">
                 <div className="bg-[#1a0f00] px-4 py-3">
                   <p className="text-xs text-zinc-500">Total Invested ($)</p>
                   <p className="text-sm font-mono text-white mt-0.5">{formatCurrency(totalPortfolio.usd.invested, 'USD')}</p>
@@ -361,7 +394,7 @@ export default function InvestmentsPage() {
       {/* Tab Switcher + Actions */}
       <div className="px-4 sm:px-6 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#874708]/20">
         <div className="flex gap-1">
-          {([['mutual_fund', 'Mutual Funds'], ['stock', 'Stocks'], ['treasury_bill', 'T-Bills']] as const).map(([key, label]) => (
+          {([['mutual_fund', 'Mutual Funds'], ['stock', 'Stocks'], ['treasury_bill', 'T-Bills'], ['savings', 'Savings']] as const).map(([key, label]) => (
             <button
               key={key}
               onClick={() => setActiveTab(key)}
@@ -376,7 +409,7 @@ export default function InvestmentsPage() {
         </div>
         <Button size="sm" onClick={() => setAddOpen(true)}
           className="bg-[#FF8D19] hover:bg-[#e67d15] text-white text-xs">
-          + Add {activeTab === 'mutual_fund' ? 'Fund' : activeTab === 'treasury_bill' ? 'T-Bill' : 'Stock'}
+          + Add {activeTab === 'mutual_fund' ? 'Fund' : activeTab === 'treasury_bill' ? 'T-Bill' : activeTab === 'savings' ? 'Savings' : 'Stock'}
         </Button>
       </div>
 
@@ -428,6 +461,14 @@ export default function InvestmentsPage() {
                             {group.totalInvested > 0 ? `${group.netPL >= 0 ? '+' : ''}${((group.netPL / group.totalInvested) * 100).toFixed(2)}%` : ''}
                           </p>
                         </div>
+                        <div className="bg-[#1a0f00] px-4 py-3 flex items-center justify-center">
+                          <button
+                            onClick={() => setYearlyReturnsTarget({ title: group.platform, ids: group.investments.map((i: any) => i.id) })}
+                            className="text-xs text-[#FF8D19] hover:text-[#FF8D19]/80 font-medium whitespace-nowrap"
+                          >
+                            📊 Yearly
+                          </button>
+                        </div>
                       </div>
                       {renderInvestmentsList(group)}
                     </div>
@@ -473,6 +514,14 @@ export default function InvestmentsPage() {
                             {group.totalInvested > 0 ? `${group.netPL >= 0 ? '+' : ''}${((group.netPL / group.totalInvested) * 100).toFixed(2)}%` : ''}
                           </p>
                         </div>
+                        <div className="bg-[#1a0f00] px-4 py-3 flex items-center justify-center">
+                          <button
+                            onClick={() => setYearlyReturnsTarget({ title: group.platform, ids: group.investments.map((i: any) => i.id) })}
+                            className="text-xs text-[#FF8D19] hover:text-[#FF8D19]/80 font-medium whitespace-nowrap"
+                          >
+                            📊 Yearly
+                          </button>
+                        </div>
                       </div>
                       {renderInvestmentsList(group)}
                     </div>
@@ -483,7 +532,7 @@ export default function InvestmentsPage() {
 
             {ngnGroups.length === 0 && usdGroups.length === 0 && (
               <div className="flex flex-col items-center justify-center py-16 text-zinc-500">
-                <p className="text-lg">No {activeTab === 'mutual_fund' ? 'mutual funds' : activeTab === 'treasury_bill' ? 'treasury bills' : 'stocks'} yet</p>
+                <p className="text-lg">No {activeTab === 'mutual_fund' ? 'mutual funds' : activeTab === 'treasury_bill' ? 'treasury bills' : activeTab === 'savings' ? 'savings' : 'stocks'} yet</p>
                 <p className="text-sm mt-1">Click the button above to add your first one</p>
               </div>
             )}
@@ -639,6 +688,66 @@ export default function InvestmentsPage() {
             </div>
           </div>
         )}
+
+      {/* Yearly Returns Modal */}
+      {yearlyReturnsTarget && (
+        <Dialog open={!!yearlyReturnsTarget} onOpenChange={(isOpen) => !isOpen && setYearlyReturnsTarget(null)}>
+          <DialogContent className="bg-[#1a0f00] border-[#874708]/20 text-white max-w-md! max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-white text-base">
+                Yearly Returns — {yearlyReturnsTarget.title}
+              </DialogTitle>
+              <p className="text-xs text-zinc-500 mt-1">Time-weighted return (deposit/withdrawal adjusted)</p>
+            </DialogHeader>
+            <div className="space-y-2 mt-3">
+              {(() => {
+                const data = getYearlyReturns(yearlyReturnsTarget.ids)
+                if (data.length === 0) return <p className="text-sm text-zinc-500 py-4 text-center">No yearly data available yet. Add value updates to see returns.</p>
+                return data.map((yr) => (
+                  <div key={yr.year} className="bg-[#2a1a00]/50 rounded-lg px-4 py-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-semibold text-white">{yr.year}</span>
+                      <span className={cn('text-lg font-mono font-bold', yr.twr >= 0 ? 'text-[#32BC00]' : 'text-[#F32400]')}>
+                        {yr.twr >= 0 ? '+' : ''}{yr.twr.toFixed(2)}%
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div>
+                        <span className="text-zinc-500">Earning</span>
+                        <p className={cn('font-mono', yr.totalEarning >= 0 ? 'text-[#32BC00]' : 'text-[#F32400]')}>
+                          {yr.totalEarning >= 0 ? '+' : '-'}{formatCurrency(yr.totalEarning)}
+                        </p>
+                      </div>
+                      <div>
+                        <span className="text-zinc-500">End Value</span>
+                        <p className="font-mono text-zinc-200">{formatCurrency(yr.endValue)}</p>
+                      </div>
+                      <div>
+                        <span className="text-zinc-500">Deposited</span>
+                        <p className="font-mono text-zinc-300">{formatCurrency(yr.totalDeposits)}</p>
+                      </div>
+                      <div>
+                        <span className="text-zinc-500">Withdrawn</span>
+                        <p className="font-mono text-zinc-300">{formatCurrency(yr.totalWithdrawals)}</p>
+                      </div>
+                      {yr.totalFees > 0 && (
+                        <div>
+                          <span className="text-zinc-500">Fees Paid</span>
+                          <p className="font-mono text-amber-400">{formatCurrency(yr.totalFees)}</p>
+                        </div>
+                      )}
+                      <div>
+                        <span className="text-zinc-500">Start Value</span>
+                        <p className="font-mono text-zinc-300">{formatCurrency(yr.startValue)}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              })()}
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
       </main>
 
       <AddInvestmentModal
