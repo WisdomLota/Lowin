@@ -219,10 +219,59 @@ export function useNotifications() {
     if (newNotifications) await fetchAll()
   }, [fetchAll])
 
+  const checkMilestones = useCallback(async (priceMap: Map<string, number>) => {
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user || priceMap.size === 0) return
+
+    const [{ data: purchases }, { data: watchlist }] = await Promise.all([
+      supabase.from('purchases').select('coin_symbol, coin_name').eq('user_id', user.id),
+      supabase.from('watchlist').select('coin_symbol, coin_name').eq('user_id', user.id),
+    ])
+
+    const trackedCoins = new Map<string, string>()
+    for (const p of purchases || []) trackedCoins.set(p.coin_symbol, p.coin_name)
+    for (const w of watchlist || []) trackedCoins.set(w.coin_symbol, w.coin_name)
+
+    const milestones = [0.10, 1.00]
+
+    for (const [symbol, name] of trackedCoins) {
+      const price = priceMap.get(symbol)
+      if (!price) continue
+
+      for (const milestone of milestones) {
+        if (price >= milestone) {
+          const milestoneLabel = milestone === 1 ? '$1.00' : '$0.10'
+
+          const { data: existing } = await supabase
+            .from('notifications')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('coin_symbol', symbol)
+            .eq('type', 'milestone')
+            .like('title', `%hit ${milestoneLabel}%`)
+            .limit(1)
+
+          if (existing && existing.length > 0) continue
+
+          await supabase.from('notifications').insert({
+            user_id: user.id,
+            coin_symbol: symbol,
+            type: 'milestone',
+            title: `${name || symbol} hit ${milestoneLabel}!`,
+            message: `${name || symbol} (${symbol}) has reached ${milestoneLabel} — currently at $${price < 0.01 ? price.toFixed(8) : price.toFixed(4)}. This coin is in your ${(purchases || []).some((p: any) => p.coin_symbol === symbol) ? 'portfolio' : 'watchlist'}.`,
+          })
+        }
+      }
+    }
+
+    await fetchAll()
+  }, [fetchAll])
+
   return {
     notifications, priceAlerts, unreadCount, loading,
     markAsRead, markAllAsRead, clearNotification,
     addPriceAlert, removePriceAlert,
-    checkDelistings, checkPriceAlerts, checkDelistingWarnings, fetchAll,
+    checkDelistings, checkPriceAlerts, checkDelistingWarnings, checkMilestones, fetchAll,
   }
 }

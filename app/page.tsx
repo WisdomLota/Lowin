@@ -24,7 +24,7 @@ export default function DashboardPage() {
   const [page, setPage] = useState(1)
   const [newCoinSymbols, setNewCoinSymbols] = useState<Set<string>>(new Set())
 
-  const { checkDelistings, checkPriceAlerts, checkDelistingWarnings } = useNotifications()
+  const { checkDelistings, checkPriceAlerts, checkDelistingWarnings, checkMilestones } = useNotifications()
 
   // Fetch genuinely new coins from known_coins table
   useEffect(() => {
@@ -62,6 +62,7 @@ export default function DashboardPage() {
 
     checkPriceAlerts(priceMap)
     checkDelistingWarnings(coinData)
+    checkMilestones(priceMap)
   }, [data]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Reset page when filters change
