@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useInvestments, InvestmentWithData } from '@/hooks/useInvestments'
 import { Header } from '@/components/layout/header'
 import { AddInvestmentModal } from '@/components/investments/add-investment-modal'
@@ -19,7 +19,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 
 type InvTab = 'mutual_fund' | 'stock' | 'treasury_bill' | 'savings'
 
 function formatCurrency(amount: number, currency: string = 'NGN'): string {
-  const symbol = currency === 'USD' ? '$' : '₦'
+  const symbol = currency === 'USD' ? '$' : currency === 'TRY' ? '₺' : '₦'
   return `${symbol}${Math.abs(amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
@@ -31,6 +31,14 @@ export default function InvestmentsPage() {
   } = useInvestments()
 
   const [activeTab, setActiveTab] = useState<InvTab>('mutual_fund')
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const tab = params.get('tab')
+    if (tab && ['mutual_fund', 'stock', 'treasury_bill', 'savings'].includes(tab)) {
+      setActiveTab(tab as InvTab)
+    }
+  }, [])
   const [addOpen, setAddOpen] = useState(false)
   const [txTarget, setTxTarget] = useState<{ id: string; title: string; type: 'deposit' | 'withdrawal' | 'value_update' } | null>(null)
   const [expandedInv, setExpandedInv] = useState<string | null>(null)
@@ -43,7 +51,7 @@ export default function InvestmentsPage() {
   // Separate by currency
   const ngnGroups = useMemo(() => allPlatformGroups.map((g) => ({
     ...g,
-    investments: g.investments.filter((i) => i.currency !== 'USD'),
+    investments: g.investments.filter((i) => i.currency !== 'USD' && i.currency !== 'TRY'),
   })).filter((g) => g.investments.length > 0).map((g) => ({
     ...g,
     totalInvested: g.investments.reduce((s, i) => s + i.totalDeposited, 0),
@@ -56,6 +64,19 @@ export default function InvestmentsPage() {
   const usdGroups = useMemo(() => allPlatformGroups.map((g) => ({
     ...g,
     investments: g.investments.filter((i) => i.currency === 'USD'),
+  })).filter((g) => g.investments.length > 0).map((g) => ({
+    ...g,
+    totalInvested: g.investments.reduce((s, i) => s + i.totalDeposited, 0),
+    totalFees: g.investments.reduce((s, i) => s + i.processing_fee, 0),
+    totalWithdrawn: g.investments.reduce((s, i) => s + i.totalWithdrawn, 0),
+    currentValue: g.investments.reduce((s, i) => s + i.currentValue, 0),
+    netPL: g.investments.reduce((s, i) => s + i.netPL, 0),
+  })), [allPlatformGroups])
+
+
+  const tryGroups = useMemo(() => allPlatformGroups.map((g) => ({
+    ...g,
+    investments: g.investments.filter((i) => i.currency === 'TRY'),
   })).filter((g) => g.investments.length > 0).map((g) => ({
     ...g,
     totalInvested: g.investments.reduce((s, i) => s + i.totalDeposited, 0),
@@ -81,8 +102,15 @@ export default function InvestmentsPage() {
       currentValue: usdGroups.reduce((s, g) => s + g.currentValue, 0),
       netPL: usdGroups.reduce((s, g) => s + g.netPL, 0),
     }
-    return { ngn: ngnSummary, usd: usdSummary }
-  }, [ngnGroups, usdGroups])
+    const trySummary = {
+      totalInvested: tryGroups.reduce((s, g) => s + g.totalInvested, 0),
+      totalFees: tryGroups.reduce((s, g) => s + g.totalFees, 0),
+      totalWithdrawn: tryGroups.reduce((s, g) => s + g.totalWithdrawn, 0),
+      currentValue: tryGroups.reduce((s, g) => s + g.currentValue, 0),
+      netPL: tryGroups.reduce((s, g) => s + g.netPL, 0),
+    }
+    return { ngn: ngnSummary, usd: usdSummary, try: trySummary }
+  }, [ngnGroups, usdGroups, tryGroups])
 
   const monthlyPerformanceForTab = useMemo(() => getMonthlyPerformance(activeTab), [getMonthlyPerformance, activeTab])
   const monthlyPerformanceCombined = useMemo(() => getMonthlyPerformance(), [getMonthlyPerformance])
@@ -90,7 +118,7 @@ export default function InvestmentsPage() {
   // Total portfolio across ALL investment types (not just active tab)
   const totalPortfolio = useMemo(() => {
     const all = getEnrichedInvestments()
-    const ngn = all.filter((i) => i.currency !== 'USD')
+    const ngn = all.filter((i) => i.currency === 'NGN' || (i.currency !== 'USD' && i.currency !== 'TRY'))
     const usd = all.filter((i) => i.currency === 'USD')
     return {
       ngn: {
@@ -106,6 +134,13 @@ export default function InvestmentsPage() {
         netPL: usd.reduce((s, i) => s + i.netPL, 0),
         fees: usd.reduce((s, i) => s + i.processing_fee, 0),
         withdrawn: usd.reduce((s, i) => s + i.totalWithdrawn, 0),
+      },
+      try: {
+        invested: all.filter((i) => i.currency === 'TRY').reduce((s, i) => s + i.totalDeposited, 0),
+        currentValue: all.filter((i) => i.currency === 'TRY').reduce((s, i) => s + i.currentValue, 0),
+        netPL: all.filter((i) => i.currency === 'TRY').reduce((s, i) => s + i.netPL, 0),
+        fees: all.filter((i) => i.currency === 'TRY').reduce((s, i) => s + i.processing_fee, 0),
+        withdrawn: all.filter((i) => i.currency === 'TRY').reduce((s, i) => s + i.totalWithdrawn, 0),
       },
     }
   }, [getEnrichedInvestments])
@@ -292,6 +327,25 @@ export default function InvestmentsPage() {
         </div>
       )}
 
+      {/* TRY Summary */}
+      {(summary.try && summary.try.totalInvested > 0) && (
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-px bg-[#2a1a00] border-b border-[#874708]/20">
+          {[
+            { l: 'Invested (₺)', v: formatCurrency(summary.try.totalInvested, 'TRY'), c: 'text-white' },
+            { l: 'Current Value', v: formatCurrency(summary.try.currentValue, 'TRY'), c: 'text-white' },
+            { l: 'Fees', v: formatCurrency(summary.try.totalFees, 'TRY'), c: 'text-amber-400' },
+            { l: 'Withdrawn', v: formatCurrency(summary.try.totalWithdrawn, 'TRY'), c: 'text-zinc-300' },
+            { l: 'Net P/L', v: `${summary.try.netPL >= 0 ? '+' : '-'}${formatCurrency(summary.try.netPL, 'TRY')}`, c: summary.try.netPL >= 0 ? 'text-[#32BC00]' : 'text-[#F32400]', pct: summary.try.totalInvested > 0 ? `${summary.try.netPL >= 0 ? '+' : ''}${((summary.try.netPL / summary.try.totalInvested) * 100).toFixed(2)}%` : '' },
+          ].map((s) => (
+            <div key={s.l} className="bg-[#0F0800] px-4 sm:px-6 py-3">
+              <p className="text-xs text-zinc-500">{s.l}</p>
+              <p className={cn('text-base sm:text-lg font-mono mt-0.5', s.c)}>{s.v}</p>
+              {(s as any).pct && <p className={cn('text-xs font-mono', s.c)}>{(s as any).pct}</p>}
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Yearly Returns Buttons for section summaries */}
       <div className="px-4 sm:px-6 py-1.5 border-b border-[#874708]/20 flex gap-3">
         {summary.ngn.totalInvested > 0 && (
@@ -387,6 +441,35 @@ export default function InvestmentsPage() {
                 </div>
               </div>
             )}
+            {totalPortfolio.try && totalPortfolio.try.invested > 0 && (
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-px bg-[#2a1a00] rounded-lg overflow-hidden">
+                <div className="bg-[#1a0f00] px-4 py-3">
+                  <p className="text-xs text-zinc-500">Total Invested (₺)</p>
+                  <p className="text-sm font-mono text-white mt-0.5">{formatCurrency(totalPortfolio.try.invested, 'TRY')}</p>
+                </div>
+                <div className="bg-[#1a0f00] px-4 py-3">
+                  <p className="text-xs text-zinc-500">Current Worth</p>
+                  <p className="text-sm font-mono text-white mt-0.5">{formatCurrency(totalPortfolio.try.currentValue, 'TRY')}</p>
+                </div>
+                <div className="bg-[#1a0f00] px-4 py-3">
+                  <p className="text-xs text-zinc-500">Total Fees</p>
+                  <p className="text-sm font-mono text-amber-400 mt-0.5">{formatCurrency(totalPortfolio.try.fees, 'TRY')}</p>
+                </div>
+                <div className="bg-[#1a0f00] px-4 py-3">
+                  <p className="text-xs text-zinc-500">Total Withdrawn</p>
+                  <p className="text-sm font-mono text-zinc-300 mt-0.5">{formatCurrency(totalPortfolio.try.withdrawn, 'TRY')}</p>
+                </div>
+                <div className="bg-[#1a0f00] px-4 py-3">
+                  <p className="text-xs text-zinc-500">Total Net P/L</p>
+                  <p className={cn('text-sm font-mono mt-0.5', totalPortfolio.try.netPL >= 0 ? 'text-[#32BC00]' : 'text-[#F32400]')}>
+                    {totalPortfolio.try.netPL >= 0 ? '+' : '-'}{formatCurrency(totalPortfolio.try.netPL, 'TRY')}
+                  </p>
+                  <p className={cn('text-xs font-mono', totalPortfolio.try.netPL >= 0 ? 'text-[#32BC00]' : 'text-[#F32400]')}>
+                    {totalPortfolio.try.invested > 0 ? `${totalPortfolio.try.netPL >= 0 ? '+' : ''}${((totalPortfolio.try.netPL / totalPortfolio.try.invested) * 100).toFixed(2)}%` : ''}
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -397,7 +480,10 @@ export default function InvestmentsPage() {
           {([['mutual_fund', 'Mutual Funds'], ['stock', 'Stocks'], ['treasury_bill', 'T-Bills'], ['savings', 'Savings']] as const).map(([key, label]) => (
             <button
               key={key}
-              onClick={() => setActiveTab(key)}
+              onClick={() => {
+              setActiveTab(key)
+              window.history.replaceState(null, '', `?tab=${key}`)
+            }}
               className={cn(
                 'px-3 py-1.5 text-sm rounded font-medium transition-colors',
                 activeTab === key ? 'bg-[#2a1a00] text-white' : 'text-zinc-500 hover:text-zinc-300'
@@ -530,7 +616,60 @@ export default function InvestmentsPage() {
               </div>
             )}
 
-            {ngnGroups.length === 0 && usdGroups.length === 0 && (
+            {/* TRY Investments */}
+            {tryGroups.length > 0 && (
+              <div>
+                <p className="text-xs text-zinc-500 mb-2 px-1">₺ Lira Investments</p>
+                <div className="space-y-4">
+                  {tryGroups.map((group) => (
+                    <div key={group.platform} className="border border-[#874708]/20 rounded-lg overflow-hidden">
+                      <div className="grid grid-cols-2 sm:grid-cols-6 gap-px bg-[#2a1a00]">
+                        <div className="bg-[#1a0f00] px-4 py-3">
+                          <p className="text-xs text-zinc-500">Platform</p>
+                          <p className="text-sm font-medium text-white mt-0.5">{group.platform}</p>
+                        </div>
+                        <div className="bg-[#1a0f00] px-4 py-3">
+                          <p className="text-xs text-zinc-500">Invested</p>
+                          <p className="text-sm font-mono text-white mt-0.5">{formatCurrency(group.totalInvested, 'TRY')}</p>
+                        </div>
+                        <div className="bg-[#1a0f00] px-4 py-3">
+                          <p className="text-xs text-zinc-500">Fees</p>
+                          <p className="text-sm font-mono text-amber-400 mt-0.5">{formatCurrency(group.totalFees, 'TRY')}</p>
+                        </div>
+                        <div className="bg-[#1a0f00] px-4 py-3">
+                          <p className="text-xs text-zinc-500">Withdrawn</p>
+                          <p className="text-sm font-mono text-zinc-300 mt-0.5">{formatCurrency(group.totalWithdrawn, 'TRY')}</p>
+                        </div>
+                        <div className="bg-[#1a0f00] px-4 py-3">
+                          <p className="text-xs text-zinc-500">Current Value</p>
+                          <p className="text-sm font-mono text-white mt-0.5">{formatCurrency(group.currentValue, 'TRY')}</p>
+                        </div>
+                        <div className="bg-[#1a0f00] px-4 py-3">
+                          <p className="text-xs text-zinc-500">Net P/L</p>
+                          <p className={cn('text-sm font-mono mt-0.5', group.netPL >= 0 ? 'text-[#32BC00]' : 'text-[#F32400]')}>
+                            {group.netPL >= 0 ? '+' : '-'}{formatCurrency(group.netPL, 'TRY')}
+                          </p>
+                          <p className={cn('text-xs font-mono', group.totalInvested > 0 ? (group.netPL >= 0 ? 'text-[#32BC00]' : 'text-[#F32400]') : 'text-zinc-500')}>
+                            {group.totalInvested > 0 ? `${group.netPL >= 0 ? '+' : ''}${((group.netPL / group.totalInvested) * 100).toFixed(2)}%` : ''}
+                          </p>
+                        </div>
+                        <div className="bg-[#1a0f00] px-4 py-3 flex items-center justify-center">
+                          <button
+                            onClick={() => setYearlyReturnsTarget({ title: group.platform, ids: group.investments.map((i: any) => i.id) })}
+                            className="text-xs text-[#FF8D19] hover:text-[#FF8D19]/80 font-medium whitespace-nowrap"
+                          >
+                            📊 Yearly
+                          </button>
+                        </div>
+                      </div>
+                      {renderInvestmentsList(group)}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {ngnGroups.length === 0 && usdGroups.length === 0 && tryGroups.length === 0 && (
               <div className="flex flex-col items-center justify-center py-16 text-zinc-500">
                 <p className="text-lg">No {activeTab === 'mutual_fund' ? 'mutual funds' : activeTab === 'treasury_bill' ? 'treasury bills' : activeTab === 'savings' ? 'savings' : 'stocks'} yet</p>
                 <p className="text-sm mt-1">Click the button above to add your first one</p>
@@ -702,6 +841,9 @@ export default function InvestmentsPage() {
             <div className="space-y-2 mt-3">
               {(() => {
                 const data = getYearlyReturns(yearlyReturnsTarget.ids)
+                const targetCurrency = yearlyReturnsTarget.ids
+                  ? enrichedInvestments.find((i) => yearlyReturnsTarget.ids!.includes(i.id))?.currency || 'NGN'
+                  : 'NGN'
                 if (data.length === 0) return <p className="text-sm text-zinc-500 py-4 text-center">No yearly data available yet. Add value updates to see returns.</p>
                 return data.map((yr) => (
                   <div key={yr.year} className="bg-[#2a1a00]/50 rounded-lg px-4 py-3">
@@ -715,30 +857,30 @@ export default function InvestmentsPage() {
                       <div>
                         <span className="text-zinc-500">Earning</span>
                         <p className={cn('font-mono', yr.totalEarning >= 0 ? 'text-[#32BC00]' : 'text-[#F32400]')}>
-                          {yr.totalEarning >= 0 ? '+' : '-'}{formatCurrency(yr.totalEarning)}
+                          {yr.totalEarning >= 0 ? '+' : '-'}{formatCurrency(yr.totalEarning, targetCurrency)}
                         </p>
                       </div>
                       <div>
                         <span className="text-zinc-500">End Value</span>
-                        <p className="font-mono text-zinc-200">{formatCurrency(yr.endValue)}</p>
+                        <p className="font-mono text-zinc-200">{formatCurrency(yr.endValue, targetCurrency)}</p>
                       </div>
                       <div>
                         <span className="text-zinc-500">Deposited</span>
-                        <p className="font-mono text-zinc-300">{formatCurrency(yr.totalDeposits)}</p>
+                        <p className="font-mono text-zinc-300">{formatCurrency(yr.totalDeposits, targetCurrency)}</p>
                       </div>
                       <div>
                         <span className="text-zinc-500">Withdrawn</span>
-                        <p className="font-mono text-zinc-300">{formatCurrency(yr.totalWithdrawals)}</p>
+                        <p className="font-mono text-zinc-300"></p>
                       </div>
                       {yr.totalFees > 0 && (
                         <div>
                           <span className="text-zinc-500">Fees Paid</span>
-                          <p className="font-mono text-amber-400">{formatCurrency(yr.totalFees)}</p>
+                          <p className="font-mono text-amber-400">{formatCurrency(yr.totalFees, targetCurrency)}</p>
                         </div>
                       )}
                       <div>
                         <span className="text-zinc-500">Start Value</span>
-                        <p className="font-mono text-zinc-300">{formatCurrency(yr.startValue)}</p>
+                        <p className="font-mono text-zinc-300">{formatCurrency(yr.startValue, targetCurrency)}</p>
                       </div>
                     </div>
                   </div>

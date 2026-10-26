@@ -44,25 +44,28 @@ export function TransactionModal({ open, onClose, onSubmit, investmentId, invest
 
     setLoading(true)
 
+    const feeValue = fee ? parseFloat(fee) : 0
+
+    // Update fee BEFORE submitting so fetchAll picks it up
+    if (feeValue > 0 && (txType === 'deposit' || txType === 'value_update')) {
+      const { createClient } = await import('@/lib/supabase')
+      const supabase = createClient()
+      const { data: inv } = await supabase.from('investments').select('processing_fee').eq('id', investmentId).single()
+      if (inv) {
+        await supabase.from('investments').update({
+          processing_fee: (inv.processing_fee || 0) + feeValue
+        }).eq('id', investmentId)
+      }
+    }
+
     const result = await onSubmit({
       investment_id: investmentId,
       type: txType,
       amount: parseFloat(amount),
       date,
       notes: notes || null,
+      fee_amount: feeValue,
     })
-
-    // If there's a fee on a deposit, also update the investment's processing_fee
-    if (!result.error && fee && parseFloat(fee) > 0 && txType === 'deposit') {
-      const { createClient } = await import('@/lib/supabase')
-      const supabase = createClient()
-      const { data: inv } = await supabase.from('investments').select('processing_fee').eq('id', investmentId).single()
-      if (inv) {
-        await supabase.from('investments').update({
-          processing_fee: (inv.processing_fee || 0) + parseFloat(fee)
-        }).eq('id', investmentId)
-      }
-    }
 
     setLoading(false)
 

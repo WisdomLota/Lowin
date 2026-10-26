@@ -28,6 +28,7 @@ export interface InvestmentTransaction {
   amount: number
   date: string
   notes: string | null
+  fee_amount: number
   created_at: string
 }
 
@@ -98,8 +99,20 @@ export function useInvestments() {
 
   const removeTransaction = async (id: string) => {
     const supabase = createClient()
+    
+    // Find the transaction to check for fee
+    const tx = transactions.find((t) => t.id === id)
+    if (tx && tx.fee_amount && tx.fee_amount > 0) {
+      // Reverse the fee from the investment's processing_fee
+      const inv = investments.find((i) => i.id === tx.investment_id)
+      if (inv) {
+      const newFee = Math.max(0, inv.processing_fee - tx.fee_amount)
+        await supabase.from('investments').update({ processing_fee: newFee }).eq('id', inv.id)
+      }
+    }
+    
     await supabase.from('investment_transactions').delete().eq('id', id)
-    setTransactions((prev) => prev.filter((t) => t.id !== id))
+    await fetchAll()
   }
 
   // Enrich investments with computed data
@@ -384,6 +397,11 @@ export function useInvestments() {
 
         if (yearUpdates.length > 0) {
           endValue = yearUpdates[0].amount
+          // Account for deposits/withdrawals AFTER the last value_update
+          const lastUpdateDate = yearUpdates[0].date
+          const postUpdateDeposits = invTxs.filter((t) => t.type === 'deposit' && t.date >= yearStart && t.date <= yearEnd && t.date >= lastUpdateDate).reduce((s, t) => s + t.amount, 0)
+          const postUpdateWithdrawals = invTxs.filter((t) => t.type === 'withdrawal' && t.date >= yearStart && t.date <= yearEnd && t.date >= lastUpdateDate).reduce((s, t) => s + t.amount, 0)
+          endValue += postUpdateDeposits - postUpdateWithdrawals
           hasData = true
         } else if (startValue > 0) {
           // No updates this year — carry forward

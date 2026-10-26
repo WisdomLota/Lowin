@@ -142,6 +142,7 @@ export function AddInvestmentModal({ open, onClose, onSubmit, defaultType, exist
               className="w-full mt-1 rounded-md bg-[#2a1a00] border border-[#874708]/30 text-white text-sm px-3 py-2 outline-none">
               <option value="NGN">NGN (₦)</option>
               <option value="USD">USD ($)</option>
+              <option value="TRY">TRY (₺)</option>
             </select>
           </div>
           <div>
