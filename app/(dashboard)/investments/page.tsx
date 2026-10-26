@@ -350,7 +350,7 @@ export default function InvestmentsPage() {
       <div className="px-4 sm:px-6 py-1.5 border-b border-[#874708]/20 flex gap-3">
         {summary.ngn.totalInvested > 0 && (
           <button
-            onClick={() => setYearlyReturnsTarget({ title: `${activeTab === 'mutual_fund' ? 'Mutual Funds' : activeTab === 'stock' ? 'Stocks' : activeTab === 'treasury_bill' ? 'T-Bills' : 'Savings'} (₦)`, ids: enrichedInvestments.filter((i) => i.type === activeTab && i.currency !== 'USD').map((i) => i.id) })}
+            onClick={() => setYearlyReturnsTarget({ title: `${activeTab === 'mutual_fund' ? 'Mutual Funds' : activeTab === 'stock' ? 'Stocks' : activeTab === 'treasury_bill' ? 'T-Bills' : 'Savings'} (₦)`, ids: enrichedInvestments.filter((i) => i.type === activeTab && i.currency !== 'USD' && i.currency !== 'TRY').map((i) => i.id) })}
             className="text-xs text-[#FF8D19] hover:text-[#FF8D19]/80 font-medium"
           >
             📊 Yearly Returns (₦)
@@ -362,6 +362,14 @@ export default function InvestmentsPage() {
             className="text-xs text-[#FF8D19] hover:text-[#FF8D19]/80 font-medium"
           >
             📊 Yearly Returns ($)
+          </button>
+        )}
+        {summary.try && summary.try.totalInvested > 0 && (
+          <button
+            onClick={() => setYearlyReturnsTarget({ title: `${activeTab === 'mutual_fund' ? 'Mutual Funds' : activeTab === 'stock' ? 'Stocks' : activeTab === 'treasury_bill' ? 'T-Bills' : 'Savings'} (₺)`, ids: enrichedInvestments.filter((i) => i.type === activeTab && i.currency === 'TRY').map((i) => i.id) })}
+            className="text-xs text-[#FF8D19] hover:text-[#FF8D19]/80 font-medium"
+          >
+            📊 Yearly Returns (₺)
           </button>
         )}
         <button
@@ -384,7 +392,7 @@ export default function InvestmentsPage() {
         {showPortfolioSummary && (
           <div className="mt-3 space-y-2">
             {totalPortfolio.ngn.invested > 0 && (
-              <div className="grid grid-cols-2 sm:grid-cols-6 gap-px bg-[#2a1a00] rounded-lg overflow-hidden">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-px bg-[#2a1a00] rounded-lg overflow-hidden">
                 <div className="bg-[#1a0f00] px-4 py-3">
                   <p className="text-xs text-zinc-500">Total Invested (₦)</p>
                   <p className="text-sm font-mono text-white mt-0.5">{formatCurrency(totalPortfolio.ngn.invested, 'NGN')}</p>
@@ -413,7 +421,7 @@ export default function InvestmentsPage() {
               </div>
             )}
             {totalPortfolio.usd.invested > 0 && (
-              <div className="grid grid-cols-2 sm:grid-cols-6 gap-px bg-[#2a1a00] rounded-lg overflow-hidden">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-px bg-[#2a1a00] rounded-lg overflow-hidden">
                 <div className="bg-[#1a0f00] px-4 py-3">
                   <p className="text-xs text-zinc-500">Total Invested ($)</p>
                   <p className="text-sm font-mono text-white mt-0.5">{formatCurrency(totalPortfolio.usd.invested, 'USD')}</p>
