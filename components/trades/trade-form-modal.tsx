@@ -11,11 +11,12 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import type { Trade } from '@/hooks/useTrades'
 
 interface TradeFormModalProps {
   open: boolean
   onClose: () => void
-  onSubmit: (trade: any) => Promise<{ error: string | null }>
+  onSubmit: (trade: Omit<Trade, 'id' | 'created_at'>) => Promise<{ error: string | null }>
 }
 
 export function TradeFormModal({ open, onClose, onSubmit }: TradeFormModalProps) {
@@ -66,7 +67,7 @@ export function TradeFormModal({ open, onClose, onSubmit }: TradeFormModalProps)
       lg_st: form.lg_st,
       hint: form.hint || null,
       comments: form.comments || null,
-      trade_mode: form.trade_mode,
+      trade_mode: form.trade_mode as Trade['trade_mode'],
       open_time: form.open_time || null,
       close_time: form.close_time || null,
       close_date: form.close_date || null,

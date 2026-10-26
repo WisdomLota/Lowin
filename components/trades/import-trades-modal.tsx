@@ -11,6 +11,9 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
+import type { Trade } from '@/hooks/useTrades'
+
+type ImportedTrade = Omit<Trade, 'id' | 'created_at' | 'trade_mode' | 'open_time' | 'close_time' | 'close_date'>
 
 interface ImportTradesModalProps {
   open: boolean
@@ -23,7 +26,7 @@ export function ImportTradesModal({ open, onClose, onSuccess }: ImportTradesModa
   const [fileType, setFileType] = useState<'demo' | 'daily'>('demo')
   const [tradeMode, setTradeMode] = useState<'demo' | 'real'>('real')
   const [loading, setLoading] = useState(false)
-  const [preview, setPreview] = useState<any[] | null>(null)
+  const [preview, setPreview] = useState<ImportedTrade[] | null>(null)
 
   async function handlePreview() {
     if (!file) {
@@ -114,7 +117,7 @@ export function ImportTradesModal({ open, onClose, onSuccess }: ImportTradesModa
             <Label className="text-zinc-400 text-sm">File Format</Label>
             <select
               value={fileType}
-              onChange={(e) => { setFileType(e.target.value as any); setPreview(null) }}
+              onChange={(e) => { setFileType(e.target.value as 'demo' | 'daily'); setPreview(null) }}
               className="w-full mt-1 rounded-md bg-[#2a1a00] border border-[#874708]/30 text-white text-sm px-3 py-2 outline-none"
             >
               <option value="demo">
@@ -130,7 +133,7 @@ export function ImportTradesModal({ open, onClose, onSuccess }: ImportTradesModa
             <Label className="text-zinc-400 text-sm">Trade Mode</Label>
             <select
               value={tradeMode}
-              onChange={(e) => setTradeMode(e.target.value as any)}
+              onChange={(e) => setTradeMode(e.target.value as 'demo' | 'real')}
               className="w-full mt-1 rounded-md bg-[#2a1a00] border border-[#874708]/30 text-white text-sm px-3 py-2 outline-none"
             >
               <option value="real">Real Trades</option>

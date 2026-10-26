@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { Coin } from '@/types/coin'
+import { Coin, BinanceTicker, BybitTicker } from '@/types/coin'
 
 interface CoinsResponse {
   coins: Coin[]
@@ -16,12 +16,12 @@ async function fetchBybitClient(): Promise<Coin[]> {
     const data = await res.json()
     if (data.retCode !== 0) return []
 
-    return data.result.list
-      .filter((t: any) => {
+    return (data.result.list as BybitTicker[])
+      .filter((t) => {
         const price = parseFloat(t.lastPrice)
         return t.symbol.endsWith('USDT') && price > 0 && price <= 1 && parseFloat(t.volume24h) > 0
       })
-      .map((t: any): Coin => {
+      .map((t): Coin => {
         const symbol = t.symbol.replace('USDT', '')
         return {
           id: `bybit-${symbol.toLowerCase()}`,
@@ -52,12 +52,12 @@ async function fetchBybitPerpsClient(): Promise<Coin[]> {
     const data = await res.json()
     if (data.retCode !== 0) return []
 
-    return data.result.list
-      .filter((t: any) => {
+    return (data.result.list as BybitTicker[])
+      .filter((t) => {
         const price = parseFloat(t.lastPrice)
         return t.symbol.endsWith('USDT') && price > 0 && price <= 1 && parseFloat(t.volume24h) > 0
       })
-      .map((t: any): Coin => {
+      .map((t): Coin => {
         const symbol = t.symbol.replace('USDT', '')
         return {
           id: `bybit-perp-${symbol.toLowerCase()}`,
@@ -87,12 +87,12 @@ async function fetchBinancePerpsClient(): Promise<Coin[]> {
 
     const data = await res.json()
 
-    return data
-      .filter((t: any) => {
+    return (data as BinanceTicker[])
+      .filter((t) => {
         const price = parseFloat(t.lastPrice)
         return t.symbol.endsWith('USDT') && price > 0 && price <= 1 && parseFloat(t.quoteVolume) > 0
       })
-      .map((t: any): Coin => {
+      .map((t): Coin => {
         const symbol = t.symbol.replace('USDT', '')
         return {
           id: `binance-perp-${symbol.toLowerCase()}`,
@@ -105,7 +105,7 @@ async function fetchBinancePerpsClient(): Promise<Coin[]> {
           total_volume: parseFloat(t.quoteVolume),
           circulating_supply: 0,
           market_cap_rank: null,
-          source: 'binance' as any,
+          source: 'binance',
           market: 'perpetual',
         }
       })
@@ -122,12 +122,12 @@ async function fetchBinanceClient(): Promise<Coin[]> {
 
     const data = await res.json()
 
-    return data
-      .filter((t: any) => {
+    return (data as BinanceTicker[])
+      .filter((t) => {
         const price = parseFloat(t.lastPrice)
         return t.symbol.endsWith('USDT') && price > 0 && price <= 1 && parseFloat(t.quoteVolume) > 0
       })
-      .map((t: any): Coin => {
+      .map((t): Coin => {
         const symbol = t.symbol.replace('USDT', '')
         return {
           id: `binance-${symbol.toLowerCase()}`,
@@ -140,7 +140,7 @@ async function fetchBinanceClient(): Promise<Coin[]> {
           total_volume: parseFloat(t.quoteVolume),
           circulating_supply: 0,
           market_cap_rank: null,
-          source: 'binance' as any,
+          source: 'binance',
           market: 'spot',
         }
       })

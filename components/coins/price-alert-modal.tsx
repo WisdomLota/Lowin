@@ -69,7 +69,7 @@ export function PriceAlertModal({ coin, open, onClose }: PriceAlertModalProps) {
 
           <div>
             <Label className="text-zinc-400 text-xs">Alert when price goes</Label>
-            <select value={direction} onChange={(e) => setDirection(e.target.value as any)}
+            <select value={direction} onChange={(e) => setDirection(e.target.value as 'above' | 'below')}
               className="w-full mt-1 rounded-md bg-[#2a1a00] border border-[#874708]/30 text-white text-sm px-3 py-2 outline-none">
               <option value="above">Above</option>
               <option value="below">Below</option>

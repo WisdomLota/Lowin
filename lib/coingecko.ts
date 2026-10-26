@@ -1,4 +1,4 @@
-import { Coin } from '@/types/coin'
+import { Coin, CoinGeckoMarket, CoinGeckoSearchCoin } from '@/types/coin'
 
 const BASE_URL = 'https://api.coingecko.com/api/v3'
 
@@ -16,16 +16,16 @@ export async function fetchCoinGeckoCoins(page = 1): Promise<Coin[]> {
     return []
   }
 
-  const data = await res.json()
+  const data: CoinGeckoMarket[] = await res.json()
 
   return data
-    .filter((coin: any) => coin.current_price !== null && coin.current_price <= 1 && coin.current_price > 0)
-    .map((coin: any): Coin => ({
+    .filter((coin) => coin.current_price !== null && coin.current_price <= 1 && coin.current_price > 0)
+    .map((coin): Coin => ({
       id: coin.id,
       symbol: coin.symbol.toUpperCase(),
       name: coin.name,
       image: coin.image,
-      current_price: coin.current_price,
+      current_price: coin.current_price ?? 0,
       price_change_percentage_24h: coin.price_change_percentage_24h ?? 0,
       market_cap: coin.market_cap ?? 0,
       total_volume: coin.total_volume ?? 0,
@@ -56,7 +56,7 @@ export async function fetchCoinPricesBySymbols(symbols: string[]): Promise<Map<s
         )
         if (!res.ok) return null
         const data = await res.json()
-        const match = data.coins?.find((c: any) => c.symbol?.toUpperCase() === symbol)
+        const match = (data.coins as CoinGeckoSearchCoin[] | undefined)?.find((c) => c.symbol?.toUpperCase() === symbol)
         return match ? { symbol, id: match.id } : null
       } catch {
         return null

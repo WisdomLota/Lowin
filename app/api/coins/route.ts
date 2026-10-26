@@ -1,60 +1,33 @@
 import { NextResponse } from 'next/server'
 import { fetchAllCoins } from '@/lib/coins'
-import { Coin } from '@/types/coin'
 
-// In-memory cache to avoid hammering APIs
-let cachedCoins: Coin[] = []
-let lastFetchTime = 0
-const CACHE_DURATION = 90 * 1000 // 90 seconds
+// Cached at the CDN instead of in memory (serverless instances don't share memory).
+// Fresh for 90s, then served stale for up to 5 minutes while it refreshes in the background.
+const CACHE_HEADERS = {
+  'Cache-Control': 'public, s-maxage=90, stale-while-revalidate=300',
+}
 
 export async function GET() {
   try {
-    const now = Date.now()
-
-    // Return cached data if fresh enough
-    if (cachedCoins.length > 0 && (now - lastFetchTime) < CACHE_DURATION) {
-      return NextResponse.json({
-        coins: cachedCoins,
-        updated_at: new Date(lastFetchTime).toISOString(),
-        count: cachedCoins.length,
-        cached: true,
-      })
-    }
-
-    // Fetch fresh data
     const coins = await fetchAllCoins()
 
-    // Only update cache if we got results (don't cache empty responses from API failures)
-    if (coins.length > 0) {
-      cachedCoins = coins
-      lastFetchTime = now
-    }
-
-    // Return fresh data if available, otherwise return stale cache
-    const returnCoins = coins.length > 0 ? coins : cachedCoins
-
-    return NextResponse.json({
-      coins: returnCoins,
-      updated_at: new Date(returnCoins === cachedCoins ? lastFetchTime : now).toISOString(),
-      count: returnCoins.length,
-      cached: coins.length === 0 && cachedCoins.length > 0,
-    })
-  } catch (error) {
-    console.error('Error fetching coins:', error)
-
-    // Return stale cache on error rather than failing
-    if (cachedCoins.length > 0) {
-      return NextResponse.json({
-        coins: cachedCoins,
-        updated_at: new Date(lastFetchTime).toISOString(),
-        count: cachedCoins.length,
-        cached: true,
-      })
+    // Don't let the CDN cache an empty result from API failures
+    if (coins.length === 0) {
+      return NextResponse.json(
+        { coins: [], updated_at: new Date().toISOString(), count: 0 },
+        { headers: { 'Cache-Control': 'no-store' } }
+      )
     }
 
     return NextResponse.json(
+      { coins, updated_at: new Date().toISOString(), count: coins.length },
+      { headers: CACHE_HEADERS }
+    )
+  } catch (error) {
+    console.error('Error fetching coins:', error)
+    return NextResponse.json(
       { error: 'Failed to fetch coin data', coins: [], count: 0 },
-      { status: 500 }
+      { status: 500, headers: { 'Cache-Control': 'no-store' } }
     )
   }
 }

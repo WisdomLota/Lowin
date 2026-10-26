@@ -86,7 +86,7 @@ export function useInvestments() {
     setTransactions((prev) => prev.filter((t) => t.investment_id !== id))
   }
 
-  const addTransaction = async (tx: { investment_id: string; type: string; amount: number; date: string; notes?: string }) => {
+  const addTransaction = async (tx: { investment_id: string; type: 'deposit' | 'withdrawal' | 'value_update'; amount: number; date: string; notes?: string | null; fee_amount?: number }) => {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return { error: 'Not authenticated' }

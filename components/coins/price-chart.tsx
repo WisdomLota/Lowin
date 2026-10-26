@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { createChart, ColorType, IChartApi, AreaSeries } from 'lightweight-charts'
+import { createChart, ColorType, IChartApi, AreaSeries, UTCTimestamp } from 'lightweight-charts'
 
 interface PricePoint {
   time: number
@@ -80,7 +80,7 @@ export function PriceChart({ data, isLoading }: PriceChartProps) {
       },
     })
 
-    series.setData(data as any)
+    series.setData(data as { time: UTCTimestamp; value: number }[])
     chart.timeScale().fitContent()
     chartRef.current = chart
 

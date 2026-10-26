@@ -1,5 +1,14 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { BinanceTicker, CoinGeckoMarket } from '@/types/coin'
+
+interface ListedCoin {
+  symbol: string
+  price: number
+  volume: number
+  change: number
+  source: string
+}
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -41,11 +50,11 @@ export async function GET(request: Request) {
       }).catch(() => null),
     ])
 
-    const currentCoins: { symbol: string; price: number; volume: number; change: number; source: string }[] = []
+    const currentCoins: ListedCoin[] = []
 
     // Parse Binance
     if (binanceRes?.ok) {
-      const binanceData = await binanceRes.json()
+      const binanceData: BinanceTicker[] = await binanceRes.json()
       for (const t of binanceData) {
         const price = parseFloat(t.lastPrice)
         if (t.symbol.endsWith('USDT') && price > 0 && price <= 1) {
@@ -62,7 +71,7 @@ export async function GET(request: Request) {
 
     // Parse CoinGecko
     if (geckoRes?.ok) {
-      const geckoData = await geckoRes.json()
+      const geckoData: CoinGeckoMarket[] = await geckoRes.json()
       for (const c of geckoData) {
         if (c.current_price && c.current_price > 0 && c.current_price <= 1) {
           const sym = c.symbol.toUpperCase()
@@ -85,23 +94,23 @@ export async function GET(request: Request) {
 
     // Get known coins from DB
     const { data: knownCoins } = await supabase.from('known_coins').select('symbol')
-    const knownSet = new Set((knownCoins || []).map((c: any) => c.symbol))
+    const knownSet = new Set((knownCoins || []).map((c: { symbol: string }) => c.symbol))
 
     // Find new coins
-    const newCoins = currentCoins.filter((c: any) => !knownSet.has(c.symbol))
+    const newCoins = currentCoins.filter((c) => !knownSet.has(c.symbol))
 
     if (newCoins.length > 0) {
       // Insert new coins into DB
       await supabase.from('known_coins').upsert(
-        newCoins.map((c: any) => ({ symbol: c.symbol, source: c.source || 'binance' })),
+        newCoins.map((c) => ({ symbol: c.symbol, source: c.source || 'binance' })),
         { onConflict: 'symbol' }
       )
 
       // Send Telegram notification
       const lines = newCoins
-        .filter((c: any) => c.price <= 1 && c.volume > 1000)
+        .filter((c) => c.price <= 1 && c.volume > 1000)
         .slice(0, 20)
-        .map((c: any) => `• <b>${c.symbol}</b> [${c.source === 'binance' ? 'Binance' : 'CoinGecko'}] — $${c.price < 0.01 ? c.price.toFixed(8) : c.price.toFixed(4)} (${c.change >= 0 ? '+' : ''}${c.change.toFixed(1)}%) Vol: $${(c.volume / 1000).toFixed(1)}K`)
+        .map((c) => `• <b>${c.symbol}</b> [${c.source === 'binance' ? 'Binance' : 'CoinGecko'}] — $${c.price < 0.01 ? c.price.toFixed(8) : c.price.toFixed(4)} (${c.change >= 0 ? '+' : ''}${c.change.toFixed(1)}%) Vol: $${(c.volume / 1000).toFixed(1)}K`)
 
       if (lines.length > 0) {
         const message = `🆕 <b>New Listings (≤$1)</b>\n\n${lines.join('\n')}\n\n🔗 Check Lowin for details`

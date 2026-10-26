@@ -109,9 +109,9 @@ export function CoinDetailModal({ coin, open, onClose }: CoinDetailModalProps) {
         if (res.ok) {
           const data = await res.json()
           if (Array.isArray(data) && data.length > 0) {
-            const prices = data.map((k: any[]) => ({
-              time: Math.floor(k[0] / 1000),
-              value: parseFloat(k[4]),
+            const prices = data.map((k: (string | number)[]) => ({
+              time: Math.floor(Number(k[0]) / 1000),
+              value: parseFloat(String(k[4])),
             }))
             setChartData(prices)
             setChartLoading(false)

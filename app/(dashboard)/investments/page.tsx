@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
-import { useInvestments, InvestmentWithData } from '@/hooks/useInvestments'
+import { useInvestments } from '@/hooks/useInvestments'
 import { Header } from '@/components/layout/header'
 import { AddInvestmentModal } from '@/components/investments/add-investment-modal'
 import { TransactionModal } from '@/components/investments/transaction-modal'
@@ -25,7 +25,7 @@ function formatCurrency(amount: number, currency: string = 'NGN'): string {
 
 export default function InvestmentsPage() {
   const {
-    investments, loading, addInvestment, removeInvestment,
+    investments, loading, addInvestment,
     addTransaction, removeTransaction,
     getPlatformGroups, getMonthlyPerformance, getEnrichedInvestments, getYearlyReturns,
   } = useInvestments()
@@ -193,7 +193,7 @@ export default function InvestmentsPage() {
                   ].map((s) => (
                     <div key={s.l} className="bg-[#2a1a00]/50 rounded px-3 py-2">
                       <p className="text-xs text-zinc-500">{s.l}</p>
-                      <p className={cn('text-sm font-mono text-zinc-200', (s as any).c)}>{s.v}</p>
+                      <p className={cn('text-sm font-mono text-zinc-200', s.c)}>{s.v}</p>
                     </div>
                   ))}
                 </div>
@@ -303,7 +303,7 @@ export default function InvestmentsPage() {
             <div key={s.l} className="bg-[#0F0800] px-4 sm:px-6 py-3">
               <p className="text-xs text-zinc-500">{s.l}</p>
               <p className={cn('text-base sm:text-lg font-mono mt-0.5', s.c)}>{s.v}</p>
-              {(s as any).pct && <p className={cn('text-xs font-mono', s.c)}>{(s as any).pct}</p>}
+              {s.pct && <p className={cn('text-xs font-mono', s.c)}>{s.pct}</p>}
             </div>
           ))}
         </div>
@@ -321,7 +321,7 @@ export default function InvestmentsPage() {
             <div key={s.l} className="bg-[#0F0800] px-4 sm:px-6 py-3">
               <p className="text-xs text-zinc-500">{s.l}</p>
               <p className={cn('text-base sm:text-lg font-mono mt-0.5', s.c)}>{s.v}</p>
-              {(s as any).pct && <p className={cn('text-xs font-mono', s.c)}>{(s as any).pct}</p>}
+              {s.pct && <p className={cn('text-xs font-mono', s.c)}>{s.pct}</p>}
             </div>
           ))}
         </div>
@@ -340,7 +340,7 @@ export default function InvestmentsPage() {
             <div key={s.l} className="bg-[#0F0800] px-4 sm:px-6 py-3">
               <p className="text-xs text-zinc-500">{s.l}</p>
               <p className={cn('text-base sm:text-lg font-mono mt-0.5', s.c)}>{s.v}</p>
-              {(s as any).pct && <p className={cn('text-xs font-mono', s.c)}>{(s as any).pct}</p>}
+              {s.pct && <p className={cn('text-xs font-mono', s.c)}>{s.pct}</p>}
             </div>
           ))}
         </div>
@@ -549,7 +549,7 @@ export default function InvestmentsPage() {
                         </div>
                         <div className="bg-[#1a0f00] px-4 py-3 flex items-center justify-center">
                           <button
-                            onClick={() => setYearlyReturnsTarget({ title: group.platform, ids: group.investments.map((i: any) => i.id) })}
+                            onClick={() => setYearlyReturnsTarget({ title: group.platform, ids: group.investments.map((i) => i.id) })}
                             className="text-xs text-[#FF8D19] hover:text-[#FF8D19]/80 font-medium whitespace-nowrap"
                           >
                             📊 Yearly
@@ -602,7 +602,7 @@ export default function InvestmentsPage() {
                         </div>
                         <div className="bg-[#1a0f00] px-4 py-3 flex items-center justify-center">
                           <button
-                            onClick={() => setYearlyReturnsTarget({ title: group.platform, ids: group.investments.map((i: any) => i.id) })}
+                            onClick={() => setYearlyReturnsTarget({ title: group.platform, ids: group.investments.map((i) => i.id) })}
                             className="text-xs text-[#FF8D19] hover:text-[#FF8D19]/80 font-medium whitespace-nowrap"
                           >
                             📊 Yearly
@@ -655,7 +655,7 @@ export default function InvestmentsPage() {
                         </div>
                         <div className="bg-[#1a0f00] px-4 py-3 flex items-center justify-center">
                           <button
-                            onClick={() => setYearlyReturnsTarget({ title: group.platform, ids: group.investments.map((i: any) => i.id) })}
+                            onClick={() => setYearlyReturnsTarget({ title: group.platform, ids: group.investments.map((i) => i.id) })}
                             className="text-xs text-[#FF8D19] hover:text-[#FF8D19]/80 font-medium whitespace-nowrap"
                           >
                             📊 Yearly
@@ -769,7 +769,7 @@ export default function InvestmentsPage() {
                       formatter={(value) => {
                         const num = Number(value)
                         const color = num >= 0 ? '#32BC00' : '#F32400'
-                        return [<span style={{ color, fontFamily: 'monospace', fontWeight: 600 }}>{num >= 0 ? '+' : '-'}{formatCurrency(num)}</span>, 'Earning']
+                        return [<span key="earning" style={{ color, fontFamily: 'monospace', fontWeight: 600 }}>{num >= 0 ? '+' : '-'}{formatCurrency(num)}</span>, 'Earning']
                       }}
                       labelFormatter={(_, payload) => {
                         const item = payload?.[0]?.payload

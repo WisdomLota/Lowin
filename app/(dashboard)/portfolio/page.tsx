@@ -33,7 +33,7 @@ export default function PortfolioPage() {
   const [activeTab, setActiveTab] = useState<PortfolioTab>('purchases')
   const [selectedCoin, setSelectedCoin] = useState<Coin | null>(null)
   const { items: watchlist, loading: watchlistLoading, remove: removeWatchlist, toggleStar } = useWatchlist()
-  const { items: purchases, loading: purchasesLoading, remove: removePurchase, refetch: refetchPurchases } = usePurchases()
+  const { items: purchases, loading: purchasesLoading, remove: removePurchase } = usePurchases()
   const { data: coinsData } = useCoins()
 
   // Fetch prices for portfolio coins not in the dashboard data

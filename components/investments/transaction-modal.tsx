@@ -12,10 +12,19 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
+export interface TransactionInput {
+  investment_id: string
+  type: 'deposit' | 'withdrawal' | 'value_update'
+  amount: number
+  date: string
+  notes: string | null
+  fee_amount: number
+}
+
 interface TransactionModalProps {
   open: boolean
   onClose: () => void
-  onSubmit: (tx: any) => Promise<{ error: string | null }>
+  onSubmit: (tx: TransactionInput) => Promise<{ error: string | null }>
   investmentId: string
   investmentTitle: string
   defaultType: 'deposit' | 'withdrawal' | 'value_update'
@@ -93,7 +102,7 @@ export function TransactionModal({ open, onClose, onSubmit, investmentId, invest
         <div className="space-y-3 mt-2">
           <div>
             <Label className="text-zinc-400 text-xs">Action</Label>
-            <select value={txType} onChange={(e) => setTxType(e.target.value as any)}
+            <select value={txType} onChange={(e) => setTxType(e.target.value as TransactionInput['type'])}
               className="w-full mt-1 rounded-md bg-[#2a1a00] border border-[#874708]/30 text-white text-sm px-3 py-2 outline-none">
               <option value="value_update">Update Current Value</option>
               <option value="deposit">Additional Deposit</option>

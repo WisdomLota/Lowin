@@ -256,7 +256,7 @@ export function useNotifications() {
 
       if (existing && existing.length > 0) continue
 
-      const isPortfolio = (purchases || []).some((p: any) => p.coin_symbol === symbol)
+      const isPortfolio = (purchases || []).some((p: { coin_symbol: string }) => p.coin_symbol === symbol)
       const message = `${name || symbol} hit ${milestoneLabel}! Currently at $${price < 0.01 ? price.toFixed(8) : price.toFixed(4)}`
 
       // Record first so the alert is only ever sent once

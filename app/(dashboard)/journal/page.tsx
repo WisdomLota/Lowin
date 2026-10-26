@@ -31,12 +31,10 @@ function getMonthLabel(monthKey: string) {
   return `${months[parseInt(m) - 1]} ${y}`
 }
 
-function calcDuration(trade: any): string {
+function calcDuration(trade: Trade): string {
   if (!trade.open_time || !trade.close_time) return '—'
   const openDate = trade.date
   const closeDate = trade.close_date || trade.date
-  const [oh, om] = trade.open_time.split(':').map(Number)
-  const [ch, cm] = trade.close_time.split(':').map(Number)
   const openMs = new Date(`${openDate}T${trade.open_time}:00`).getTime()
   const closeMs = new Date(`${closeDate}T${trade.close_time}:00`).getTime()
   let diff = closeMs - openMs
@@ -50,7 +48,7 @@ function calcDuration(trade: any): string {
   return `${mins}m`
 }
 
-function TradesTable({ trades, onDelete, onSelect }: { trades: any[]; onDelete: (id: string) => void; onSelect: (trade: any) => void }) {
+function TradesTable({ trades, onDelete, onSelect }: { trades: Trade[]; onDelete: (id: string) => void; onSelect: (trade: Trade) => void }) {
   if (trades.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-zinc-500">
@@ -130,7 +128,7 @@ function TradesTable({ trades, onDelete, onSelect }: { trades: any[]; onDelete: 
   )
 }
 
-function StatsBar({ trades, label }: { trades: any[]; label?: string }) {
+function StatsBar({ trades, label }: { trades: Trade[]; label?: string }) {
   const profits = trades.filter((t) => t.pl_type === 'P').length
   const losses = trades.filter((t) => t.pl_type === 'L').length
   const winRate = trades.length > 0 ? (profits / trades.length) * 100 : 0
@@ -166,7 +164,7 @@ function StatsBar({ trades, label }: { trades: any[]; label?: string }) {
 function TradeDetailModal({ trade, open, onClose, onSwitchMode }: { trade: Trade | null; open: boolean; onClose: () => void; onSwitchMode?: (id: string, mode: 'demo' | 'real') => void }) {
   if (!trade) return null
 
-  const rows = [
+  const rows: { label: string; value: string; color?: string }[] = [
     { label: 'Date', value: trade.date },
     { label: 'Name', value: trade.name },
     { label: 'Mode', value: trade.trade_mode === 'real' ? 'Real' : 'Demo' },
@@ -205,7 +203,7 @@ function TradeDetailModal({ trade, open, onClose, onSwitchMode }: { trade: Trade
           {rows.map((r) => (
             <div key={r.label} className="flex justify-between px-5 py-2">
               <span className="text-xs text-zinc-500">{r.label}</span>
-              <span className={cn('text-sm font-mono', (r as any).color || 'text-zinc-200')}>{r.value}</span>
+              <span className={cn('text-sm font-mono', r.color || 'text-zinc-200')}>{r.value}</span>
             </div>
           ))}
         </div>
@@ -256,12 +254,11 @@ function TradeDetailModal({ trade, open, onClose, onSwitchMode }: { trade: Trade
 }
 
 export default function JournalPage() {
-  const { trades, loading, addTrade, removeTrade, updateTradeMode, fetchTrades, getMonthlySummaries, getYearlySummaries } = useTrades()
+  const { trades, loading, addTrade, removeTrade, updateTradeMode, fetchTrades } = useTrades()
   const [formOpen, setFormOpen] = useState(false)
   const [importOpen, setImportOpen] = useState(false)
   const [viewMode, setViewMode] = useState<ViewMode>('trades')
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null)
-  const [expandedYear, setExpandedYear] = useState<number | null>(null)
   const [expandedMonth, setExpandedMonth] = useState<string | null>(null)
   const [tradeFilter, setTradeFilter] = useState<'combined' | 'real' | 'demo'>('combined')
   const [selectedTrade, setSelectedTrade] = useState<Trade | null>(null)
@@ -273,7 +270,7 @@ export default function JournalPage() {
   }, [trades, tradeFilter])
 
   const monthlySummaries = useMemo(() => {
-    const grouped = new Map<string, any[]>()
+    const grouped = new Map<string, Trade[]>()
     const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
       'July', 'August', 'September', 'October', 'November', 'December']
 
@@ -287,9 +284,9 @@ export default function JournalPage() {
       .map(([month, monthTrades]) => {
         const [y, m] = month.split('-')
         const label = `${monthNames[parseInt(m) - 1]} ${y}`
-        const profits = monthTrades.filter((t: any) => t.pl_type === 'P').length
-        const losses = monthTrades.filter((t: any) => t.pl_type === 'L').length
-        const totalPL = monthTrades.reduce((sum: number, t: any) => {
+        const profits = monthTrades.filter((t) => t.pl_type === 'P').length
+        const losses = monthTrades.filter((t) => t.pl_type === 'L').length
+        const totalPL = monthTrades.reduce((sum, t) => {
           return sum + (t.pl_type === 'P' ? Math.abs(t.amount_pl) : -Math.abs(t.amount_pl))
         }, 0)
         return {
@@ -302,7 +299,7 @@ export default function JournalPage() {
   }, [filteredByMode])
 
   const yearlySummaries = useMemo(() => {
-    const grouped = new Map<number, any[]>()
+    const grouped = new Map<number, Trade[]>()
 
     for (const trade of filteredByMode) {
       const year = parseInt(trade.date.substring(0, 4))
@@ -312,9 +309,9 @@ export default function JournalPage() {
 
     return Array.from(grouped.entries())
       .map(([year, yearTrades]) => {
-        const profits = yearTrades.filter((t: any) => t.pl_type === 'P').length
-        const losses = yearTrades.filter((t: any) => t.pl_type === 'L').length
-        const totalPL = yearTrades.reduce((sum: number, t: any) => {
+        const profits = yearTrades.filter((t) => t.pl_type === 'P').length
+        const losses = yearTrades.filter((t) => t.pl_type === 'L').length
+        const totalPL = yearTrades.reduce((sum, t) => {
           return sum + (t.pl_type === 'P' ? Math.abs(t.amount_pl) : -Math.abs(t.amount_pl))
         }, 0)
         return {
@@ -391,7 +388,7 @@ export default function JournalPage() {
           {(['trades', 'monthly', 'yearly'] as ViewMode[]).map((mode) => (
             <button
               key={mode}
-              onClick={() => { setViewMode(mode); setSelectedMonth(null); setExpandedMonth(null); setExpandedYear(null) }}
+              onClick={() => { setViewMode(mode); setSelectedMonth(null); setExpandedMonth(null) }}
               className={cn(
                 'px-3 py-1.5 text-sm rounded font-medium capitalize transition-colors',
                 viewMode === mode

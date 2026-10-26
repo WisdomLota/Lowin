@@ -1,4 +1,4 @@
-import { Coin } from '@/types/coin'
+import { Coin, BybitTicker, BybitLegacyTicker } from '@/types/coin'
 
 export async function fetchBybitCoins(): Promise<Coin[]> {
   try {
@@ -36,12 +36,12 @@ export async function fetchBybitCoins(): Promise<Coin[]> {
         const fallbackData = await fallbackRes.json()
         if (fallbackData.retCode !== 0 || !fallbackData.result?.list) return []
 
-        return fallbackData.result.list
-          .filter((t: any) => {
+        return (fallbackData.result.list as BybitLegacyTicker[])
+          .filter((t) => {
             const price = parseFloat(t.lp)
             return t.s?.endsWith('USDT') && price > 0 && price <= 0.01
           })
-          .map((t: any): Coin => {
+          .map((t): Coin => {
             const symbol = t.s.replace('USDT', '')
             return {
               id: `bybit-${symbol.toLowerCase()}`,
@@ -69,8 +69,8 @@ export async function fetchBybitCoins(): Promise<Coin[]> {
       return []
     }
 
-    return data.result.list
-      .filter((ticker: any) => {
+    return (data.result.list as BybitTicker[])
+      .filter((ticker) => {
         const price = parseFloat(ticker.lastPrice)
         return (
           ticker.symbol.endsWith('USDT') &&
@@ -79,7 +79,7 @@ export async function fetchBybitCoins(): Promise<Coin[]> {
           parseFloat(ticker.volume24h) > 0
         )
       })
-      .map((ticker: any): Coin => {
+      .map((ticker): Coin => {
         const symbol = ticker.symbol.replace('USDT', '')
         return {
           id: `bybit-${symbol.toLowerCase()}`,

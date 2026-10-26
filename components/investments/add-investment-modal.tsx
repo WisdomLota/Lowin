@@ -11,11 +11,12 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import type { Investment } from '@/hooks/useInvestments'
 
 interface AddInvestmentModalProps {
   open: boolean
   onClose: () => void
-  onSubmit: (inv: any) => Promise<{ error: string | null }>
+  onSubmit: (inv: Omit<Investment, 'id' | 'created_at'>) => Promise<{ error: string | null }>
   defaultType: 'mutual_fund' | 'stock' | 'treasury_bill' | 'savings'
   existingPlatforms?: string[]
 }

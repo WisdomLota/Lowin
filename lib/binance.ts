@@ -1,4 +1,4 @@
-import { Coin } from '@/types/coin'
+import { Coin, BinanceTicker } from '@/types/coin'
 
 export async function fetchBinanceCoins(): Promise<Coin[]> {
   try {
@@ -9,10 +9,10 @@ export async function fetchBinanceCoins(): Promise<Coin[]> {
 
     if (!res.ok) return []
 
-    const data = await res.json()
+    const data: BinanceTicker[] = await res.json()
 
     return data
-      .filter((ticker: any) => {
+      .filter((ticker) => {
         const price = parseFloat(ticker.lastPrice)
         return (
           ticker.symbol.endsWith('USDT') &&
@@ -21,7 +21,7 @@ export async function fetchBinanceCoins(): Promise<Coin[]> {
           parseFloat(ticker.quoteVolume) > 0
         )
       })
-      .map((ticker: any): Coin => {
+      .map((ticker): Coin => {
         const symbol = ticker.symbol.replace('USDT', '')
         return {
           id: `binance-${symbol.toLowerCase()}`,
@@ -34,7 +34,7 @@ export async function fetchBinanceCoins(): Promise<Coin[]> {
           total_volume: parseFloat(ticker.quoteVolume),
           circulating_supply: 0,
           market_cap_rank: null,
-          source: 'binance' as any,
+          source: 'binance',
         }
       })
   } catch {

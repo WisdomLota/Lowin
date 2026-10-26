@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { fetchCoinGeckoPriceHistory } from '@/lib/price-history'
+import { CoinGeckoSearchCoin } from '@/types/coin'
 
 export async function GET(
   request: NextRequest,
@@ -21,7 +22,7 @@ export async function GET(
         )
         if (searchRes.ok) {
           const searchData = await searchRes.json()
-          const match = searchData.coins?.find((c: any) => c.symbol?.toUpperCase() === symbol)
+          const match = (searchData.coins as CoinGeckoSearchCoin[] | undefined)?.find((c) => c.symbol?.toUpperCase() === symbol)
           if (match) {
             prices = await fetchCoinGeckoPriceHistory(match.id)
           }

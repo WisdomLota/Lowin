@@ -32,7 +32,7 @@ export default function DashboardPage() {
       .then((r) => r.json())
       .then((data) => {
         if (data.coins?.length > 0) {
-          setNewCoinSymbols(new Set(data.coins.map((c: any) => c.symbol)))
+          setNewCoinSymbols(new Set(data.coins.map((c: { symbol: string }) => c.symbol)))
         }
       })
       .catch(() => {})
@@ -87,10 +87,12 @@ export default function DashboardPage() {
     setPage(1)
   }
 
-  const filteredCoins = useMemo(() => {
-    if (!data?.coins) return []
+  const allCoins = data?.coins
 
-    let coins = data.coins
+  const filteredCoins = useMemo(() => {
+    if (!allCoins) return []
+
+    let coins = allCoins
 
     // Search filter
     if (search.trim()) {
@@ -149,7 +151,7 @@ export default function DashboardPage() {
       default:
         return coins
     }
-  }, [data?.coins, activeTab, sourceFilter, marketFilter, priceFilter, search, newCoinSymbols])
+  }, [allCoins, activeTab, sourceFilter, marketFilter, priceFilter, search, newCoinSymbols])
 
   // Pagination
   const totalPages = Math.ceil(filteredCoins.length / PAGE_SIZE)
