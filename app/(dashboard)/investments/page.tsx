@@ -684,7 +684,7 @@ export default function InvestmentsPage() {
             <div className="border border-[#874708]/20 rounded-lg overflow-hidden">
               <div className="px-4 py-3 border-b border-[#874708]/20">
                 <p className="text-sm font-medium text-zinc-300">
-                  Monthly Earnings — {activeTab === 'mutual_fund' ? 'Mutual Funds' : activeTab === 'treasury_bill' ? 'Treasury Bills' : 'Stocks'}
+                  Monthly Earnings — {activeTab === 'mutual_fund' ? 'Mutual Funds' : activeTab === 'treasury_bill' ? 'Treasury Bills' : activeTab === 'savings' ? 'Savings' : 'Stocks'}
                 </p>
               </div>
               <div className="divide-y divide-zinc-800/50">
