@@ -139,3 +139,29 @@
     @apply font-sans;
   }
 }
+
+/* Slim themed scrollbars everywhere */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #874708;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #FF8D19;
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+/* Firefox */
+@supports (-moz-appearance: none) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #874708 transparent;
+  }
+}

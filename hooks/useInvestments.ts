@@ -50,6 +50,13 @@ export interface InvestmentWithData extends Investment {
   netPL: number
 }
 
+export type CurrencyCode = 'NGN' | 'USD' | 'TRY'
+
+// Anything that isn't USD or TRY is treated as naira
+export function currencyOf(currency: string): CurrencyCode {
+  return currency === 'USD' || currency === 'TRY' ? currency : 'NGN'
+}
+
 export function useInvestments() {
   const [investments, setInvestments] = useState<Investment[]>([])
   const [transactions, setTransactions] = useState<InvestmentTransaction[]>([])
@@ -182,15 +189,20 @@ export function useInvestments() {
     }))
   }, [getEnrichedInvestments])
 
-  // Monthly performance: per-investment earnings summed up
-  const getMonthlyPerformance = useCallback((filterType?: 'mutual_fund' | 'stock' | 'treasury_bill' | 'savings') => {
+  // Monthly performance: per-investment earnings summed up (one currency at a time —
+  // amounts in different currencies can't be added together)
+  const getMonthlyPerformance = useCallback((filterType?: 'mutual_fund' | 'stock' | 'treasury_bill' | 'savings', currency?: 'NGN' | 'USD' | 'TRY') => {
     const allEnriched = getEnrichedInvestments()
-    const enriched = filterType ? allEnriched.filter((i) => i.type === filterType) : allEnriched
+    const enriched = allEnriched.filter((i) =>
+      (!filterType || i.type === filterType) && (!currency || currencyOf(i.currency) === currency)
+    )
     if (enriched.length === 0) return []
 
+    // Only months where one of these investments had a value update
+    const enrichedIds = new Set(enriched.map((i) => i.id))
     const monthsWithUpdates = new Set<string>()
     for (const tx of transactions) {
-      if (tx.type === 'value_update') {
+      if (tx.type === 'value_update' && enrichedIds.has(tx.investment_id)) {
         monthsWithUpdates.add(tx.date.substring(0, 7))
       }
     }

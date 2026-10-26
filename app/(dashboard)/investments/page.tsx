@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
-import { useInvestments } from '@/hooks/useInvestments'
+import { useInvestments, type CurrencyCode } from '@/hooks/useInvestments'
 import { Header } from '@/components/layout/header'
 import { AddInvestmentModal } from '@/components/investments/add-investment-modal'
 import { TransactionModal } from '@/components/investments/transaction-modal'
@@ -17,6 +17,13 @@ import {
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 
 type InvTab = 'mutual_fund' | 'stock' | 'treasury_bill' | 'savings'
+
+const TAB_LABELS: Record<InvTab, string> = {
+  mutual_fund: 'Mutual Funds',
+  stock: 'Stocks',
+  treasury_bill: 'T-Bills',
+  savings: 'Savings',
+}
 
 function formatCurrency(amount: number, currency: string = 'NGN'): string {
   const symbol = currency === 'USD' ? '$' : currency === 'TRY' ? '₺' : '₦'
@@ -112,8 +119,31 @@ export default function InvestmentsPage() {
     return { ngn: ngnSummary, usd: usdSummary, try: trySummary }
   }, [ngnGroups, usdGroups, tryGroups])
 
-  const monthlyPerformanceForTab = useMemo(() => getMonthlyPerformance(activeTab), [getMonthlyPerformance, activeTab])
-  const monthlyPerformanceCombined = useMemo(() => getMonthlyPerformance(), [getMonthlyPerformance])
+  // Currencies held on the current tab (earnings can't be summed across currencies)
+  // The user's pick only applies to the tab it was made on
+  const [earningsPick, setEarningsPick] = useState<{ tab: InvTab; currency: CurrencyCode } | null>(null)
+  const monthlyPerformanceByTabCurrency = useMemo(() => ({
+    NGN: getMonthlyPerformance(activeTab, 'NGN'),
+    USD: getMonthlyPerformance(activeTab, 'USD'),
+    TRY: getMonthlyPerformance(activeTab, 'TRY'),
+  }), [getMonthlyPerformance, activeTab])
+  const monthlyPerformanceByCurrency = useMemo(() => ({
+    NGN: getMonthlyPerformance(undefined, 'NGN'),
+    USD: getMonthlyPerformance(undefined, 'USD'),
+    TRY: getMonthlyPerformance(undefined, 'TRY'),
+  }), [getMonthlyPerformance])
+  const [earningsScope, setEarningsScope] = useState<'tab' | 'all'>('tab')
+  // Fall back to all investments when the current tab has no earnings yet
+  const availableCurrencies = (['NGN', 'USD', 'TRY'] as const).filter((c) => monthlyPerformanceByCurrency[c].length > 0)
+  // Default to a currency this tab actually holds
+  const tabCurrencies = availableCurrencies.filter((c) => monthlyPerformanceByTabCurrency[c].length > 0)
+  const pickedCurrency = earningsPick?.tab === activeTab ? earningsPick.currency : null
+  const effectiveCurrency: CurrencyCode =
+    pickedCurrency && availableCurrencies.includes(pickedCurrency) ? pickedCurrency
+    : (tabCurrencies[0] ?? availableCurrencies[0] ?? 'NGN')
+  const monthlyPerformanceForTab = monthlyPerformanceByTabCurrency[effectiveCurrency]
+  const effectiveScope = monthlyPerformanceForTab.length > 0 ? earningsScope : 'all'
+  const earningsRows = effectiveScope === 'tab' ? monthlyPerformanceForTab : monthlyPerformanceByCurrency[effectiveCurrency]
   const enrichedInvestments = useMemo(() => getEnrichedInvestments(), [getEnrichedInvestments])
   // Total portfolio across ALL investment types (not just active tab)
   const totalPortfolio = useMemo(() => {
@@ -602,7 +632,7 @@ export default function InvestmentsPage() {
                         <div className="bg-[#1a0f00] px-4 py-3">
                           <p className="text-xs text-zinc-500">Net P/L</p>
                           <p className={cn('text-sm font-mono mt-0.5', group.netPL >= 0 ? 'text-[#32BC00]' : 'text-[#F32400]')}>
-                            {group.netPL >= 0 ? '+' : '-'}{formatCurrency(group.netPL)}
+                            {group.netPL >= 0 ? '+' : '-'}{formatCurrency(group.netPL, 'USD')}
                           </p>
                           <p className={cn('text-xs font-mono', group.totalInvested > 0 ? (group.netPL >= 0 ? 'text-[#32BC00]' : 'text-[#F32400]') : 'text-zinc-500')}>
                             {group.totalInvested > 0 ? `${group.netPL >= 0 ? '+' : ''}${((group.netPL / group.totalInvested) * 100).toFixed(2)}%` : ''}
@@ -686,64 +716,58 @@ export default function InvestmentsPage() {
           </div>
         )}
 
-        {/* Monthly Earnings for current tab */}
-        {monthlyPerformanceForTab.length > 0 && (
+        {/* Earnings: one card, switch between this tab and all investments */}
+        {earningsRows.length > 0 && (
           <div className="p-4 sm:p-6 pt-0">
             <div className="border border-[#874708]/20 rounded-lg overflow-hidden">
-              <div className="px-4 py-3 border-b border-[#874708]/20">
-                <p className="text-sm font-medium text-zinc-300">
-                  Monthly Earnings — {activeTab === 'mutual_fund' ? 'Mutual Funds' : activeTab === 'treasury_bill' ? 'Treasury Bills' : activeTab === 'savings' ? 'Savings' : 'Stocks'}
-                </p>
-              </div>
-              <div className="divide-y divide-zinc-800/50">
-                {monthlyPerformanceForTab.map((m) => (
-                  <div key={m.month} className="px-4 py-3">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm font-medium text-zinc-300">{m.label}</span>
-                      <span className={cn('text-sm font-mono font-semibold',
-                        m.monthEarning >= 0 ? 'text-[#32BC00]' : 'text-[#F32400]')}>
-                        {m.monthEarning >= 0 ? '+' : '-'}{formatCurrency(m.monthEarning)}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex gap-3 text-xs text-zinc-500">
-                        {m.deposits > 0 && <span>Deposited: {formatCurrency(m.deposits)}</span>}
-                        {m.withdrawals > 0 && <span>Withdrawn: {formatCurrency(m.withdrawals)}</span>}
-                        <span>Value: {formatCurrency(m.totalValue)}</span>
-                      </div>
-                      <span className={cn('text-xs font-mono',
-                        m.earningPct >= 0 ? 'text-[#32BC00]' : 'text-[#F32400]')}>
-                        {m.earningPct >= 0 ? '+' : ''}{m.earningPct.toFixed(2)}%
-                      </span>
-                    </div>
+              <div className="px-4 py-3 border-b border-[#874708]/20 flex items-center justify-between gap-3 flex-wrap">
+                <p className="text-sm font-medium text-zinc-300">Earnings</p>
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 text-xs text-zinc-400">
+                    <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-[#32BC00]" /> Profit</span>
+                    <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-[#F32400]" /> Loss</span>
                   </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Earnings Chart */}
-        {monthlyPerformanceCombined.length > 0 && (
-          <div className="p-4 sm:p-6 pt-0">
-            <div className="border border-[#874708]/20 rounded-lg overflow-hidden">
-              <div className="px-4 py-3 border-b border-[#874708]/20 flex items-center justify-between">
-                <p className="text-sm font-medium text-zinc-300">Earnings Overview</p>
-                <div className="flex items-center gap-4 text-xs">
-                  <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-[#32BC00]" /> Profit</span>
-                  <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-[#F32400]" /> Loss</span>
+                  {availableCurrencies.length > 1 && (
+                    <div className="flex rounded-md overflow-hidden border border-[#874708]/30 text-xs">
+                      {availableCurrencies.map((c) => (
+                        <button
+                          key={c}
+                          onClick={() => setEarningsPick({ tab: activeTab, currency: c })}
+                          className={cn('px-3 py-1 transition-colors',
+                            effectiveCurrency === c ? 'bg-[#FF8D19] text-black font-medium' : 'text-zinc-400 hover:text-zinc-200')}
+                        >
+                          {c === 'USD' ? '$' : c === 'TRY' ? '₺' : '₦'}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {monthlyPerformanceForTab.length > 0 && (
+                    <div className="flex rounded-md overflow-hidden border border-[#874708]/30 text-xs">
+                      {([['tab', TAB_LABELS[activeTab]], ['all', 'All']] as const).map(([key, label]) => (
+                        <button
+                          key={key}
+                          onClick={() => setEarningsScope(key)}
+                          className={cn('px-3 py-1 transition-colors',
+                            effectiveScope === key ? 'bg-[#FF8D19] text-black font-medium' : 'text-zinc-400 hover:text-zinc-200')}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
-              <div className="px-2 sm:px-4 py-6">
-                <ResponsiveContainer width="100%" height={280}>
+
+              <div className="px-2 sm:px-4 pt-4 pb-2">
+                <ResponsiveContainer width="100%" height={200}>
                   <BarChart
-                    data={monthlyPerformanceCombined.map((m) => ({
+                    data={earningsRows.map((m) => ({
                       name: m.label.split(' ')[0].substring(0, 3),
                       earning: Math.round(m.monthEarning),
                       fullLabel: m.label,
                       pct: m.earningPct,
                     }))}
-                    margin={{ top: 20, right: 10, left: 10, bottom: 5 }}
+                    margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
                   >
                     <XAxis
                       dataKey="name"
@@ -777,7 +801,7 @@ export default function InvestmentsPage() {
                       formatter={(value) => {
                         const num = Number(value)
                         const color = num >= 0 ? '#32BC00' : '#F32400'
-                        return [<span key="earning" style={{ color, fontFamily: 'monospace', fontWeight: 600 }}>{num >= 0 ? '+' : '-'}{formatCurrency(num)}</span>, 'Earning']
+                        return [<span key="earning" style={{ color, fontFamily: 'monospace', fontWeight: 600 }}>{num >= 0 ? '+' : '-'}{formatCurrency(num, effectiveCurrency)}</span>, 'Earning']
                       }}
                       labelFormatter={(_, payload) => {
                         const item = payload?.[0]?.payload
@@ -786,7 +810,7 @@ export default function InvestmentsPage() {
                       }}
                     />
                     <Bar dataKey="earning" radius={[8, 8, 0, 0]} maxBarSize={50}>
-                      {monthlyPerformanceCombined.map((m, idx) => (
+                      {earningsRows.map((m, idx) => (
                         <Cell
                           key={idx}
                           fill={m.monthEarning >= 0 ? '#32BC00' : '#F32400'}
@@ -797,40 +821,36 @@ export default function InvestmentsPage() {
                   </BarChart>
                 </ResponsiveContainer>
               </div>
-            </div>
-          </div>
-        )}
-        
-        {/* Combined Monthly Earnings */}
-        {monthlyPerformanceCombined.length > 0 && (
-          <div className="p-4 sm:p-6 pt-0">
-            <div className="border border-[#874708]/20 rounded-lg overflow-hidden">
-              <div className="px-4 py-3 border-b border-[#874708]/20">
-                <p className="text-sm font-medium text-zinc-300">Monthly Earnings — All Investments</p>
-              </div>
-              <div className="divide-y divide-zinc-800/50">
-                {monthlyPerformanceCombined.map((m) => (
-                  <div key={m.month} className="px-4 py-3">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm font-medium text-zinc-300">{m.label}</span>
-                      <span className={cn('text-sm font-mono font-semibold',
-                        m.monthEarning >= 0 ? 'text-[#32BC00]' : 'text-[#F32400]')}>
-                        {m.monthEarning >= 0 ? '+' : '-'}{formatCurrency(m.monthEarning)}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex gap-3 text-xs text-zinc-500">
-                        {m.deposits > 0 && <span>Deposited: {formatCurrency(m.deposits)}</span>}
-                        {m.withdrawals > 0 && <span>Withdrawn: {formatCurrency(m.withdrawals)}</span>}
-                        <span>Value: {formatCurrency(m.totalValue)}</span>
+
+              {/* Newest first, fixed height so the page doesn't keep growing */}
+              <div className="max-h-72 overflow-y-auto border-t border-[#874708]/20">
+                <div className="sticky top-0 z-10 grid grid-cols-[1fr_auto_auto] gap-4 px-4 py-2 text-[11px] uppercase tracking-wide text-zinc-500 bg-[#120a00]">
+                  <span>Month</span>
+                  <span className="text-right w-28">Earning</span>
+                  <span className="text-right w-16">%</span>
+                </div>
+                <div className="divide-y divide-zinc-800/50">
+                  {[...earningsRows].reverse().map((m) => (
+                    <div key={m.month} className="grid grid-cols-[1fr_auto_auto] gap-4 px-4 py-2.5 items-center">
+                      <div className="min-w-0">
+                        <p className="text-sm text-zinc-300">{m.label}</p>
+                        <p className="text-xs text-zinc-500 truncate">
+                          Value {formatCurrency(m.totalValue, effectiveCurrency)}
+                          {m.deposits > 0 && ` · In ${formatCurrency(m.deposits, effectiveCurrency)}`}
+                          {m.withdrawals > 0 && ` · Out ${formatCurrency(m.withdrawals, effectiveCurrency)}`}
+                        </p>
                       </div>
-                      <span className={cn('text-xs font-mono',
+                      <span className={cn('text-sm font-mono font-semibold text-right w-28',
+                        m.monthEarning >= 0 ? 'text-[#32BC00]' : 'text-[#F32400]')}>
+                        {m.monthEarning >= 0 ? '+' : '-'}{formatCurrency(m.monthEarning, effectiveCurrency)}
+                      </span>
+                      <span className={cn('text-xs font-mono text-right w-16',
                         m.earningPct >= 0 ? 'text-[#32BC00]' : 'text-[#F32400]')}>
                         {m.earningPct >= 0 ? '+' : ''}{m.earningPct.toFixed(2)}%
                       </span>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
           </div>
