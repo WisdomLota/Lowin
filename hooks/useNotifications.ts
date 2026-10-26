@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase'
 
 export interface Notification {
   id: string
-  type: 'delisting' | 'price_alert' | 'system'
+  type: 'delisting' | 'price_alert' | 'milestone' | 'system'
   title: string
   message: string
   coin_symbol: string | null
@@ -239,31 +239,46 @@ export function useNotifications() {
       const price = priceMap.get(symbol)
       if (!price) continue
 
-      for (const milestone of milestones) {
-        if (price >= milestone) {
-          const milestoneLabel = milestone === 1 ? '$1.00' : '$0.10'
+      // Only alert for the highest milestone reached
+      const milestone = [...milestones].reverse().find((m) => price >= m)
+      if (milestone === undefined) continue
+      const milestoneLabel = milestone === 1 ? '$1.00' : '$0.10'
+      const title = `${symbol} hit ${milestoneLabel}`
 
-          const { data: existing } = await supabase
-            .from('notifications')
-            .select('id')
-            .eq('user_id', user.id)
-            .eq('coin_symbol', symbol)
-            .eq('type', 'milestone')
-            .like('title', `%hit ${milestoneLabel}%`)
-            .limit(1)
+      const { data: existing } = await supabase
+        .from('notifications')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('coin_symbol', symbol)
+        .eq('type', 'milestone')
+        .eq('title', title)
+        .limit(1)
 
-          if (existing && existing.length > 0) continue
+      if (existing && existing.length > 0) continue
 
-          // Send Telegram alert
-          fetch('/api/notify-telegram', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              message: `🎯 <b>${name || symbol} hit ${milestoneLabel}!</b>\n\nCurrently at $${price < 0.01 ? price.toFixed(8) : price.toFixed(4)}\nSource: ${(purchases || []).some((p: any) => p.coin_symbol === symbol) ? 'Portfolio' : 'Watchlist'}\n\n🔗 Check Lowin for details`,
-            }),
-          }).catch(() => {})
-        }
+      const isPortfolio = (purchases || []).some((p: any) => p.coin_symbol === symbol)
+      const message = `${name || symbol} hit ${milestoneLabel}! Currently at $${price < 0.01 ? price.toFixed(8) : price.toFixed(4)}`
+
+      // Record first so the alert is only ever sent once
+      const { error } = await supabase.from('notifications').insert({
+        user_id: user.id,
+        type: 'milestone',
+        title,
+        message,
+        coin_symbol: symbol,
+      })
+      if (error) {
+        console.error('Failed to record milestone notification:', error.message)
+        continue
       }
+
+      fetch('/api/notify-telegram', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: `🎯 <b>${name || symbol} hit ${milestoneLabel}!</b>\n\nCurrently at $${price < 0.01 ? price.toFixed(8) : price.toFixed(4)}\nSource: ${isPortfolio ? 'Portfolio' : 'Watchlist'}\n\n🔗 Check Lowin for details`,
+        }),
+      }).catch(() => {})
     }
 
     await fetchAll()
