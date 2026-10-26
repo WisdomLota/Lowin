@@ -361,7 +361,7 @@ export function useInvestments() {
     for (const year of sortedYears) {
       const yearStart = `${year}-01-01`
       const yearEnd = `${year}-12-31`
-      const daysInYear = (year % 4 === 0) ? 366 : 365
+      const daysInYear = ((year % 4 === 0 && year % 100 !== 0) || year % 400 === 0) ? 366 : 365
 
       let totalStartValue = 0
       let totalEndValue = 0
@@ -383,8 +383,8 @@ export function useInvestments() {
         if (preYearUpdates.length > 0) {
           startValue = preYearUpdates[0].amount
         } else if (inv.buy_date < yearStart) {
-          // No value_update before this year — use cost basis
-          startValue = inv.amount - inv.processing_fee
+          // No value_update before this year — use amount held (fees are a cost, not part of the holding)
+          startValue = inv.amount
           startValue += invTxs.filter((t) => t.type === 'deposit' && t.date < yearStart).reduce((s, t) => s + t.amount, 0)
           startValue -= invTxs.filter((t) => t.type === 'withdrawal' && t.date < yearStart).reduce((s, t) => s + t.amount, 0)
         }
@@ -398,9 +398,11 @@ export function useInvestments() {
         if (yearUpdates.length > 0) {
           endValue = yearUpdates[0].amount
           // Account for deposits/withdrawals AFTER the last value_update
-          const lastUpdateDate = yearUpdates[0].date
-          const postUpdateDeposits = invTxs.filter((t) => t.type === 'deposit' && t.date >= yearStart && t.date <= yearEnd && t.date >= lastUpdateDate).reduce((s, t) => s + t.amount, 0)
-          const postUpdateWithdrawals = invTxs.filter((t) => t.type === 'withdrawal' && t.date >= yearStart && t.date <= yearEnd && t.date >= lastUpdateDate).reduce((s, t) => s + t.amount, 0)
+          const lastUpdate = yearUpdates[0]
+          const isAfterUpdate = (t: InvestmentTransaction) =>
+            t.date > lastUpdate.date || (t.date === lastUpdate.date && t.created_at > lastUpdate.created_at)
+          const postUpdateDeposits = invTxs.filter((t) => t.type === 'deposit' && t.date <= yearEnd && isAfterUpdate(t)).reduce((s, t) => s + t.amount, 0)
+          const postUpdateWithdrawals = invTxs.filter((t) => t.type === 'withdrawal' && t.date <= yearEnd && isAfterUpdate(t)).reduce((s, t) => s + t.amount, 0)
           endValue += postUpdateDeposits - postUpdateWithdrawals
           hasData = true
         } else if (startValue > 0) {
@@ -415,8 +417,8 @@ export function useInvestments() {
           if (yearUpdates.length > 0) {
             endValue = yearUpdates[0].amount
           } else {
-            // No value update — use cost basis including all deposits/withdrawals this year
-            endValue = inv.amount - inv.processing_fee
+            // No value update — amount held including all deposits/withdrawals this year (fees are not part of the holding)
+            endValue = inv.amount
             endValue += invTxs.filter((t) => t.type === 'deposit' && t.date >= yearStart && t.date <= yearEnd).reduce((s, t) => s + t.amount, 0)
             endValue -= invTxs.filter((t) => t.type === 'withdrawal' && t.date >= yearStart && t.date <= yearEnd).reduce((s, t) => s + t.amount, 0)
           }
@@ -429,16 +431,24 @@ export function useInvestments() {
         // Cashflows this year (deposits, withdrawals, initial investment, fees)
         const yearCashflows: { amount: number; date: string }[] = []
 
-        // Initial investment if bought this year
+        // processing_fee also accumulates fees from transactions, so the buy-date fee is what's left over
+        const txFeesTotal = invTxs.reduce((s, t) => s + (t.fee_amount || 0), 0)
+        const initialFee = Math.max(0, inv.processing_fee - txFeesTotal)
+
+        // Initial investment if bought this year — fee is paid on top, so it's a cost
         if (inv.buy_date >= yearStart && inv.buy_date <= yearEnd) {
-          const netInitial = inv.amount - inv.processing_fee
-          yearCashflows.push({ amount: netInitial, date: inv.buy_date })
+          yearCashflows.push({ amount: inv.amount + initialFee, date: inv.buy_date })
           totalDeposits += inv.amount
-          totalFees += inv.processing_fee
+          totalFees += initialFee
         }
 
         // Deposits this year
         for (const tx of invTxs) {
+          // Fees charged on transactions are also paid on top
+          if (tx.fee_amount > 0 && tx.date >= yearStart && tx.date <= yearEnd) {
+            yearCashflows.push({ amount: tx.fee_amount, date: tx.date })
+            totalFees += tx.fee_amount
+          }
           if (tx.type === 'deposit' && tx.date >= yearStart && tx.date <= yearEnd) {
             yearCashflows.push({ amount: tx.amount, date: tx.date })
             totalDeposits += tx.amount
@@ -461,15 +471,16 @@ export function useInvestments() {
 
       if (!hasData) continue
 
-      // Modified Dietz formula:
+      // Modified Dietz formula (returns are net of fees):
       // Return = (End - Start - Net Cashflow) / (Start + Weighted Cashflow)
-      const netCashflow = totalDeposits - totalWithdrawals - totalFees
+      // Fees are cash paid in but never show up in the value, so they count as a loss
+      const netCashflow = totalDeposits - totalWithdrawals + totalFees
       const totalEarning = totalEndValue - totalStartValue - netCashflow
       const denominator = totalStartValue + weightedCashflow
 
       let twr = 0
       // If no start value (all new investments this year), use simple return
-      const effectiveBase = totalStartValue > 0 ? denominator : (totalDeposits - totalFees)
+      const effectiveBase = totalStartValue > 0 ? denominator : (totalDeposits + totalFees)
       if (effectiveBase > 0) {
         twr = (totalEarning / effectiveBase) * 100
       } else if (totalEarning > 0) {
