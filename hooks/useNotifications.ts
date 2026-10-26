@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase'
+import { highestMilestone, milestoneTitle, formatMilestonePrice } from '@/lib/milestones'
 
 export interface Notification {
   id: string
@@ -233,17 +234,14 @@ export function useNotifications() {
     for (const p of purchases || []) trackedCoins.set(p.coin_symbol, p.coin_name)
     for (const w of watchlist || []) trackedCoins.set(w.coin_symbol, w.coin_name)
 
-    const milestones = [0.10, 1.00]
-
     for (const [symbol, name] of trackedCoins) {
       const price = priceMap.get(symbol)
       if (!price) continue
 
-      // Only alert for the highest milestone reached
-      const milestone = [...milestones].reverse().find((m) => price >= m)
-      if (milestone === undefined) continue
-      const milestoneLabel = milestone === 1 ? '$1.00' : '$0.10'
-      const title = `${symbol} hit ${milestoneLabel}`
+      const milestone = highestMilestone(price)
+      if (!milestone) continue
+      const milestoneLabel = milestone.label
+      const title = milestoneTitle(symbol, milestoneLabel)
 
       const { data: existing } = await supabase
         .from('notifications')
@@ -257,7 +255,7 @@ export function useNotifications() {
       if (existing && existing.length > 0) continue
 
       const isPortfolio = (purchases || []).some((p: { coin_symbol: string }) => p.coin_symbol === symbol)
-      const message = `${name || symbol} hit ${milestoneLabel}! Currently at $${price < 0.01 ? price.toFixed(8) : price.toFixed(4)}`
+      const message = `${name || symbol} hit ${milestoneLabel}! Currently at ${formatMilestonePrice(price)}`
 
       // Record first so the alert is only ever sent once
       const { error } = await supabase.from('notifications').insert({
@@ -276,7 +274,7 @@ export function useNotifications() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: `🎯 <b>${name || symbol} hit ${milestoneLabel}!</b>\n\nCurrently at $${price < 0.01 ? price.toFixed(8) : price.toFixed(4)}\nSource: ${isPortfolio ? 'Portfolio' : 'Watchlist'}\n\n🔗 Check Lowin for details`,
+          message: `🎯 <b>${name || symbol} hit ${milestoneLabel}!</b>\n\nCurrently at ${formatMilestonePrice(price)}\nSource: ${isPortfolio ? 'Portfolio' : 'Watchlist'}\n\n🔗 Check Lowin for details`,
         }),
       }).catch(() => {})
     }

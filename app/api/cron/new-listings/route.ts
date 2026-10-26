@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { BinanceTicker, CoinGeckoMarket } from '@/types/coin'
+import { sendTelegram } from '@/lib/telegram'
+import { fetchCoinPricesBySymbols } from '@/lib/coingecko'
+import { highestMilestone, milestoneTitle, formatMilestonePrice } from '@/lib/milestones'
 
 interface ListedCoin {
   symbol: string
@@ -15,21 +18,71 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-async function sendTelegram(message: string) {
-  const token = process.env.TELEGRAM_BOT_TOKEN
-  const chatId = process.env.TELEGRAM_CHAT_ID
-  if (!token || !chatId) return
+// Alerts for tracked coins (portfolio + watchlist) that reached a price milestone.
+// The in-app check only runs while the app is open; this covers the rest.
+async function checkMilestones(): Promise<number> {
+  const [{ data: purchases }, { data: watchlist }] = await Promise.all([
+    supabase.from('purchases').select('user_id, coin_symbol, coin_name'),
+    supabase.from('watchlist').select('user_id, coin_symbol, coin_name'),
+  ])
 
-  await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      chat_id: chatId,
-      text: message,
-      parse_mode: 'HTML',
-    }),
-  })
+  type Tracked = { userId: string; symbol: string; name: string; portfolio: boolean }
+  const tracked = new Map<string, Tracked>()
+  for (const w of watchlist || []) {
+    tracked.set(`${w.user_id}:${w.coin_symbol}`, { userId: w.user_id, symbol: w.coin_symbol, name: w.coin_name, portfolio: false })
+  }
+  for (const p of purchases || []) {
+    tracked.set(`${p.user_id}:${p.coin_symbol}`, { userId: p.user_id, symbol: p.coin_symbol, name: p.coin_name, portfolio: true })
+  }
+  if (tracked.size === 0) return 0
+
+  // fetchCoinPricesBySymbols handles 10 symbols at a time
+  const symbols = Array.from(new Set(Array.from(tracked.values()).map((t) => t.symbol)))
+  const priceMap = new Map<string, number>()
+  for (let i = 0; i < symbols.length; i += 10) {
+    const chunk = await fetchCoinPricesBySymbols(symbols.slice(i, i + 10))
+    for (const [symbol, price] of chunk) priceMap.set(symbol, price)
+  }
+
+  let sent = 0
+  for (const t of tracked.values()) {
+    const price = priceMap.get(t.symbol)
+    if (!price) continue
+    const milestone = highestMilestone(price)
+    if (!milestone) continue
+
+    const title = milestoneTitle(t.symbol, milestone.label)
+    const { data: existing } = await supabase
+      .from('notifications')
+      .select('id')
+      .eq('user_id', t.userId)
+      .eq('coin_symbol', t.symbol)
+      .eq('type', 'milestone')
+      .eq('title', title)
+      .limit(1)
+    if (existing && existing.length > 0) continue
+
+    // Record first so the alert is only ever sent once
+    const { error } = await supabase.from('notifications').insert({
+      user_id: t.userId,
+      type: 'milestone',
+      title,
+      message: `${t.name || t.symbol} hit ${milestone.label}! Currently at ${formatMilestonePrice(price)}`,
+      coin_symbol: t.symbol,
+    })
+    if (error) {
+      console.error('Failed to record milestone notification:', error.message)
+      continue
+    }
+
+    await sendTelegram(
+      `🎯 <b>${t.name || t.symbol} hit ${milestone.label}!</b>\n\nCurrently at ${formatMilestonePrice(price)}\nSource: ${t.portfolio ? 'Portfolio' : 'Watchlist'}\n\n🔗 Check Lowin for details`
+    )
+    sent++
+  }
+  return sent
 }
+
 
 export async function GET(request: Request) {
   // Verify cron secret
@@ -37,6 +90,13 @@ export async function GET(request: Request) {
   const authHeader = request.headers.get('authorization')
   if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  let milestonesSent = 0
+  try {
+    milestonesSent = await checkMilestones()
+  } catch (error) {
+    console.error('Milestone check error:', error)
   }
 
   try {
@@ -121,6 +181,7 @@ export async function GET(request: Request) {
     return NextResponse.json({
       checked: currentCoins.length,
       newFound: newCoins.length,
+      milestonesSent,
       timestamp: new Date().toISOString(),
     })
   } catch (error) {
