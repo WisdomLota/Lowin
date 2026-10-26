@@ -254,13 +254,14 @@ export function useNotifications() {
 
           if (existing && existing.length > 0) continue
 
-          await supabase.from('notifications').insert({
-            user_id: user.id,
-            coin_symbol: symbol,
-            type: 'milestone',
-            title: `${name || symbol} hit ${milestoneLabel}!`,
-            message: `${name || symbol} (${symbol}) has reached ${milestoneLabel} — currently at $${price < 0.01 ? price.toFixed(8) : price.toFixed(4)}. This coin is in your ${(purchases || []).some((p: any) => p.coin_symbol === symbol) ? 'portfolio' : 'watchlist'}.`,
-          })
+          // Send Telegram alert
+          fetch('/api/notify-telegram', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              message: `🎯 <b>${name || symbol} hit ${milestoneLabel}!</b>\n\nCurrently at $${price < 0.01 ? price.toFixed(8) : price.toFixed(4)}\nSource: ${(purchases || []).some((p: any) => p.coin_symbol === symbol) ? 'Portfolio' : 'Watchlist'}\n\n🔗 Check Lowin for details`,
+            }),
+          }).catch(() => {})
         }
       }
     }
