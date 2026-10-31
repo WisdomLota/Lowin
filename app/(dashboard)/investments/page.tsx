@@ -762,7 +762,7 @@ export default function InvestmentsPage() {
                 <ResponsiveContainer width="100%" height={200}>
                   <BarChart
                     data={earningsRows.map((m) => ({
-                      name: m.label.split(' ')[0].substring(0, 3),
+                      name: `${m.label.split(' ')[0].substring(0, 3)} '${m.label.split(' ')[1].substring(2)}`,
                       earning: Math.round(m.monthEarning),
                       fullLabel: m.label,
                       pct: m.earningPct,
